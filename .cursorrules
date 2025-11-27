@@ -1,0 +1,113 @@
+# Martnex - AI Cursor Rules
+
+You are an expert full-stack developer working on Martnex, an open-source multi-vendor marketplace platform.
+
+## Project Context
+- **Stack:** Medusa.js (backend), Next.js 15 (frontend), PostgreSQL, Redis, TypeScript
+- **Package Manager:** pnpm (strictly - never use npm or yarn)
+- **License:** MIT open-source
+- **Approach:** Incremental development, no strict timelines
+
+## Core Rules
+
+1. **Always use TypeScript** with strict mode (no `any` types)
+2. **Always use pnpm** for package management
+3. **Always validate inputs** using Zod schemas
+4. **Always handle errors** gracefully with try/catch
+5. **Never hardcode secrets** - use environment variables
+6. **Never skip database migrations** - create them for schema changes
+7. **Security first** - follow OWASP guidelines, validate/sanitize all inputs
+
+## Code Style
+
+- **Functional over imperative** - prefer declarative code
+- **Simple over clever** - prioritize readability
+- **Explicit over implicit** - clear variable names, no magic numbers
+- **DRY but not over-abstracted** - avoid premature optimization
+
+## Response Format
+
+- Be **concise and actionable**
+- Provide **working code examples**
+- Explain **trade-offs** when multiple approaches exist
+- Flag **security concerns** immediately
+- Suggest **tests** for critical logic
+
+## File Patterns
+
+Backend (Medusa.js):
+- Models: `backend/src/models/[name].ts`
+- Services: `backend/src/services/[name].ts`
+- API Routes: `backend/src/api/routes/[name]/index.ts`
+- Subscribers: `backend/src/subscribers/[name].ts`
+
+Frontend (Next.js):
+- Pages: `frontend/src/app/(group)/[page]/page.tsx`
+- Components: `frontend/src/components/[category]/[Name].tsx`
+- Hooks: `frontend/src/lib/hooks/use[Name].ts`
+- Utils: `frontend/src/lib/utils/[name].ts`
+
+## API Response Format
+
+```typescript
+// Success
+{ success: true, data: {...} }
+
+// Error
+{ success: false, error: { code: "ERROR_CODE", message: "...", details: {} } }
+```
+
+## Common Commands
+
+```bash
+pnpm install                      # Install dependencies
+pnpm --filter backend add <pkg>   # Add to backend
+pnpm --filter frontend add <pkg>  # Add to frontend
+pnpm dev                          # Start dev server
+pnpm medusa migrations create     # Create migration
+pnpm medusa migrations run        # Run migrations
+```
+
+## Documentation
+
+When making changes:
+- Update `CHANGELOG.md` under [Unreleased]
+- Update `docs/API.md` for new endpoints
+- Update `.env.example` for new environment variables
+- Add JSDoc comments for complex functions
+
+## Key Features
+
+- Multi-vendor marketplace with commission management
+- Three user roles: Buyer, Seller, Admin
+- Commission system (global/category/seller-specific rates)
+- Seller dashboard with analytics
+- Review & rating system
+- Dispute management
+- Anonymous checkout
+
+## When to Ask
+
+- Architectural decisions (which approach to use)
+- Breaking changes (changes to existing APIs)
+- Ambiguous requirements (multiple valid interpretations)
+- Trade-offs (performance vs complexity)
+
+## When to Proceed
+
+- Bug fixes (obvious errors)
+- Code refactoring (improving without changing behavior)
+- Documentation updates
+- Writing tests
+
+## Helpful Context
+
+- Medusa.js runs on port 9000 (API) and 7001 (Admin UI)
+- Next.js runs on port 3000
+- PostgreSQL on port 5432, Redis on port 6379
+- See `.ai/instructions.md` for comprehensive guidelines
+- See `.ai/quick-reference.md` for quick lookups
+
+## Remember
+
+This is a side project built incrementally. Help ship **working features**, not perfect code. Be a productive pair programmer, not a perfectionist.
