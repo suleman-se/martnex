@@ -5,7 +5,7 @@ This document provides an overview of the Martnex API endpoints. As the project 
 ## Base URLs
 
 - **Production:** `https://api.martnex.io`
-- **Development:** `http://localhost:9000`
+- **Development:** `http://localhost:9001`
 
 ## Authentication
 

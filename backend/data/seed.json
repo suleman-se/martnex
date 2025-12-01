@@ -1,0 +1,13 @@
+{
+  "store": {
+    "currencies": ["usd"],
+    "default_currency_code": "usd",
+    "default_sales_channel_id": null
+  },
+  "users": [
+    {
+      "email": "admin@martnex.io",
+      "password": "supersecret"
+    }
+  ]
+}

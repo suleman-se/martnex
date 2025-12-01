@@ -48,7 +48,7 @@
 
 ```
 src/
-├── app/                        # Next.js 14 App Router
+├── app/                        # Next.js 16 App Router
 │   ├── (auth)/                 # Auth group
 │   │   ├── login/
 │   │   ├── register/

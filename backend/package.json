@@ -1,0 +1,49 @@
+{
+  "name": "martnex-backend",
+  "version": "0.1.0",
+  "description": "Martnex Multi-Vendor Marketplace Backend",
+  "author": "Martnex Team",
+  "license": "MIT",
+  "keywords": [
+    "medusa",
+    "marketplace",
+    "multi-vendor",
+    "ecommerce"
+  ],
+  "scripts": {
+    "build": "medusa build",
+    "dev": "medusa develop",
+    "start": "medusa start",
+    "start:worker": "medusa start --worker",
+    "test": "vitest",
+    "seed": "medusa exec ./src/scripts/seed.ts",
+    "db:migrate": "medusa db:migrate",
+    "db:generate": "medusa db:generate",
+    "db:sync": "medusa db:sync"
+  },
+  "dependencies": {
+    "@medusajs/caching-redis": "^2.11.3",
+    "@medusajs/framework": "^2.11.3",
+    "@medusajs/medusa": "^2.11.3",
+    "@medusajs/utils": "^2.11.3",
+    "awilix": "^12.0.2",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "pg": "^8.13.3",
+    "redis": "^4.7.0"
+  },
+  "devDependencies": {
+    "@medusajs/test-utils": "^2.11.3",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.12.6",
+    "@types/pg": "^8.11.10",
+    "eslint": "^9.39.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.7",
+    "vitest": "^2.1.8"
+  },
+  "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a"
+}

@@ -92,8 +92,8 @@ npm run dev
 ```
 
 Backend should be running at:
-- **Storefront API:** http://localhost:9000
-- **Admin API:** http://localhost:9000/admin
+- **Storefront API:** http://localhost:9001
+- **Admin API:** http://localhost:9001/admin
 - **Admin UI:** http://localhost:7001
 
 ### Step 7: Test Backend
@@ -142,7 +142,7 @@ npx shadcn-ui@latest init
 Create `frontend/.env.local`:
 
 ```env
-NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000
+NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9001
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...  # Add later
 ```
 
@@ -154,7 +154,7 @@ Create `frontend/src/lib/api/client.ts`:
 import Medusa from "@medusajs/medusa-js"
 
 const medusa = new Medusa({
-  baseUrl: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000",
+  baseUrl: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9001",
   maxRetries: 3,
 })
 
@@ -388,7 +388,7 @@ npm run dev
 ### 2. Access Points
 
 - **Frontend:** http://localhost:3000
-- **Backend API:** http://localhost:9000
+- **Backend API:** http://localhost:9001
 - **Admin UI:** http://localhost:7001
 - **PostgreSQL:** localhost:5432
 - **Redis:** localhost:6379
@@ -410,7 +410,7 @@ npm run dev
 
 ```bash
 # Find process using port
-lsof -i :9000  # or :3000, :7001
+lsof -i :9001  # or :3000, :7001
 
 # Kill process
 kill -9 <PID>

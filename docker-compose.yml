@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: martnex-postgres
+    environment:
+      POSTGRES_USER: martnex
+      POSTGRES_PASSWORD: martnex_dev_password
+      POSTGRES_DB: martnex
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U martnex"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - martnex-network
+
+  # Redis Cache
+  redis:
+    image: redis:7.4-alpine
+    container_name: martnex-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - martnex-network
+
+  # Medusa Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: martnex-backend
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://martnex:martnex_dev_password@postgres:5432/martnex?sslmode=disable
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: supersecret-change-in-production
+      COOKIE_SECRET: supersecret-cookie-change-in-production
+      PORT: 9001
+      ADMIN_CORS: http://localhost:7001,http://localhost:9001
+      STORE_CORS: http://localhost:3000
+      AUTH_CORS: http://localhost:7001,http://localhost:9001,http://localhost:3000
+    ports:
+      - "9001:9001"
+      - "7001:7001"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - /app/.pnpm-store
+      - backend_uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - martnex-network
+    command: pnpm run dev
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: martnex-frontend
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9001
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.pnpm-store
+      - /app/.next
+    depends_on:
+      - backend
+    networks:
+      - martnex-network
+    command: pnpm run dev
+
+volumes:
+  postgres_data:
+  redis_data:
+  backend_uploads:
+
+networks:
+  martnex-network:
+    driver: bridge
