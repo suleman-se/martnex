@@ -142,7 +142,7 @@ backend/
 │   │   └── notification.ts
 │   ├── migrations/             # Database migrations
 │   └── loaders/                # Custom loaders
-├── medusa-config.js            # Medusa configuration
+├── medusa-config.ts            # Medusa configuration
 └── package.json
 ```
 

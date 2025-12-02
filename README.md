@@ -187,14 +187,14 @@ For detailed setup instructions, see [Setup Guide](docs/SETUP_INSTRUCTIONS.md).
 
 ```
 martnex/
-├── backend/                 # Medusa.js backend (to be created)
+├── backend/                 # Medusa.js v2 backend
 │   ├── src/
 │   │   ├── api/            # Custom API routes
-│   │   ├── models/         # Database models
+│   │   ├── models/         # Database models (DML)
 │   │   ├── services/       # Business logic
 │   │   └── subscribers/    # Event handlers
-│   └── medusa-config.js
-├── frontend/                # Next.js frontend (to be created)
+│   └── medusa-config.ts
+├── frontend/                # Next.js 16 frontend
 │   ├── src/
 │   │   ├── app/            # Next.js app router
 │   │   ├── components/     # React components

@@ -5,8 +5,8 @@
 Before starting, ensure you have the following installed:
 
 - **Node.js** v18 or higher ([Download](https://nodejs.org/))
-- **PostgreSQL** v13 or higher ([Download](https://www.postgresql.org/download/))
-- **Redis** v6 or higher ([Download](https://redis.io/download))
+- **PostgreSQL** v17 or higher ([Download](https://www.postgresql.org/download/))
+- **Redis** v7 or higher ([Download](https://redis.io/download))
 - **Git** ([Download](https://git-scm.com/downloads))
 - **Code Editor** (VS Code recommended)
 
@@ -14,8 +14,8 @@ Before starting, ensure you have the following installed:
 
 ```bash
 node --version   # Should be v18+
-npm --version
-psql --version   # Should be v13+
+pnpm --version
+psql --version   # Should be v17+
 redis-cli --version
 ```
 
@@ -23,18 +23,12 @@ redis-cli --version
 
 ## Part 1: Backend Setup (Medusa.js)
 
-### Step 1: Install Medusa CLI
+### Step 1: Navigate to Backend Directory
+
+The backend project structure has already been created with Medusa v2.
 
 ```bash
-npm install -g @medusajs/medusa-cli
-```
-
-### Step 2: Create Medusa Project
-
-```bash
-cd /Users/macair/Documents/Project/martnex
-medusa new backend
-cd backend
+cd /Users/macair/Documents/Project/martnex/backend
 ```
 
 ### Step 3: Configure PostgreSQL
@@ -46,11 +40,11 @@ cd backend
 psql postgres
 
 # Create database
-CREATE DATABASE martnex_dev;
+CREATE DATABASE martnex;
 
 # Create user (optional)
-CREATE USER medusa_user WITH PASSWORD 'your_password';
-GRANT ALL PRIVILEGES ON DATABASE martnex_dev TO medusa_user;
+CREATE USER martnex WITH PASSWORD 'martnex_dev_password';
+GRANT ALL PRIVILEGES ON DATABASE martnex TO martnex;
 
 # Exit
 \q
@@ -61,34 +55,34 @@ GRANT ALL PRIVILEGES ON DATABASE martnex_dev TO medusa_user;
 Edit `backend/.env`:
 
 ```env
-DATABASE_URL=postgres://medusa_user:your_password@localhost:5432/martnex_dev
+DATABASE_URL=postgres://martnex:martnex_dev_password@localhost:5432/martnex?sslmode=disable
 REDIS_URL=redis://localhost:6379
-JWT_SECRET=your-super-secret-jwt-key-change-this
-COOKIE_SECRET=your-super-secret-cookie-key-change-this
+JWT_SECRET=supersecret-change-in-production
+COOKIE_SECRET=supersecret-cookie-change-in-production
 ```
 
-### Step 4: Run Migrations
+### Step 2: Run Migrations
 
 ```bash
 cd backend
-npm run build
-medusa migrations run
+pnpm install
+pnpm run db:migrate
 ```
 
-### Step 5: Seed Initial Data
+### Step 3: Seed Initial Data
 
 ```bash
-npm run seed
+pnpm run seed
 ```
 
 This creates:
-- Admin user: `admin@medusa-test.com` / `supersecret`
+- Admin user: `admin@martnex.io` / `supersecret`
 - Sample products and categories
 
-### Step 6: Start Backend
+### Step 4: Start Backend
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Backend should be running at:
@@ -96,48 +90,32 @@ Backend should be running at:
 - **Admin API:** http://localhost:9001/admin
 - **Admin UI:** http://localhost:7001
 
-### Step 7: Test Backend
+### Step 5: Test Backend
 
 Visit http://localhost:7001 and login with:
-- Email: `admin@medusa-test.com`
+- Email: `admin@martnex.io`
 - Password: `supersecret`
 
 ---
 
 ## Part 2: Frontend Setup (Next.js)
 
-### Step 1: Create Next.js Project
+### Step 1: Navigate to Frontend Directory
+
+The frontend project structure has already been created with Next.js 16.
 
 ```bash
-cd /Users/macair/Documents/Project/martnex
-npx create-next-app@latest frontend --typescript --tailwind --app
+cd /Users/macair/Documents/Project/martnex/frontend
 ```
-
-Choose these options:
-- ✅ TypeScript
-- ✅ ESLint
-- ✅ Tailwind CSS
-- ✅ `src/` directory
-- ✅ App Router
-- ✅ Import alias (@/*)
 
 ### Step 2: Install Dependencies
 
 ```bash
 cd frontend
-npm install @medusajs/medusa-js axios
-npm install react-hook-form zod @hookform/resolvers
-npm install zustand
-npm install lucide-react class-variance-authority clsx tailwind-merge
+pnpm install
 ```
 
-### Step 3: Install Shadcn/UI
-
-```bash
-npx shadcn-ui@latest init
-```
-
-### Step 4: Configure Environment Variables
+### Step 3: Configure Environment Variables
 
 Create `frontend/.env.local`:
 
@@ -146,54 +124,13 @@ NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9001
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...  # Add later
 ```
 
-### Step 5: Create API Client
-
-Create `frontend/src/lib/api/client.ts`:
-
-```typescript
-import Medusa from "@medusajs/medusa-js"
-
-const medusa = new Medusa({
-  baseUrl: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9001",
-  maxRetries: 3,
-})
-
-export default medusa
-```
-
-### Step 6: Test Connection
-
-Create `frontend/src/app/page.tsx`:
-
-```typescript
-import medusa from "@/lib/api/client"
-
-export default async function Home() {
-  const { products } = await medusa.products.list()
-
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Products</h1>
-      <div className="grid grid-cols-3 gap-4">
-        {products?.map((product) => (
-          <div key={product.id} className="border p-4 rounded">
-            <h2 className="font-semibold">{product.title}</h2>
-            <p className="text-sm text-gray-600">{product.description}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-```
-
-### Step 7: Start Frontend
+### Step 4: Start Frontend
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
-Visit http://localhost:3000 - you should see sample products!
+Visit http://localhost:3000 - you should see the Martnex frontend!
 
 ---
 
@@ -231,24 +168,24 @@ docker run -d -p 6379:6379 --name redis redis:7-alpine
 
 ```bash
 cd backend
-npm install medusa-payment-stripe
+pnpm add @medusajs/medusa-payment-stripe
 ```
 
 ### Step 3: Configure Stripe
 
-Update `backend/medusa-config.js`:
+Update `backend/medusa-config.ts`:
 
-```javascript
-const plugins = [
-  // ... other plugins
-  {
-    resolve: `medusa-payment-stripe`,
+```typescript
+modules: {
+  // ... other modules
+  medusaPaymentStripe: {
+    resolve: "@medusajs/medusa-payment-stripe",
     options: {
-      api_key: process.env.STRIPE_API_KEY,
-      webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
+      apiKey: process.env.STRIPE_API_KEY,
+      webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
     },
   },
-]
+}
 ```
 
 Update `backend/.env`:
@@ -261,7 +198,7 @@ STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 ### Step 4: Restart Backend
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 ---
@@ -272,20 +209,22 @@ npm run dev
 
 ```bash
 cd backend
-npm install medusa-file-s3
+pnpm add @medusajs/medusa-file-s3
 ```
 
-Configure in `medusa-config.js`:
+Configure in `medusa-config.ts`:
 
-```javascript
-{
-  resolve: `medusa-file-s3`,
-  options: {
-    s3_url: process.env.S3_URL,
-    bucket: process.env.S3_BUCKET,
-    region: process.env.S3_REGION,
-    access_key_id: process.env.S3_ACCESS_KEY_ID,
-    secret_access_key: process.env.S3_SECRET_ACCESS_KEY,
+```typescript
+modules: {
+  medusaFileS3: {
+    resolve: "@medusajs/medusa-file-s3",
+    options: {
+      fileUrl: process.env.S3_URL,
+      bucket: process.env.S3_BUCKET,
+      region: process.env.S3_REGION,
+      accessKeyId: process.env.S3_ACCESS_KEY_ID,
+      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+    },
   },
 }
 ```
@@ -293,7 +232,7 @@ Configure in `medusa-config.js`:
 ### Option B: Cloudinary
 
 ```bash
-npm install medusa-file-cloudinary
+pnpm add medusa-file-cloudinary
 ```
 
 ---
@@ -304,19 +243,21 @@ npm install medusa-file-cloudinary
 
 ```bash
 cd backend
-npm install medusa-plugin-sendgrid
+pnpm add medusa-plugin-sendgrid
 ```
 
 ### Step 2: Configure
 
-Update `medusa-config.js`:
+Update `medusa-config.ts`:
 
-```javascript
-{
-  resolve: `medusa-plugin-sendgrid`,
-  options: {
-    api_key: process.env.SENDGRID_API_KEY,
-    from: process.env.SENDGRID_FROM,
+```typescript
+modules: {
+  sendgrid: {
+    resolve: "medusa-plugin-sendgrid",
+    options: {
+      apiKey: process.env.SENDGRID_API_KEY,
+      from: process.env.SENDGRID_FROM,
+    },
   },
 }
 ```
@@ -343,13 +284,11 @@ SENDGRID_FROM=noreply@yourdomain.com
 
 ### Install Development Tools
 
-```bash
-cd backend
-npm install -D typescript ts-node @types/node
-npm install -D eslint prettier
+Development tools are already configured in both backend and frontend projects.
 
-cd ../frontend
-npm install -D eslint prettier prettier-plugin-tailwindcss
+```bash
+# Backend already has: typescript, ts-node, @types/node, eslint
+# Frontend already has: eslint, prettier
 ```
 
 ### Create `.prettierrc` (both frontend & backend)
@@ -378,11 +317,11 @@ brew services start postgresql
 
 # Terminal 3: Backend
 cd backend
-npm run dev
+pnpm run dev
 
 # Terminal 4: Frontend
 cd frontend
-npm run dev
+pnpm run dev
 ```
 
 ### 2. Access Points
@@ -423,7 +362,7 @@ kill -9 <PID>
 brew services list
 
 # Check connection
-psql -U medusa_user -d martnex_dev
+psql -U martnex -d martnex
 ```
 
 ### Redis Connection Issues
@@ -441,13 +380,13 @@ brew services restart redis
 ```bash
 # Reset database
 psql postgres
-DROP DATABASE martnex_dev;
-CREATE DATABASE martnex_dev;
+DROP DATABASE martnex;
+CREATE DATABASE martnex;
 \q
 
 # Re-run migrations
-medusa migrations run
-npm run seed
+pnpm run db:migrate
+pnpm run seed
 ```
 
 ---
@@ -471,45 +410,48 @@ Once setup is complete:
 
 ```bash
 # Start development server
-npm run dev
+pnpm run dev
 
 # Run migrations
-medusa migrations run
+pnpm run db:migrate
 
-# Create new migration
-medusa migrations create YourMigrationName
+# Generate new migration
+pnpm run db:generate
 
 # Seed database
-npm run seed
+pnpm run seed
 
 # Build for production
-npm run build
+pnpm run build
 
 # Start production
-npm run start
+pnpm run start
 ```
 
 ### Frontend
 
 ```bash
 # Start development server
-npm run dev
+pnpm run dev
 
 # Build for production
-npm run build
+pnpm run build
 
 # Start production
-npm run start
+pnpm run start
 
 # Lint code
-npm run lint
+pnpm run lint
+
+# Format code
+pnpm run format
 ```
 
 ### Database
 
 ```bash
 # Connect to database
-psql -U medusa_user -d martnex_dev
+psql -U martnex -d martnex
 
 # List tables
 \dt

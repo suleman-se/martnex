@@ -51,7 +51,7 @@ Once all services are running:
 ### Run database migrations
 
 ```bash
-docker-compose exec backend npm run migrations:run
+docker-compose exec backend pnpm run db:migrate
 ```
 
 ### Seed initial data
@@ -59,7 +59,7 @@ docker-compose exec backend npm run migrations:run
 This creates an admin user (admin@martnex.io / supersecret):
 
 ```bash
-docker-compose exec backend npm run seed
+docker-compose exec backend pnpm run seed
 ```
 
 ## Useful Commands
@@ -106,7 +106,7 @@ docker-compose exec backend sh
 docker-compose exec frontend sh
 
 # PostgreSQL shell
-docker-compose exec postgres psql -U martnex -d martnex_db
+docker-compose exec postgres psql -U martnex -d martnex
 ```
 
 ### Install new packages (using pnpm)
@@ -129,7 +129,7 @@ docker-compose exec backend pnpm add -D <package-name>
 docker-compose exec backend pnpm run migrations:create
 
 # Run migrations
-docker-compose exec backend pnpm run migrations:run
+docker-compose exec backend pnpm run db:migrate
 ```
 
 ## Development Workflow
@@ -161,7 +161,7 @@ docker-compose ps
 # Reset database
 docker-compose down -v
 docker-compose up -d postgres
-docker-compose exec backend npm run migrations:run
+docker-compose exec backend pnpm run db:migrate
 ```
 
 ### Container won't start
@@ -206,7 +206,7 @@ martnex/
 ├── backend/
 │   ├── Dockerfile             # Backend container config
 │   ├── package.json           # Backend dependencies
-│   ├── medusa-config.js       # Medusa configuration
+│   ├── medusa-config.ts       # Medusa configuration
 │   └── src/                   # Backend source code
 └── frontend/
     ├── Dockerfile             # Frontend container config
@@ -217,8 +217,8 @@ martnex/
 
 ## Next Steps
 
-1. ✅ Run migrations: `docker-compose exec backend npm run migrations:run`
-2. ✅ Seed data: `docker-compose exec backend npm run seed`
+1. ✅ Run migrations: `docker-compose exec backend pnpm run db:migrate`
+2. ✅ Seed data: `docker-compose exec backend pnpm run seed`
 3. ✅ Access admin panel: http://localhost:7001 (admin@martnex.io / supersecret)
 4. ✅ Start building features!
 
