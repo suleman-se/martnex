@@ -8,8 +8,10 @@ This document provides guidelines for AI assistants working on the Martnex proje
 
 ### Key Information
 - **License:** MIT (fully open-source)
-- **Tech Stack:** Medusa.js (backend), Next.js 15 (frontend), PostgreSQL, Redis, TypeScript
+- **Tech Stack:** Medusa.js v2.11.3 (backend), Next.js 16.0.5 (frontend), React 19.2.0, PostgreSQL 15+, Redis 7+, TypeScript 5.9.3
 - **Package Manager:** pnpm (strictly enforced)
+- **Package Versions:** ALWAYS use latest versions from npm registry
+- **Architecture:** Medusa v2 module-first with workflows, Next.js App Router with Server Components
 - **Development Approach:** Incremental, no strict timelines, feature-driven
 - **Target Users:** 3 roles (Buyer, Seller, Admin)
 
@@ -29,6 +31,14 @@ This document provides guidelines for AI assistants working on the Martnex proje
 - **No over-engineering** - build what's needed, not what might be needed
 - **Security-first** - validate inputs, sanitize outputs, follow OWASP guidelines
 
+### 3. Package Management Rules (CRITICAL)
+- **ALWAYS use latest package versions** - check with `npm view <package> version` first
+- **Never guess versions** - verify from npm registry before adding
+- **Use `@latest` tag** when installing: `pnpm add <package>@latest`
+- **Monthly updates** - check `pnpm outdated` and update packages
+- **Commit lock files** - always commit `pnpm-lock.yaml` with package.json
+- **Security first** - run `pnpm audit` regularly
+
 ### 3. Communication Style
 - **Concise and actionable** - avoid long explanations unless asked
 - **Show, don't tell** - provide code examples
@@ -40,14 +50,16 @@ This document provides guidelines for AI assistants working on the Martnex proje
 
 ```
 martnex/
-├── backend/          (to be created - Medusa.js)
-├── frontend/         (to be created - Next.js)
-├── packages/         (to be created - shared code)
-├── docs/             (documentation)
-├── planning/         (architecture, schemas, roadmap)
-├── .ai/              (AI instructions)
+├── backend/          # Medusa.js v2 backend
+├── frontend/         # Next.js 16 frontend
+├── docs/             # Documentation
+├── planning/         # Architecture, schemas, roadmap
+├── .ai/              # AI instructions
+├── .personal/        # Personal notes (gitignored)
 └── [root config files]
 ```
+
+Note: Simple two-folder structure (no monorepo). Backend and frontend are independent.
 
 ## Technical Guidelines
 
@@ -68,8 +80,9 @@ martnex/
   - Files: kebab-case for utils (e.g., `format-currency.ts`)
 
 ### Database
-- Use **TypeORM** (Medusa's ORM)
-- **Always create migrations** for schema changes
+- Use **MikroORM** (Medusa v2's ORM, not TypeORM)
+- Use **DML (Data Model Language)** for defining models in v2
+- **Auto-generate migrations** with `pnpm run db:generate`
 - Follow naming in `planning/DATABASE_SCHEMA.md`
 - Use JSONB for flexible metadata
 - Add indexes for foreign keys and frequently queried fields
@@ -104,27 +117,35 @@ martnex/
 
 ## File Organization
 
-### Backend (Medusa.js)
+### Backend (Medusa.js v2)
+
 ```
 backend/
 ├── src/
+│   ├── modules/          # Custom modules (v2 architecture)
+│   │   ├── seller/
+│   │   │   ├── models/
+│   │   │   │   └── seller.ts      # DML model
+│   │   │   ├── service.ts         # MedusaService with auto-CRUD
+│   │   │   └── index.ts           # Module definition
+│   │   ├── commission/
+│   │   └── payout/
+│   ├── workflows/        # Workflows for complex operations
+│   │   ├── register-seller.ts
+│   │   └── process-payout.ts
 │   ├── api/              # Custom API routes
 │   │   └── routes/
 │   │       ├── seller/
-│   │       ├── commission/
-│   │       └── dispute/
-│   ├── models/           # Database models
-│   │   ├── seller.ts
-│   │   ├── commission.ts
-│   │   └── ...
-│   ├── services/         # Business logic
-│   │   ├── seller.ts
-│   │   └── commission.ts
-│   ├── subscribers/      # Event handlers
-│   │   └── order.ts      # Calculate commission on order
-│   └── migrations/       # Database migrations
-└── medusa-config.js
+│   │       └── admin/
+│   └── scripts/          # Seed scripts, etc.
+└── medusa-config.ts      # v2 config (TypeScript)
 ```
+
+**Key v2 Changes:**
+- Modules replace models/services/subscribers
+- Workflows for multi-step operations with auto-rollback
+- DML for model definitions (simpler than TypeORM decorators)
+- MedusaService provides auto-CRUD methods
 
 ### Frontend (Next.js)
 ```
@@ -163,31 +184,38 @@ frontend/
 7. **Test end-to-end** - Full user flow
 8. **Update docs** - Add to `docs/API.md`, update CHANGELOG.md
 
-### Creating Database Migrations
+### Creating Database Migrations (Medusa v2)
 
 ```bash
-# Generate migration
+# Auto-generate migration from DML models
 cd backend
-pnpm medusa migrations create AddSellerTable
+pnpm run db:generate seller
 
-# Edit the migration file in src/migrations/
+# Run migrations
+pnpm run db:migrate
 
-# Run migration
-pnpm medusa migrations run
+# Or sync database (development only)
+pnpm run db:sync
 ```
+
+**Note:** In v2, migrations are auto-generated from DML models. No manual migration files needed.
 
 ### Adding Dependencies
 
 ```bash
 # Backend
-pnpm --filter backend add <package-name>
+cd backend
+pnpm add <package-name>@latest
 
 # Frontend
-pnpm --filter frontend add <package-name>
+cd frontend
+pnpm add <package-name>@latest
 
 # Check for vulnerabilities
 pnpm audit
 ```
+
+**Important:** Always use `@latest` to install the latest version. Verify version with `npm view <package-name> version` first.
 
 ### Environment Variables
 
@@ -324,30 +352,49 @@ refactor(utils): simplify date formatting helper
 
 ## Helpful Context
 
-### Medusa.js Specifics
+### Medusa.js v2 Specifics
+
 - Built on Express.js
-- Uses TypeORM for database
-- Event-driven architecture (subscribers)
+- Uses **MikroORM** for database (not TypeORM)
+- **Module-first architecture** - everything is a module
+- **Workflows** replace complex event logic (automatic rollback)
+- **DML** for model definitions (simpler syntax)
+- **Redis required** for events, workflows, and cache
 - Admin UI at port 7001
-- API at port 9000
+- API at port 9001
+- Reference: [MEDUSAJS_EXPLAINED.md](../docs/MEDUSAJS_EXPLAINED.md)
 
 ### Next.js 16 App Router
-- Server components by default (with async support)
-- Client components need `'use client'`
+
+- **Turbopack stable** - 10x faster dev builds
+- **Server Components by default** (with async support)
+- **Client components** need `'use client'`
+- **React 19** with Actions and use() hook
 - File-based routing in `app/` directory
 - Route groups with `(group-name)/`
-- Turbopack for faster dev builds
 - Partial prerendering (PPR) support
 - Enhanced caching strategies
+- Reference: [NEXTJS16_EXPLAINED.md](../docs/NEXTJS16_EXPLAINED.md)
+
+### Tailwind CSS 4.1
+
+- **Single `@import "tailwindcss"`** - new simplified setup
+- **@tailwindcss/postcss** plugin required
+- **@theme directive** for CSS-first theming
+- **New utilities:** text-shadow, mask
+- No autoprefixer needed (built-in)
 
 ### Commission System Logic
+
 The core unique feature of Martnex is the commission system:
-1. Order placed → `order.placed` event
-2. Subscriber calculates commission based on rates
+
+1. Order placed → workflow triggered
+2. Calculate commission workflow runs (with automatic rollback if fails)
 3. Creates commission record (status: pending)
 4. Seller requests payout
 5. Admin approves payout
-6. Commission status → paid
+6. Payout workflow executes (Stripe transfer)
+7. Commission status → paid
 
 ### User Roles & Permissions
 - **Buyer** - Browse, purchase, review products

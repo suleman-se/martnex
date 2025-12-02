@@ -30,8 +30,8 @@ Martnex is a powerful, scalable multi-vendor marketplace platform that enables e
 ### Why Martnex?
 
 - ✅ **Open Source** - Free to use, modify, and distribute (MIT License)
-- ✅ **Built on Medusa.js** - Leverage a proven, production-ready e-commerce platform
-- ✅ **Modern Tech Stack** - Next.js 14, React, TypeScript, PostgreSQL
+- ✅ **Built on Medusa.js v2** - Leverage the latest version with workflows and module architecture
+- ✅ **Modern Tech Stack** - Next.js 16, React 19, TypeScript, PostgreSQL, Redis
 - ✅ **Multi-Vendor Ready** - Complete seller management, commission tracking, and payouts
 - ✅ **Fully Customizable** - Own your code, customize every aspect
 - ✅ **Production Ready** - Security, performance, and scalability built-in
@@ -90,11 +90,11 @@ Martnex is a powerful, scalable multi-vendor marketplace platform that enables e
 - [Shadcn/UI](https://ui.shadcn.com/)
 
 **Backend:**
-- [Medusa.js](https://medusajs.com/)
+- [Medusa.js v2.11.3](https://medusajs.com/) (Module-first architecture, Workflows)
 - [Node.js 18+](https://nodejs.org/)
-- [PostgreSQL](https://www.postgresql.org/)
-- [Redis](https://redis.io/)
-- [TypeORM](https://typeorm.io/)
+- [PostgreSQL 15+](https://www.postgresql.org/)
+- [Redis 7+](https://redis.io/) (Required for events, workflows, cache)
+- [MikroORM](https://mikro-orm.io/) (Medusa v2 ORM)
 
 **Payments:**
 - [Stripe](https://stripe.com/)
@@ -108,14 +108,28 @@ Martnex is a powerful, scalable multi-vendor marketplace platform that enables e
 
 ## 🚦 Quick Start
 
-### Prerequisites
+### Option 1: Docker (Recommended)
 
-- Node.js 18+ and npm
-- PostgreSQL 13+
-- Redis 6+
-- Git
+**Prerequisites:** Docker Desktop
 
-### Installation
+1. **Clone and start**
+   ```bash
+   git clone https://github.com/suleman-se/martnex.git
+   cd martnex
+   ./start.sh
+   ```
+
+2. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:9001
+   - Admin Dashboard: http://localhost:7001
+   - Default login: `admin@martnex.io` / `supersecret`
+
+For more Docker commands, see [Docker Setup Guide](README.docker.md).
+
+### Option 2: Manual Setup
+
+**Prerequisites:** Node.js 18+, PostgreSQL 15+, Redis 7+, pnpm
 
 1. **Clone the repository**
    ```bash
@@ -126,40 +140,22 @@ Martnex is a powerful, scalable multi-vendor marketplace platform that enables e
 2. **Set up the backend**
    ```bash
    cd backend
-   npm install
-
-   # Configure your database
+   pnpm install
    cp .env.example .env
-   # Edit .env with your database credentials
-
-   # Run migrations
-   npm run build
-   medusa migrations run
-
-   # Seed initial data
-   npm run seed
-
-   # Start backend
-   npm run dev
+   # Edit .env with your database and Redis credentials
+   pnpm run db:migrate
+   pnpm run seed
+   pnpm run dev
    ```
 
 3. **Set up the frontend**
    ```bash
    cd ../frontend
-   npm install
-
-   # Configure environment
+   pnpm install
    cp .env.example .env.local
    # Edit .env.local with your backend URL
-
-   # Start frontend
-   npm run dev
+   pnpm run dev
    ```
-
-4. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:9000
-   - Admin Dashboard: http://localhost:7001
 
 For detailed setup instructions, see [Setup Guide](docs/SETUP_INSTRUCTIONS.md).
 
@@ -167,13 +163,22 @@ For detailed setup instructions, see [Setup Guide](docs/SETUP_INSTRUCTIONS.md).
 
 ## 📚 Documentation
 
+### Core Documentation
+
+- **[Medusa.js v2 Explained](docs/MEDUSAJS_EXPLAINED.md)** - Complete Medusa v2 guide (modules, workflows, DML)
+- **[Next.js 16 Explained](docs/NEXTJS16_EXPLAINED.md)** - Complete Next.js 16 guide (Turbopack, Server Components)
+- **[Tailwind CSS 4.1](docs/TAILWINDCSS_4_1.md)** - Tailwind 4.1 features and setup
+- **[Quick Start](docs/QUICK_START.md)** - Get started in 5 minutes
+- **[Development Standards](docs/DEVELOPMENT_STANDARDS.md)** - Coding standards and best practices
+- **[Package Manager Guide](docs/PACKAGE_MANAGER.md)** - Why pnpm and how to use it
+
+### Planning Documentation
+
 - **[Project Context](PROJECT_CONTEXT.md)** - Full requirements and scope
 - **[Business Rules](planning/BUSINESS_RULES.md)** - Operational logic and configurable policies
-- **[Setup Instructions](docs/SETUP_INSTRUCTIONS.md)** - Complete development setup guide
 - **[Implementation Plan](planning/IMPLEMENTATION_PLAN.md)** - Phase-by-phase development roadmap
 - **[Database Schema](planning/DATABASE_SCHEMA.md)** - Database design and structure
 - **[Architecture](planning/ARCHITECTURE.md)** - System architecture overview
-- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Production deployment instructions
 - **[Features Checklist](planning/FEATURES_CHECKLIST.md)** - Track feature implementation
 
 ---
@@ -182,14 +187,14 @@ For detailed setup instructions, see [Setup Guide](docs/SETUP_INSTRUCTIONS.md).
 
 ```
 martnex/
-├── backend/                 # Medusa.js backend (to be created)
+├── backend/                 # Medusa.js v2 backend
 │   ├── src/
 │   │   ├── api/            # Custom API routes
-│   │   ├── models/         # Database models
+│   │   ├── models/         # Database models (DML)
 │   │   ├── services/       # Business logic
 │   │   └── subscribers/    # Event handlers
-│   └── medusa-config.js
-├── frontend/                # Next.js frontend (to be created)
+│   └── medusa-config.ts
+├── frontend/                # Next.js 16 frontend
 │   ├── src/
 │   │   ├── app/            # Next.js app router
 │   │   ├── components/     # React components

@@ -117,7 +117,7 @@ try {
 
 ## Ports
 - Frontend: `3000`
-- Backend API: `9000`
+- Backend API: `9001`
 - Admin UI: `7001`
 - PostgreSQL: `5432`
 - Redis: `6379`

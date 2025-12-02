@@ -55,7 +55,13 @@ pnpm-debug.log*
 package-lock.json
 yarn.lock
 
+# Docker
+docker-compose.override.yml
+
 # Misc
 .cache/
 temp/
 tmp/
+
+# Personal/Marketing files (not part of codebase)
+.personal

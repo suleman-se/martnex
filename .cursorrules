@@ -102,7 +102,7 @@ When making changes:
 
 ## Helpful Context
 
-- Medusa.js runs on port 9000 (API) and 7001 (Admin UI)
+- Medusa.js runs on port 9001 (API) and 7001 (Admin UI)
 - Next.js runs on port 3000
 - PostgreSQL on port 5432, Redis on port 6379
 - See `.ai/instructions.md` for comprehensive guidelines
