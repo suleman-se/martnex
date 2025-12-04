@@ -22,10 +22,11 @@
     "db:sync": "medusa db:sync"
   },
   "dependencies": {
-    "@medusajs/caching-redis": "^2.11.3",
-    "@medusajs/framework": "^2.11.3",
-    "@medusajs/medusa": "^2.11.3",
-    "@medusajs/utils": "^2.11.3",
+    "@medusajs/caching-redis": "^2.12.1",
+    "@medusajs/cli": "2.12.1",
+    "@medusajs/framework": "^2.12.1",
+    "@medusajs/medusa": "^2.12.1",
+    "@medusajs/utils": "^2.12.1",
     "awilix": "^12.0.2",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
@@ -35,7 +36,8 @@
     "redis": "^4.7.0"
   },
   "devDependencies": {
-    "@medusajs/test-utils": "^2.11.3",
+    "@medusajs/test-utils": "^2.12.1",
+    "@medusajs/types": "^2.12.1",
     "@types/express": "^5.0.0",
     "@types/node": "^22.12.6",
     "@types/pg": "^8.11.10",

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2021",
-    "module": "commonjs",
+    "module": "Node16",
     "allowJs": true,
     "checkJs": false,
     "jsx": "react-jsx",
@@ -10,7 +10,7 @@
     "rootDir": "./src",
     "removeComments": true,
     "strict": false,
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,

@@ -8,7 +8,7 @@ This document provides guidelines for AI assistants working on the Martnex proje
 
 ### Key Information
 - **License:** MIT (fully open-source)
-- **Tech Stack:** Medusa.js v2.11.3 (backend), Next.js 16.0.5 (frontend), React 19.2.0, PostgreSQL 15+, Redis 7+, TypeScript 5.9.3
+- **Tech Stack:** Medusa.js v2.12.1 (backend), Next.js 16.0.5 (frontend), React 19.2.0, PostgreSQL 15+, Redis 7+, TypeScript 5.9.3
 - **Package Manager:** pnpm (strictly enforced)
 - **Package Versions:** ALWAYS use latest versions from npm registry
 - **Architecture:** Medusa v2 module-first with workflows, Next.js App Router with Server Components
@@ -321,6 +321,14 @@ try {
 - Update `CHANGELOG.md` for all changes
 - Use categories: Added, Changed, Fixed, Removed, Security
 - Keep under [Unreleased] until version release
+
+**Important - "Fixed" Category Usage:**
+
+- **"Fixed"** = Bugs in already merged/released code
+- **NOT "Fixed"** = Corrections during active implementation (before merge)
+  - Example: Fixing TypeScript errors during Phase 2 development = part of implementation, NOT a "fix"
+  - Example: Fixing a bug in Phase 1 code discovered during Phase 2 = "fix"
+- Only use "Fixed" for post-merge bug fixes, not for corrections during the development process
 
 ## Git Workflow
 
