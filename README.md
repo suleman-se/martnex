@@ -248,17 +248,39 @@ Please read our [Contributing Guide](CONTRIBUTING.md) to get started.
 
 ## 🛣️ Roadmap
 
-### Phase 1: MVP - Core Features
+### Phase 1: Initial Setup ✅ (v0.1.0)
 - [x] Project setup and planning
-- [ ] Core marketplace features
-- [ ] Multi-vendor support
-- [ ] Commission system
-- [ ] Payment integration
+- [x] Docker environment
+- [x] Medusa v2.12.1 backend
+- [x] Next.js 16 frontend
+- [x] PostgreSQL + Redis
+- [x] Complete documentation
+
+### Phase 2: Multi-Vendor Core ✅ (v0.2.0)
+- [x] Custom Medusa modules (Seller, Commission, Payout)
+- [x] Store mode system (Single Store / Multi-Vendor)
+- [x] Payment methods (Stripe, PayPal, COD, Bank Transfer)
+- [x] API layer (20 endpoints)
+- [x] Validation & audit logging
+- [x] Business rules engine
+
+### Phase 2.5: Authentication & Authorization 🔄 (In Progress)
+- [ ] JWT authentication system
+- [ ] Role-based access control (RBAC)
+- [ ] Email verification
+- [ ] Password reset
+- [ ] Session management
+- [ ] Protected API routes
+
+### Phase 3: Product Integration & Workflows
+- [ ] Product-seller relationships
+- [ ] Order automation workflows
+- [ ] Payment processing (Stripe/PayPal)
 - [ ] Admin dashboard
 - [ ] Seller dashboard
-- [ ] Buyer dashboard
+- [ ] Buyer features
 
-### Phase 2: Enhanced Features
+### Phase 4: Enhanced Features
 - [ ] Advanced analytics
 - [ ] Multi-language support
 - [ ] Advanced search (Elasticsearch)
