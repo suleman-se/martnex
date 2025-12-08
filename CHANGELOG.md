@@ -44,6 +44,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `docs/STORE_MODE.md`: Store mode configuration guide
   - `STORE_MODE_QUICKSTART.md`: Quick start guide for store mode setup
 
+#### Phase 2.5: Authentication & Authorization (December 5, 2025)
+
+- **JWT Authentication System**:
+  - Access tokens (15min expiry) and refresh tokens (7 days expiry)
+  - Token generation, verification, and decoding utilities
+  - Secure token extraction from Bearer headers
+  - `backend/src/auth/jwt.ts` (170 lines, 7 functions, 12 tests)
+- **Password Security**:
+  - bcrypt hashing with 12 salt rounds
+  - Password verification and strength validation
+  - Requirements: 8+ chars, uppercase, lowercase, number, special char
+  - Secure token generation for email/password reset
+  - `backend/src/auth/password.ts` (152 lines, 5 functions, 18 tests)
+- **Authentication Middleware**:
+  - `authenticate`: JWT verification and user attachment
+  - `optionalAuthenticate`: Non-blocking authentication for public/private routes
+  - `backend/src/middleware/authenticate.ts` (9 tests)
+- **Authorization Middleware**:
+  - Role-based access control (RBAC) for buyer, seller, admin roles
+  - `authorize`: Factory function for role checking
+  - Convenience functions: `requireAdmin`, `requireSeller`, `requireAuthenticated`
+  - `backend/src/middleware/authorize.ts` (14 tests)
+- **Ownership Verification Middleware**:
+  - `checkOwnership`: Ensures sellers only access their own resources
+  - `checkOwnershipInBody`: Validates ownership from request body
+  - `checkUserOwnership`: User profile ownership verification
+  - Automatic admin bypass for all ownership checks
+  - `backend/src/middleware/checkOwnership.ts` (16 tests)
+- **Authentication Endpoints** (8 routes):
+  - `POST /auth/register` - User registration with role selection
+  - `POST /auth/login` - Login with JWT token generation
+  - `POST /auth/logout` - Token invalidation
+  - `POST /auth/refresh` - Access token refresh
+  - `GET /auth/me` - Current user information
+  - `POST /auth/verify-email` - Email verification
+  - `POST /auth/forgot-password` - Password reset request
+  - `POST /auth/reset-password` - Password reset with token
+  - All endpoints in `backend/src/api/auth/` (28 integration tests)
+- **Test Coverage**:
+  - JWT utilities: 12 tests
+  - Password utilities: 18 tests
+  - Authentication middleware: 9 tests
+  - Authorization middleware: 14 tests
+  - Ownership middleware: 16 tests
+  - Auth API integration: 28 tests
+  - **Total: 97 new tests, all passing (106 tests total)**
+- **Dependencies Added**:
+  - jsonwebtoken (9.0.3) for JWT token management
+  - bcrypt (6.0.0) for password hashing
+  - @types/jsonwebtoken and @types/bcrypt
+- **Configuration**:
+  - `JWT_REFRESH_SECRET` added to `.env.example`
+  - Vitest setup file for test environment (`vitest.setup.ts`)
+  - Updated vitest config to use setup file
+
 #### Phase 2: Refinements (December 5, 2025)
 
 - **API Layer** (20 endpoints):
