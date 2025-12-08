@@ -25,14 +25,31 @@
 
 ## 🚀 About Martnex
 
-Martnex is a powerful, scalable multi-vendor marketplace platform that enables entrepreneurs and businesses to launch their own marketplace in weeks, not months. Built on the modern Medusa.js e-commerce framework, Martnex provides everything you need to create a feature-rich marketplace with commission management, role-based access, and comprehensive e-commerce functionality.
+Martnex is a powerful, scalable platform that enables entrepreneurs and businesses to launch their online store in weeks, not months. Built on the modern Medusa.js e-commerce framework, Martnex provides everything you need - whether you're running a simple online store or a full multi-vendor marketplace.
+
+### 🎯 Two Modes, One Platform
+
+**🏪 Single Store Mode** - Perfect for your own products
+- Launch your online store quickly
+- You manage all products via admin
+- No commission complexity
+- Simple, clean, fast
+
+**🏢 Multi-Vendor Marketplace Mode** - Build the next Etsy
+- Multiple sellers can register and sell
+- Automatic commission calculations
+- Seller dashboards and analytics
+- Complete payout management
+
+**Switch between modes with ONE environment variable!**
 
 ### Why Martnex?
 
 - ✅ **Open Source** - Free to use, modify, and distribute (MIT License)
+- ✅ **Flexible Modes** - Single store OR multi-vendor marketplace (your choice!)
 - ✅ **Built on Medusa.js v2** - Leverage the latest version with workflows and module architecture
 - ✅ **Modern Tech Stack** - Next.js 16, React 19, TypeScript, PostgreSQL, Redis
-- ✅ **Multi-Vendor Ready** - Complete seller management, commission tracking, and payouts
+- ✅ **Modular Architecture** - Enable only the features you need
 - ✅ **Fully Customizable** - Own your code, customize every aspect
 - ✅ **Production Ready** - Security, performance, and scalability built-in
 
@@ -90,7 +107,7 @@ Martnex is a powerful, scalable multi-vendor marketplace platform that enables e
 - [Shadcn/UI](https://ui.shadcn.com/)
 
 **Backend:**
-- [Medusa.js v2.11.3](https://medusajs.com/) (Module-first architecture, Workflows)
+- [Medusa.js v2.12.1](https://medusajs.com/) (Module-first architecture, Workflows)
 - [Node.js 18+](https://nodejs.org/)
 - [PostgreSQL 15+](https://www.postgresql.org/)
 - [Redis 7+](https://redis.io/) (Required for events, workflows, cache)
@@ -143,6 +160,7 @@ For more Docker commands, see [Docker Setup Guide](README.docker.md).
    pnpm install
    cp .env.example .env
    # Edit .env with your database and Redis credentials
+   # Choose your store mode: SINGLE_STORE or MULTI_VENDOR_MARKETPLACE
    pnpm run db:migrate
    pnpm run seed
    pnpm run dev
@@ -165,6 +183,7 @@ For detailed setup instructions, see [Setup Guide](docs/SETUP_INSTRUCTIONS.md).
 
 ### Core Documentation
 
+- **[Store Mode Configuration](docs/STORE_MODE.md)** - ⭐ Single Store vs Multi-Vendor modes
 - **[Medusa.js v2 Explained](docs/MEDUSAJS_EXPLAINED.md)** - Complete Medusa v2 guide (modules, workflows, DML)
 - **[Next.js 16 Explained](docs/NEXTJS16_EXPLAINED.md)** - Complete Next.js 16 guide (Turbopack, Server Components)
 - **[Tailwind CSS 4.1](docs/TAILWINDCSS_4_1.md)** - Tailwind 4.1 features and setup
@@ -229,17 +248,39 @@ Please read our [Contributing Guide](CONTRIBUTING.md) to get started.
 
 ## 🛣️ Roadmap
 
-### Phase 1: MVP - Core Features
+### Phase 1: Initial Setup ✅ (v0.1.0)
 - [x] Project setup and planning
-- [ ] Core marketplace features
-- [ ] Multi-vendor support
-- [ ] Commission system
-- [ ] Payment integration
+- [x] Docker environment
+- [x] Medusa v2.12.1 backend
+- [x] Next.js 16 frontend
+- [x] PostgreSQL + Redis
+- [x] Complete documentation
+
+### Phase 2: Multi-Vendor Core ✅ (v0.2.0)
+- [x] Custom Medusa modules (Seller, Commission, Payout)
+- [x] Store mode system (Single Store / Multi-Vendor)
+- [x] Payment methods (Stripe, PayPal, COD, Bank Transfer)
+- [x] API layer (20 endpoints)
+- [x] Validation & audit logging
+- [x] Business rules engine
+
+### Phase 2.5: Authentication & Authorization 🔄 (In Progress)
+- [ ] JWT authentication system
+- [ ] Role-based access control (RBAC)
+- [ ] Email verification
+- [ ] Password reset
+- [ ] Session management
+- [ ] Protected API routes
+
+### Phase 3: Product Integration & Workflows
+- [ ] Product-seller relationships
+- [ ] Order automation workflows
+- [ ] Payment processing (Stripe/PayPal)
 - [ ] Admin dashboard
 - [ ] Seller dashboard
-- [ ] Buyer dashboard
+- [ ] Buyer features
 
-### Phase 2: Enhanced Features
+### Phase 4: Enhanced Features
 - [ ] Advanced analytics
 - [ ] Multi-language support
 - [ ] Advanced search (Elasticsearch)

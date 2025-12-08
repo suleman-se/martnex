@@ -8,6 +8,127 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+#### Phase 2: Multi-Vendor Marketplace Core (December 4, 2025)
+
+- **Store Mode System** (`backend/src/config/store-mode.ts`): Single environment variable (`STORE_MODE`) controls entire platform behavior
+  - `SINGLE_STORE` mode: Regular e-commerce functionality
+  - `MULTI_VENDOR_MARKETPLACE` mode: Full multi-vendor features
+  - Automatic configuration of 31+ features based on mode
+  - Conditional module loading system
+- **Custom Medusa Modules** (3 modules):
+  - **Seller Module** (`backend/src/modules/seller/`): Vendor management with verification workflow, financial tracking, and payout configuration (23 fields, 10 custom methods)
+  - **Commission Module** (`backend/src/modules/commission/`): Per-line-item commission tracking with multi-status workflow (pending → approved → paid)
+  - **Payout Module** (`backend/src/modules/payout/`): Seller payout request management with payment provider integration
+- **Payment System** (`backend/src/config/payment-config.ts`):
+  - Cash on Delivery (COD) with smart restrictions
+  - Country-based COD restrictions (configurable whitelist)
+  - Domestic-only COD mode option
+  - Automatic digital product filtering (no COD for digital goods)
+  - Support for Stripe, PayPal, Bank Transfer, and COD
+- **Test Infrastructure**:
+  - Module registration test script (`backend/src/scripts/test-modules.ts`)
+  - Comprehensive test suites for all 3 custom modules (67+ test cases)
+  - `backend/src/modules/seller/__tests__/seller.service.spec.ts` (25+ tests)
+  - `backend/src/modules/commission/__tests__/commission.service.spec.ts` (20+ tests)
+  - `backend/src/modules/payout/__tests__/payout.service.spec.ts` (22+ tests)
+- **Documentation**:
+  - `.learn/` folder created for organized learning resources
+  - `.learn/1_INITIAL_PROJECT_SETUP.md`: Phase 1 complete summary
+  - `.learn/2_MULTI_VENDOR_MARKETPLACE_CORE.md`: Phase 2 complete implementation guide
+  - `.learn/MEDUSAJS_EXPLAINED.md`: Complete Medusa v2.12.1 guide
+  - `.learn/NEXTJS_16_EXPLAINED.md`: Next.js 16 features and patterns
+  - `.learn/TAILWINDCSS_4.1_EXPLAINED.md`: Tailwind CSS 4.1 guide
+  - `docs/PAYMENT_METHODS.md`: Payment configuration guide
+  - `docs/TESTING_GUIDE.md`: Testing instructions for custom modules
+  - `docs/STORE_MODE.md`: Store mode configuration guide
+  - `STORE_MODE_QUICKSTART.md`: Quick start guide for store mode setup
+
+#### Phase 2.5: Authentication & Authorization (December 5, 2025)
+
+- **JWT Authentication System**:
+  - Access tokens (15min expiry) and refresh tokens (7 days expiry)
+  - Token generation, verification, and decoding utilities
+  - Secure token extraction from Bearer headers
+  - `backend/src/auth/jwt.ts` (170 lines, 7 functions, 12 tests)
+- **Password Security**:
+  - bcrypt hashing with 12 salt rounds
+  - Password verification and strength validation
+  - Requirements: 8+ chars, uppercase, lowercase, number, special char
+  - Secure token generation for email/password reset
+  - `backend/src/auth/password.ts` (152 lines, 5 functions, 18 tests)
+- **Authentication Middleware**:
+  - `authenticate`: JWT verification and user attachment
+  - `optionalAuthenticate`: Non-blocking authentication for public/private routes
+  - `backend/src/middleware/authenticate.ts` (9 tests)
+- **Authorization Middleware**:
+  - Role-based access control (RBAC) for buyer, seller, admin roles
+  - `authorize`: Factory function for role checking
+  - Convenience functions: `requireAdmin`, `requireSeller`, `requireAuthenticated`
+  - `backend/src/middleware/authorize.ts` (14 tests)
+- **Ownership Verification Middleware**:
+  - `checkOwnership`: Ensures sellers only access their own resources
+  - `checkOwnershipInBody`: Validates ownership from request body
+  - `checkUserOwnership`: User profile ownership verification
+  - Automatic admin bypass for all ownership checks
+  - `backend/src/middleware/checkOwnership.ts` (16 tests)
+- **Authentication Endpoints** (8 routes):
+  - `POST /auth/register` - User registration with role selection
+  - `POST /auth/login` - Login with JWT token generation
+  - `POST /auth/logout` - Token invalidation
+  - `POST /auth/refresh` - Access token refresh
+  - `GET /auth/me` - Current user information
+  - `POST /auth/verify-email` - Email verification
+  - `POST /auth/forgot-password` - Password reset request
+  - `POST /auth/reset-password` - Password reset with token
+  - All endpoints in `backend/src/api/auth/` (28 integration tests)
+- **Test Coverage**:
+  - JWT utilities: 12 tests
+  - Password utilities: 18 tests
+  - Authentication middleware: 9 tests
+  - Authorization middleware: 14 tests
+  - Ownership middleware: 16 tests
+  - Auth API integration: 28 tests
+  - **Total: 97 new tests, all passing (106 tests total)**
+- **Dependencies Added**:
+  - jsonwebtoken (9.0.3) for JWT token management
+  - bcrypt (6.0.0) for password hashing
+  - @types/jsonwebtoken and @types/bcrypt
+- **Configuration**:
+  - `JWT_REFRESH_SECRET` added to `.env.example`
+  - Vitest setup file for test environment (`vitest.setup.ts`)
+  - Updated vitest config to use setup file
+
+#### Phase 2: Refinements (December 5, 2025)
+
+- **API Layer** (20 endpoints):
+  - 7 store endpoints (seller registration, commissions, payouts)
+  - 13 admin endpoints (seller management, approvals, payouts)
+  - Complete CRUD operations for all modules
+  - Pagination, filtering, and search support
+- **Module Links** (`backend/src/config/module-links.ts`):
+  - Cross-module relationships without tight coupling
+  - Seller ↔ Customer, Commission ↔ Seller, Commission ↔ Order, Payout ↔ Seller
+- **Validation Layer** (`backend/src/services/seller-validation.ts`):
+  - Input validation for all operations
+  - Business rule validation
+  - Format and constraint checking
+- **Audit Logging System**:
+  - Immutable audit trail model (`backend/src/models/audit-log.ts`)
+  - Audit service with 9+ event types (`backend/src/services/audit-service.ts`)
+  - Compliance-ready tracking for all operations
+- **Business Rules Engine** (`backend/src/services/business-rules.ts`):
+  - Payout rules (min/max amounts, frequency limits)
+  - Commission rules (rate validation, category/seller overrides)
+  - Seller rules (verification, suspension, ratings)
+  - Risk scoring and fraud detection
+- **Event Subscribers** (`backend/src/subscribers/order-placed.ts`):
+  - Order placement event handler
+  - Framework for automatic commission creation
+  - Ready for Phase 3 workflow integration
+
+#### Phase 1: Initial Setup
+
 - Initial project setup and planning documentation
 - Comprehensive implementation plan with 10 modular phases
 - Database schema design for multi-vendor marketplace
@@ -20,24 +141,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dockerfiles for backend and frontend with pnpm support via corepack
 - Makefile with helper commands for common tasks
 - start.sh script for one-command setup
-- backend/package.json with Medusa.js v2.11.3 and all dependencies
+- backend/package.json with Medusa.js dependencies
 - backend/medusa-config.ts with v2 configuration using defineConfig()
 - @medusajs/workflows-sdk dependency for workflow engine
 - Redis modules configured (cache, event-bus, workflow-engine)
 - frontend/package.json with Next.js 16.0.5, React 19.2.0, Tailwind 4.1.17
 - frontend/postcss.config.mjs with @tailwindcss/postcss plugin for v4.1
-- Comprehensive tech documentation (MEDUSAJS_EXPLAINED.md, NEXTJS16_EXPLAINED.md, TAILWINDCSS_4_1.md)
 - DEVELOPMENT_STANDARDS.md explaining package management and latest version policy
 - PACKAGE_MANAGER.md explaining pnpm usage with visual examples
-- IMPLEMENTATION_CHANGES.md documenting all v2 migration changes
 - AI instructions in .ai/instructions.md with package management rules
 - .gitignore entries for .personal folder
 
 ### Changed
+
+#### Phase 2: Updates (December 4, 2025)
+- **Updated all Medusa packages to v2.12.1** (from v2.11.3):
+  - @medusajs/medusa: 2.12.1
+  - @medusajs/framework: 2.12.1
+  - @medusajs/utils: 2.12.1
+  - @medusajs/types: 2.12.1 (newly added)
+  - @medusajs/cli: 2.12.1
+  - @medusajs/caching-redis: 2.12.1
+  - @medusajs/test-utils: 2.12.1
+- **TypeScript Configuration** (`backend/tsconfig.json`):
+  - Changed module resolution to "node16" (required for @medusajs/types)
+  - Updated module to "Node16"
+- **Module Configuration** (`backend/medusa-config.ts`):
+  - Changed modules from object to array structure
+  - Added conditional module loading based on store mode
+  - Fixed module key format (underscores only: `event_bus_redis`, `cache_redis`)
+- **Environment Variables** (`backend/.env.example`):
+  - Added STORE_MODE configuration
+  - Added COD payment method variables
+  - Added domestic country configuration
+
+#### Phase 1: Updates
 - Migrated from npm to pnpm as package manager
 - Updated all package versions to latest from npm registry (verified with `npm view`)
 - Backend scripts simplified to Medusa v2 commands (medusa build, medusa develop)
-- Backend now uses Medusa.js v2.11.3 with module-first architecture
+- Backend now uses Medusa.js v2 with module-first architecture
 - Backend configuration changed from medusa-config.js to medusa-config.ts
 - Redis now required for events, workflows, and cache in v2
 - Replaced Jest with Vitest for testing
@@ -54,7 +196,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - npm and yarn lock files (using pnpm-lock.yaml only)
-- Temporary summary files (PHASE_1_SUMMARY.md, SETUP_COMPLETE.md, UPDATES_SUMMARY.md)
+- Temporary summary files moved to `.learn/` folder:
+  - COD_FEATURE_ADDED.md → .learn/
+  - CORRECTIONS_APPLIED.md → .learn/
+  - PHASE_2_COMPLETE.md → .learn/
+  - VERIFICATION_COMPLETE.md → .learn/
 - Monorepo structure (packages folder, pnpm-workspace.yaml, root package.json)
 - Babel dependencies (no longer needed in Medusa v2)
 - cross-env dependency (handled internally by Medusa v2)
@@ -63,7 +209,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Old TypeORM references (Medusa v2 uses MikroORM)
 
 ### Fixed
-- N/A
+
+- N/A (Phase 2 implementation corrections documented in "Changed" section above)
 
 ### Security
 - All packages updated to latest versions for security patches

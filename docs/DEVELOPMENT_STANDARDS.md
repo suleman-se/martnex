@@ -23,7 +23,7 @@ npm view <package-name> version
 
 # Examples:
 npm view next version          # Shows: 16.0.5
-npm view @medusajs/medusa version  # Shows: 2.11.3
+npm view @medusajs/medusa version  # Shows: 2.12.1
 npm view react version         # Shows: 19.2.0
 ```
 
@@ -73,7 +73,7 @@ make install  # Reinstall with latest versions
 |-----------|----------------|---------------|
 | **Next.js** | 16.0.5 | Latest React framework with best performance |
 | **React** | 19.2.0 | Latest React with new features and fixes |
-| **Medusa.js** | 2.11.3 | Latest e-commerce framework version |
+| **Medusa.js** | 2.12.1 | Latest e-commerce framework version |
 | **TypeScript** | 5.9.3 | Latest for best type safety |
 | **Tailwind CSS** | 4.1.17 | Latest for newest CSS features |
 | **pnpm** | 9.15.4+ | Fastest, most efficient package manager |
