@@ -3125,4 +3125,197 @@ await productService.update(draft.id, {
 
 ---
 
+## Medusa v2 Authentication & User Management (Phase 3 Findings)
+
+### Built-In User & Customer Tables
+
+**Discovery:** Medusa v2 already provides User and Customer modules with authentication!
+
+**Core Tables:**
+
+| Table | Purpose | Key Fields |
+|-------|---------|------------|
+| `user` | Admin/staff users | id, first_name, last_name, email, avatar_url, metadata |
+| `customer` | Buyers/customers | id, first_name, last_name, email, phone, has_account, metadata |
+| `auth_identity` | Authentication identity | id, app_metadata |
+| `provider_identity` | Provider-specific auth | id, entity_id, provider, auth_identity_id, user_metadata, provider_metadata |
+
+### How Medusa Authentication Works
+
+**Auth Module Providers:**
+- `emailpass` - Email/password authentication (default)
+- `google` - Google OAuth
+- `github` - GitHub OAuth
+- Custom providers - Add your own
+
+**Authentication Flow:**
+1. User provides credentials (email/password)
+2. Auth Module verifies via `provider_identity` table
+3. Password hash stored in `provider_metadata` (emailpass provider)
+4. JWT token generated for authenticated sessions
+5. Refresh tokens for long-lived sessions
+
+**Multi-Vendor Role Mapping:**
+- **Buyers** → `customer` table (has_account = true)
+- **Sellers** → `user` table + custom `seller` module
+- **Admin** → `user` table (role = 'admin')
+
+### Extending Core Tables with Custom Columns
+
+**Problem:** Need additional authentication fields (email verification, account locking, roles)
+
+**Solution:** Extend Medusa's core tables via SQL migrations
+
+**Our Implementation (Phase 3.1):**
+```sql
+-- Extend user table
+ALTER TABLE "user"
+ADD COLUMN IF NOT EXISTS "role" text DEFAULT 'admin',
+ADD COLUMN IF NOT EXISTS "email_verified" boolean DEFAULT false,
+ADD COLUMN IF NOT EXISTS "email_verified_at" timestamp with time zone,
+ADD COLUMN IF NOT EXISTS "failed_login_attempts" integer DEFAULT 0,
+ADD COLUMN IF NOT EXISTS "locked_until" timestamp with time zone,
+ADD COLUMN IF NOT EXISTS "last_login_at" timestamp with time zone,
+ADD COLUMN IF NOT EXISTS "seller_id" text;
+
+CREATE INDEX IF NOT EXISTS "IDX_user_role" ON "user" ("role");
+CREATE INDEX IF NOT EXISTS "IDX_user_locked_until" ON "user" ("locked_until") WHERE locked_until IS NOT NULL;
+
+-- Extend customer table
+ALTER TABLE "customer"
+ADD COLUMN IF NOT EXISTS "email_verified" boolean DEFAULT false,
+ADD COLUMN IF NOT EXISTS "email_verified_at" timestamp with time zone,
+ADD COLUMN IF NOT EXISTS "failed_login_attempts" integer DEFAULT 0,
+ADD COLUMN IF NOT EXISTS "locked_until" timestamp with time zone,
+ADD COLUMN IF NOT EXISTS "last_login_at" timestamp with time zone;
+
+CREATE INDEX IF NOT EXISTS "IDX_customer_locked_until" ON "customer" ("locked_until") WHERE locked_until IS NOT NULL;
+```
+
+**Migration via Docker:**
+```bash
+# Create SQL migration file
+touch backend/migrations/extend-user-customer-tables.sql
+
+# Run migration via Docker PostgreSQL
+docker exec -i martnex-postgres psql -U martnex -d martnex < backend/migrations/extend-user-customer-tables.sql
+```
+
+**Why Docker SQL Instead of Medusa Migrations:**
+- Medusa v2 migration scripts have complex parameter passing
+- Direct SQL via Docker is simpler for core table extensions
+- Module migrations (`npx medusa db:generate`) are for custom modules only
+- Core table extensions require manual SQL migrations
+
+### Custom Fields Added
+
+**User Table Extensions:**
+- `role` - User role (admin, seller) - Default: 'admin'
+- `email_verified` - Email verification status - Default: false
+- `email_verified_at` - Timestamp of verification
+- `failed_login_attempts` - Track failed logins - Default: 0
+- `locked_until` - Account lock expiration
+- `last_login_at` - Last successful login timestamp
+- `seller_id` - Link to seller module (if user is a seller)
+
+**Customer Table Extensions:**
+- `email_verified` - Email verification status - Default: false
+- `email_verified_at` - Timestamp of verification
+- `failed_login_attempts` - Track failed logins - Default: 0
+- `locked_until` - Account lock expiration
+- `last_login_at` - Last successful login timestamp
+
+**Performance Indexes:**
+- `IDX_user_role` - Fast role-based queries
+- `IDX_user_locked_until` - Efficient account lock checks
+- `IDX_user_seller_id` - Quick seller lookups
+- `IDX_customer_locked_until` - Efficient account lock checks for customers
+
+### Account Security Features
+
+**Account Locking (Brute Force Protection):**
+- Track failed login attempts in `failed_login_attempts` column
+- Lock account for 15 minutes after 5 failed attempts
+- Store lock expiration in `locked_until` column
+- Check lock status before allowing login
+
+**Email Verification:**
+- Generate verification token
+- Store in custom `email_verification` table (Account module)
+- Mark `email_verified = true` after verification
+- Set `email_verified_at` timestamp
+
+**Password Reset:**
+- Generate reset token
+- Store in custom `password_reset` table (Account module)
+- Expire tokens after 15 minutes
+- Update password via Medusa's Auth Module
+
+### Metadata vs Columns Decision
+
+**Initially Considered:** Store custom fields in `metadata` (JSONB)
+
+**Final Decision:** Use actual database columns
+
+**Reasons:**
+- ✅ Database indexes for fast queries (role, locked_until)
+- ✅ Type safety and constraints at database level
+- ✅ Standard SQL operations (WHERE, ORDER BY)
+- ✅ Better query performance
+- ✅ Clearer schema definition
+
+**Trade-offs:**
+- ❌ Requires database migrations
+- ❌ Changes to Medusa's core tables
+- ✅ But: Performance and type safety outweigh complexity
+
+### Migration File Organization
+
+**Best Practices:**
+- Store SQL migrations in `backend/migrations/` directory
+- Use descriptive names: `extend-user-customer-tables.sql`
+- Add comments explaining purpose and fields
+- Use `IF NOT EXISTS` for idempotency (safe re-runs)
+- Create performance indexes for frequently queried columns
+
+**Why Not src/migration-scripts:**
+- Medusa v2 migration scripts are for post-DB updates
+- Require specific parameters (`query`, `logger`)
+- Complex to debug
+- Direct SQL is clearer for core table extensions
+
+### Next Phase Tasks
+
+**Phase 3.2+:** Create Account Module
+- EmailVerification model (token, expiry, used_at)
+- PasswordReset model (token, expiry, used_at)
+- AccountModuleService (wrapper for User/Customer operations)
+- Integrate with Medusa's Auth Module for password verification
+
+**Phase 3.3:** Update Authentication Endpoints
+- Connect to database (replace in-memory storage)
+- Use Medusa's User/Customer services
+- Integrate email verification flow
+- Integrate password reset flow
+
+**Phase 3.4:** Redis Token Storage
+- Store refresh tokens in Redis
+- Token revocation on logout
+- Persistent session management
+
+### Key Lessons
+
+1. **Don't recreate what Medusa provides** - Use built-in User/Customer/Auth modules
+2. **Extend, don't replace** - Add columns to core tables instead of creating parallel tables
+3. **Use Docker SQL for core extensions** - Simpler than Medusa migration scripts
+4. **Add indexes for performance** - Especially on frequently queried fields (role, locked_until)
+5. **Document your migrations** - Future developers will thank you
+
+**Resources:**
+- [Medusa Auth Module Docs](https://docs.medusajs.com/resources/commerce-modules/auth)
+- [Medusa User Module](https://docs.medusajs.com/resources/commerce-modules/user)
+- [Medusa Customer Module](https://docs.medusajs.com/resources/commerce-modules/customer)
+
+---
+
 **Questions?** Check [Medusa Documentation](https://docs.medusajs.com) or ask!
