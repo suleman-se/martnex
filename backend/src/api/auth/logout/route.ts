@@ -4,37 +4,44 @@
  */
 
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
-import { authenticate, AuthenticatedRequest } from '../../../middleware/authenticate'
+import { z } from 'zod'
+import { verifyRefreshToken } from '../../../auth/jwt'
+import { getRedisTokenStore } from '../../../lib/redis-token-store'
+
+const logoutSchema = z.object({
+  refresh_token: z.string().min(1, 'Refresh token is required')
+})
 
 export async function POST(
   req: MedusaRequest,
   res: MedusaResponse
 ): Promise<void> {
-  // Apply authentication middleware
-  authenticate(req as AuthenticatedRequest, res, async () => {
-    const authReq = req as AuthenticatedRequest
+  try {
+    const { refresh_token } = logoutSchema.parse(req.body)
 
-    try {
-      if (!authReq.user) {
-        res.status(401).json({
-          message: 'Not authenticated'
-        })
-        return
-      }
+    // Verify refresh token to extract user_id and token_id
+    const decoded = verifyRefreshToken(refresh_token)
 
-      // TODO: Invalidate refresh token (remove from Redis/database)
-      // TODO: Add access token to blacklist (if implementing token blacklist)
-      // Redis key pattern: `refresh_token:${user_id}:${token_id}`
-      // Redis key pattern: `token_blacklist:${access_token}`
+    // Revoke the refresh token from Redis
+    const tokenStore = getRedisTokenStore()
+    await tokenStore.revokeRefreshToken(decoded.user_id, decoded.token_id)
 
-      res.status(200).json({
-        message: 'Logout successful'
+    res.status(200).json({
+      message: 'Logout successful. Your session has been terminated.'
+    })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({
+        message: 'Validation failed',
+        errors: error.errors
       })
-    } catch (error) {
-      res.status(500).json({
-        message: 'Logout failed',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      })
+      return
     }
-  })
+
+    // Even if token is invalid/expired, return success
+    // This prevents information leakage
+    res.status(200).json({
+      message: 'Logout successful. Your session has been terminated.'
+    })
+  }
 }

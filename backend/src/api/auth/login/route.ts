@@ -7,6 +7,7 @@ import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from 'zod'
 import { generateAccessToken, generateRefreshToken } from '../../../auth/jwt'
 import { generateSecureToken } from '../../../auth/password'
+import { getRedisTokenStore } from '../../../lib/redis-token-store'
 import type { IAuthModuleService } from '@medusajs/framework/types'
 import type { ICustomerModuleService } from '@medusajs/framework/types'
 
@@ -101,10 +102,11 @@ export async function POST(
     const accessToken = generateAccessToken(accessTokenPayload)
     const refreshToken = generateRefreshToken(refreshTokenPayload)
 
-    // TODO: Store refresh token in Redis with expiration (Task 6)
-    // await redisTokenStore.storeRefreshToken(customer.id, tokenId, refreshTokenExpiry)
+    // Store refresh token in Redis with 7-day expiration
+    const tokenStore = getRedisTokenStore()
+    await tokenStore.storeRefreshToken(customer.id, tokenId, 604800) // 7 days in seconds
 
-    // TODO: Update last_login_at timestamp on customer
+    // TODO: Update last_login_at timestamp on customer when customer table is extended
 
     res.status(200).json({
       message: 'Login successful',

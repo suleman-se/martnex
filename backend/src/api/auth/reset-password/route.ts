@@ -7,6 +7,7 @@ import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from 'zod'
 import { validatePassword } from '../../../auth/password'
 import { ACCOUNT_MODULE } from '../../../modules/account'
+import { getRedisTokenStore } from '../../../lib/redis-token-store'
 import type { IAuthModuleService } from '@medusajs/framework/types'
 
 const resetPasswordSchema = z.object({
@@ -61,8 +62,9 @@ export async function POST(
     // Invalidate all password reset tokens for this user
     await accountService.invalidatePasswordResetTokens(reset.user_id)
 
-    // TODO: Invalidate all refresh tokens in Redis (force re-login)
-    // await redisTokenStore.revokeAllUserTokens(reset.user_id)
+    // Invalidate all refresh tokens in Redis (force re-login after password change)
+    const tokenStore = getRedisTokenStore()
+    await tokenStore.revokeAllUserTokens(reset.user_id)
 
     res.status(200).json({
       message: 'Password reset successful. You can now log in with your new password.'

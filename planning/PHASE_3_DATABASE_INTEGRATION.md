@@ -2,7 +2,7 @@
 
 **Objective:** Integrate the authentication system with Medusa's built-in User/Customer modules and database.
 
-**Status:** ⏳ In Progress (Tasks 1-4 Complete, Redis integration pending)
+**Status:** ✅ Complete (Backend authentication fully integrated with database and Redis)
 
 ---
 
@@ -29,13 +29,18 @@
 - `/api/auth/forgot-password` - Creates password reset tokens with 15-min expiry
 - `/api/auth/reset-password` - Resets password via Medusa Auth Module + Account Module
 
+**Phase 3.4 - Redis Integration:**
+- Created RedisTokenStore class with 8 methods for token lifecycle management
+- `/api/auth/login` - Stores refresh tokens in Redis with 7-day expiry
+- `/api/auth/refresh` - Validates tokens against Redis before refreshing
+- `/api/auth/logout` - Revokes refresh tokens from Redis
+- `/api/auth/reset-password` - Revokes all user tokens on password change
+
 ### ⏳ Pending
 
-- **Redis Integration** - RedisTokenStore class for refresh token management
-- `/api/auth/refresh` - Update to use Redis instead of in-memory storage
-- `/api/auth/logout` - Revoke Redis tokens on logout
 - **Frontend Pages** - Update to use database-backed authentication
 - **Full Stack Testing** - Integration and E2E tests
+- **Email Service** - Integrate email sending for verification and reset emails
 
 ---
 
