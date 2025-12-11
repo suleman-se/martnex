@@ -5,7 +5,10 @@
 
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from 'zod'
-import { hashPassword, validatePassword, generateSecureToken } from '../../../auth/password'
+import { validatePassword } from '../../../auth/password'
+import { ACCOUNT_MODULE } from '../../../modules/account'
+import type { IAuthModuleService } from '@medusajs/framework/types'
+import type { ICustomerModuleService } from '@medusajs/framework/types'
 
 const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -32,23 +35,64 @@ export async function POST(
       return
     }
 
-    // TODO: Check if user already exists
-    // TODO: Save user to database with hashed password
-    const hashedPassword = await hashPassword(validatedData.password)
-    const verificationToken = generateSecureToken(32)
+    // Resolve services from container
+    const authService = req.scope.resolve<IAuthModuleService>('authModuleService')
+    const customerService = req.scope.resolve<ICustomerModuleService>('customerModuleService')
+    const accountService = req.scope.resolve(ACCOUNT_MODULE)
 
-    // Mock response - will be replaced with actual DB operations
-    const mockUserId = `user_${Date.now()}`
+    // Check if user already exists
+    const existingCustomers = await customerService.listCustomers({
+      email: validatedData.email
+    })
+
+    if (existingCustomers.length > 0) {
+      res.status(409).json({
+        message: 'An account with this email already exists'
+      })
+      return
+    }
+
+    // Create customer (for buyers) or user (for sellers - TODO in seller module)
+    // For now, all registrations create customers
+    const customer = await customerService.createCustomers({
+      email: validatedData.email,
+      first_name: validatedData.first_name,
+      last_name: validatedData.last_name || '',
+      has_account: true,
+    })
+
+    // Create auth identity with password using emailpass provider
+    await authService.create({
+      entity_id: customer.id,
+      provider: 'emailpass',
+      provider_metadata: {
+        password: validatedData.password, // Medusa Auth will hash this
+      },
+      app_metadata: {
+        role: validatedData.role,
+      },
+    })
+
+    // Create email verification token
+    const verification = await accountService.createEmailVerificationToken(
+      customer.id,
+      validatedData.email
+    )
+
+    // TODO: Send verification email with verification.token
+    // For now, we'll return the token in response (remove in production!)
 
     res.status(201).json({
       message: 'User registered successfully. Please check your email to verify your account.',
       data: {
-        user_id: mockUserId,
-        email: validatedData.email,
-        first_name: validatedData.first_name,
-        last_name: validatedData.last_name,
+        user_id: customer.id,
+        email: customer.email,
+        first_name: customer.first_name,
+        last_name: customer.last_name,
         role: validatedData.role,
-        email_verified: false
+        email_verified: false,
+        // TODO: Remove this in production - only for testing
+        verification_token: verification.token,
       }
     })
   } catch (error) {

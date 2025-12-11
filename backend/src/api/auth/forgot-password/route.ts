@@ -5,7 +5,8 @@
 
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from 'zod'
-import { generateSecureToken } from '../../../auth/password'
+import { ACCOUNT_MODULE } from '../../../modules/account'
+import type { ICustomerModuleService } from '@medusajs/framework/types'
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address')
@@ -18,24 +19,31 @@ export async function POST(
   try {
     const { email } = forgotPasswordSchema.parse(req.body)
 
-    // TODO: Check if user exists with this email
-    // TODO: Generate password reset token (32 chars)
-    // TODO: Save token with 15-minute expiration
-    // TODO: Send password reset email with token link
+    // Resolve services from container
+    const accountService = req.scope.resolve(ACCOUNT_MODULE)
+    const customerService = req.scope.resolve<ICustomerModuleService>('customerModuleService')
 
-    const resetToken = generateSecureToken(32)
+    // Check if customer exists with this email
+    const customers = await customerService.listCustomers({ email })
+    const customer = customers[0]
 
-    // Mock implementation
-    // const user = await db.user.findOne({ email })
-    // if (user) {
-    //   const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
-    //   await db.passwordReset.create({ user_id: user.id, token: resetToken, expires_at: expiresAt })
-    //   await emailService.sendPasswordReset(user.email, resetToken)
-    // }
+    if (customer) {
+      // Create password reset token (15-minute expiration)
+      const resetToken = await accountService.createPasswordResetToken(
+        customer.id,
+        email
+      )
+
+      // TODO: Send password reset email with resetToken.token
+      // For now, we'll return the token in response (remove in production!)
+      // await emailService.sendPasswordReset(customer.email, resetToken.token)
+    }
 
     // Always return success to prevent email enumeration attacks
     res.status(200).json({
-      message: 'If an account with that email exists, a password reset link has been sent.'
+      message: 'If an account with that email exists, a password reset link has been sent.',
+      // TODO: Remove this in production - only for testing
+      ...(customer && { reset_token: (await accountService.createPasswordResetToken(customer.id, email)).token })
     })
   } catch (error) {
     if (error instanceof z.ZodError) {

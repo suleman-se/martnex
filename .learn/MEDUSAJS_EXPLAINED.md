@@ -283,8 +283,9 @@ const Product = model.define("product", {
   price: model.bigNumber(), // Stored in major units (dollars, not cents)
   inventory_quantity: model.integer().default(0),
   seller_id: model.text(), // Link to seller for multi-vendor
-  created_at: model.timestamps().createdAt(),
-  updated_at: model.timestamps().updatedAt(),
+
+  // Timestamps (created_at, updated_at, deleted_at) are auto-added by Medusa v2.12+
+  // ⚠️ DO NOT manually define them!
 })
 
 export default Product
@@ -293,7 +294,7 @@ export default Product
 **What this means:**
 - Creates a `product` table in PostgreSQL using MikroORM
 - Clean, simple syntax without decorators
-- Automatically includes `created_at`, `updated_at`, `deleted_at`
+- **IMPORTANT:** `created_at`, `updated_at`, `deleted_at` are **automatically added** by Medusa v2.12+ - you should NOT define them manually!
 - `seller_id` links products to sellers (multi-vendor feature)
 - Prices stored in major units (see Pricing Changes section)
 
@@ -318,6 +319,60 @@ CREATE TABLE product (
 - ✅ Prices in major units (not cents)
 - ✅ Migrations auto-generated: `npx medusa db:generate product`
 - ✅ Uses MikroORM instead of TypeORM
+
+---
+
+#### 📌 Auto-Generated Timestamp Fields (Medusa v2.12+)
+
+**IMPORTANT: DO NOT manually define timestamp fields!**
+
+Medusa v2.12+ **automatically adds** these fields to ALL models:
+
+| Field | Type | Default | Purpose |
+|-------|------|---------|---------|
+| `created_at` | `timestamp with time zone` | `now()` | Record creation time |
+| `updated_at` | `timestamp with time zone` | `now()` | Last update time (auto-updated on changes) |
+| `deleted_at` | `timestamp with time zone` | `null` | Soft delete timestamp (null = not deleted) |
+
+**✅ CORRECT - Don't define timestamps:**
+```typescript
+const Seller = model.define("seller", {
+  id: model.id().primaryKey(),
+  business_name: model.text(),
+  email: model.text(),
+  // ✅ Timestamps auto-added - no need to define!
+})
+```
+
+**❌ WRONG - Don't do this:**
+```typescript
+const Seller = model.define("seller", {
+  id: model.id().primaryKey(),
+  business_name: model.text(),
+  email: model.text(),
+  created_at: model.dateTime().default("now"), // ❌ Will cause errors!
+  updated_at: model.dateTime().default("now"), // ❌ Redundant!
+})
+```
+
+**Why this matters:**
+1. **Prevents errors** - Medusa will add these fields automatically during migration
+2. **Consistent behavior** - All models have the same timestamp fields
+3. **Soft deletes** - `deleted_at` enables soft-delete functionality automatically
+4. **Index optimization** - Medusa adds `WHERE deleted_at IS NULL` to indexes for performance
+
+**Best Practice:**
+Add a comment at the end of your model definition:
+```typescript
+const EmailVerification = model.define("email_verification", {
+  id: model.id().primaryKey(),
+  user_id: model.text(),
+  token: model.text(),
+  expires_at: model.dateTime(),
+
+  // Timestamps (created_at, updated_at, deleted_at) are auto-added by Medusa v2.12+
+})
+```
 
 ---
 

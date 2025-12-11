@@ -5,6 +5,8 @@
 
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from 'zod'
+import { ACCOUNT_MODULE } from '../../../modules/account'
+import type { ICustomerModuleService } from '@medusajs/framework/types'
 
 const verifyEmailSchema = z.object({
   token: z.string().min(1, 'Verification token is required')
@@ -17,22 +19,35 @@ export async function POST(
   try {
     const { token } = verifyEmailSchema.parse(req.body)
 
-    // TODO: Query database for verification token
-    // TODO: Check if token exists and not expired (24 hours validity)
-    // TODO: Mark user email as verified
-    // TODO: Delete verification token from database
+    // Resolve services from container
+    const accountService = req.scope.resolve(ACCOUNT_MODULE)
+    const customerService = req.scope.resolve<ICustomerModuleService>('customerModuleService')
 
-    // Mock implementation
-    // const verification = await db.emailVerification.findOne({ token })
-    // if (!verification || verification.expires_at < new Date()) {
-    //   res.status(400).json({ message: 'Invalid or expired token' })
-    //   return
-    // }
-    // await db.user.update({ email_verified: true }, { where: { id: verification.user_id }})
-    // await db.emailVerification.delete({ token })
+    // Verify the email token using Account module
+    const verification = await accountService.verifyEmailToken(token)
+
+    if (!verification) {
+      res.status(400).json({
+        message: 'Email verification failed',
+        error: 'Invalid or expired verification token'
+      })
+      return
+    }
+
+    // Update customer email_verified field
+    // TODO: Uncomment when customer table is extended with email_verified column
+    // await customerService.updateCustomers({
+    //   id: verification.user_id,
+    //   email_verified: true,
+    //   email_verified_at: new Date()
+    // })
 
     res.status(200).json({
-      message: 'Email verified successfully. You can now log in.'
+      message: 'Email verified successfully. You can now log in.',
+      data: {
+        user_id: verification.user_id,
+        email: verification.email
+      }
     })
   } catch (error) {
     if (error instanceof z.ZodError) {

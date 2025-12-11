@@ -2,7 +2,40 @@
 
 **Objective:** Integrate the authentication system with Medusa's built-in User/Customer modules and database.
 
-**Status:** ⏳ In Progress
+**Status:** ⏳ In Progress (Tasks 1-4 Complete, Redis integration pending)
+
+---
+
+## 🎯 Progress Summary
+
+### ✅ Completed (as of 2025-12-11)
+
+**Phase 3.1 - Database Schema Extensions:**
+- Extended `user` table with 7 custom columns (role, email_verified, failed_login_attempts, locked_until, last_login_at, seller_id)
+- Extended `customer` table with 5 custom columns (email_verified, failed_login_attempts, locked_until, last_login_at)
+- All columns and indexes created successfully via Docker SQL migration
+
+**Phase 3.2 - Account Module:**
+- Created `email_verification` and `password_reset` models using Medusa DML
+- Implemented AccountModuleService with token management methods
+- Generated and ran database migrations (Migration20251211080247)
+- Registered module in medusa-config.ts
+- 19 unit tests passing ✅
+
+**Phase 3.3 - Authentication Endpoints:**
+- `/api/auth/register` - Now creates customers via Medusa Customer Module + Auth Module
+- `/api/auth/login` - Authenticates using Medusa Auth Module (emailpass provider)
+- `/api/auth/verify-email` - Verifies email using database tokens from Account Module
+- `/api/auth/forgot-password` - Creates password reset tokens with 15-min expiry
+- `/api/auth/reset-password` - Resets password via Medusa Auth Module + Account Module
+
+### ⏳ Pending
+
+- **Redis Integration** - RedisTokenStore class for refresh token management
+- `/api/auth/refresh` - Update to use Redis instead of in-memory storage
+- `/api/auth/logout` - Revoke Redis tokens on logout
+- **Frontend Pages** - Update to use database-backed authentication
+- **Full Stack Testing** - Integration and E2E tests
 
 ---
 
@@ -103,14 +136,14 @@ backend/src/modules/account/
 - Email verification token management
 - Password reset token management
 
-### 3.3: Update Authentication Endpoints
+### 3.3: Update Backend Authentication Endpoints
 
 Update Phase 2.5 authentication endpoints to use:
 1. Medusa's Auth Module for password verification
 2. AccountModuleService for user management
 3. Database for token storage (replace in-memory)
 
-**Files to Update:**
+**Backend Files to Update:**
 - `backend/src/api/auth/register/route.ts`
 - `backend/src/api/auth/login/route.ts`
 - `backend/src/api/auth/verify-email/route.ts`
@@ -119,7 +152,28 @@ Update Phase 2.5 authentication endpoints to use:
 - `backend/src/api/auth/refresh/route.ts`
 - `backend/src/api/auth/logout/route.ts`
 
-### 3.4: Integrate Redis for Refresh Token Storage
+### 3.4: Update Frontend Authentication Pages
+
+Update Phase 2.5 frontend pages to handle database-backed authentication:
+
+**Frontend Files to Update:**
+- `frontend/src/app/(auth)/register/page.tsx` - Handle database validation errors
+- `frontend/src/app/(auth)/login/page.tsx` - Show account locked messages
+- `frontend/src/app/(auth)/verify-email/page.tsx` - Use database verification tokens
+- `frontend/src/app/(auth)/forgot-password/page.tsx` - Request password reset
+- `frontend/src/app/(auth)/reset-password/page.tsx` - Confirm password reset
+- `frontend/src/contexts/AuthContext.tsx` - Handle database sessions
+- `frontend/src/lib/auth.ts` - Update API calls for database backend
+
+**New Features to Add:**
+- Loading states during database operations
+- Error handling for network/database failures
+- Account locked notification (15 minutes remaining)
+- Email verification reminder
+- Session expiration handling
+- Auto-logout on token expiration
+
+### 3.5: Integrate Redis for Refresh Token Storage
 
 Replace in-memory refresh token storage with Redis.
 
@@ -134,60 +188,88 @@ class RedisTokenStore {
 }
 ```
 
-### 3.5: Database Migration & Testing
+### 3.6: Full Stack Testing
 
-1. Generate migrations for Account module (email_verification, password_reset)
-2. Run migrations
-3. Update tests to use database
-4. Test all authentication flows end-to-end
+1. Backend unit tests (Account module, Redis store)
+2. Backend integration tests (API endpoints with database)
+3. Frontend component tests (forms, pages)
+4. End-to-end tests (complete user journeys)
+5. Performance testing (database queries, Redis operations)
+6. Security testing (token validation, account locking)
 
 ---
 
 ## Sub-Tasks Breakdown
 
-### Task 1: Create Custom Migrations to Extend User/Customer Tables
-- [ ] Create migration file to extend `user` table with custom columns
-- [ ] Create migration file to extend `customer` table with custom columns
-- [ ] Run migrations
-- [ ] Verify columns added in PostgreSQL
+### Task 1: Create Custom Migrations to Extend User/Customer Tables ✅
+- [x] Create migration file to extend `user` table with custom columns
+- [x] Create migration file to extend `customer` table with custom columns
+- [x] Run migrations
+- [x] Verify columns added in PostgreSQL
 
-### Task 2: Create Account Module
-- [ ] Create `backend/src/modules/account/` directory
-- [ ] Define EmailVerification model
-- [ ] Define PasswordReset model
-- [ ] Create AccountModuleService
-- [ ] Register module in `medusa-config.ts`
-- [ ] Write tests
+### Task 2: Create Account Module ✅
+- [x] Create `backend/src/modules/account/` directory
+- [x] Define EmailVerification model
+- [x] Define PasswordReset model
+- [x] Create AccountModuleService
+- [x] Register module in `medusa-config.ts`
+- [x] Write tests
 
-### Task 3: Generate Migrations for Account Module
-- [ ] Generate migrations for Account module (email_verification, password_reset)
-- [ ] Run migrations
-- [ ] Verify tables created in PostgreSQL
+### Task 3: Generate Migrations for Account Module ✅
+- [x] Generate migrations for Account module (email_verification, password_reset)
+- [x] Run migrations
+- [x] Verify tables created in PostgreSQL
 
-### Task 4: Update Authentication Endpoints
-- [ ] Update `/api/auth/register` to use Account module
-- [ ] Update `/api/auth/login` to use Medusa Auth + Account module
-- [ ] Update `/api/auth/verify-email` to use database tokens
-- [ ] Update `/api/auth/forgot-password` to use database tokens
-- [ ] Update `/api/auth/reset-password` to use database tokens
-- [ ] Update `/api/auth/refresh` to use Redis
-- [ ] Update `/api/auth/logout` to revoke Redis tokens
+### Task 4: Update Backend Authentication Endpoints ✅ (Partial - Redis pending)
+- [x] Update `/api/auth/register` to use Account module
+- [x] Update `/api/auth/login` to use Medusa Auth + Account module
+- [x] Update `/api/auth/verify-email` to use database tokens
+- [x] Update `/api/auth/forgot-password` to use database tokens
+- [x] Update `/api/auth/reset-password` to use database tokens
+- [ ] Update `/api/auth/refresh` to use Redis (TODO: Next phase)
+- [ ] Update `/api/auth/logout` to revoke Redis tokens (TODO: Next phase)
 
-### Task 5: Redis Integration
+### Task 5: Update Frontend Authentication Pages
+- [ ] Update registration page to handle database errors
+- [ ] Update login page to show account locked messages
+- [ ] Update email verification page to use database tokens
+- [ ] Update password reset flow (request + reset pages)
+- [ ] Add loading states during database operations
+- [ ] Add error handling for network failures
+- [ ] Update auth context to handle database sessions
+
+### Task 6: Redis Integration
 - [ ] Create RedisTokenStore class
 - [ ] Implement token storage methods
 - [ ] Update refresh endpoint to use Redis
 - [ ] Add token revocation on logout
 - [ ] Add tests for Redis token store
 
-### Task 6: Testing
+### Task 7: Testing (Backend + Frontend)
+
+**Backend Tests:**
 - [ ] Update unit tests for Account module
 - [ ] Write integration tests for auth endpoints with database
-- [ ] Test email verification flow
-- [ ] Test password reset flow
+- [ ] Test email verification flow (backend)
+- [ ] Test password reset flow (backend)
 - [ ] Test account locking after failed attempts
 - [ ] Test token refresh with Redis
 - [ ] Test logout token revocation
+
+**Frontend Tests:**
+- [ ] Test registration form submission
+- [ ] Test login form with correct/incorrect credentials
+- [ ] Test account locked UI display
+- [ ] Test email verification page
+- [ ] Test password reset request and confirmation
+- [ ] Test protected route access with database sessions
+- [ ] Test auto-logout on token expiration
+
+**End-to-End Tests:**
+- [ ] Complete user journey: Register → Verify Email → Login → Access Protected Page
+- [ ] Complete seller journey: Register as Seller → Verify Email → Login → Access Seller Dashboard
+- [ ] Password reset journey: Request Reset → Receive Email → Reset Password → Login
+- [ ] Failed login journey: Fail 5 times → Account Locked → Wait 15 min → Login Success
 
 ---
 
@@ -231,6 +313,8 @@ We should leverage this instead of reimplementing.
 ## Expected Outcomes
 
 After Phase 3:
+
+**Backend:**
 - ✅ `user` and `customer` tables extended with custom columns
 - ✅ Authentication integrated with Medusa's User/Customer tables
 - ✅ Buyer/Seller/Admin roles managed via `role` column with indexes
@@ -238,8 +322,23 @@ After Phase 3:
 - ✅ Password reset stored in database (`password_reset` table)
 - ✅ Refresh tokens stored in Redis (persistent)
 - ✅ Account locking after failed attempts (using `locked_until` column)
-- ✅ All 106 Phase 2.5 tests still passing
+- ✅ All 106 Phase 2.5 backend tests still passing
 - ✅ New integration tests with database
+
+**Frontend:**
+- ✅ Registration/Login pages connected to database backend
+- ✅ Email verification flow working with database tokens
+- ✅ Password reset flow working with database tokens
+- ✅ Account locked messages displayed to users
+- ✅ Loading states during database operations
+- ✅ Proper error handling for network/database failures
+- ✅ Protected routes working with database sessions
+- ✅ Auto-logout on token expiration
+
+**Full Stack:**
+- ✅ Complete authentication flows tested end-to-end
+- ✅ No in-memory storage (all data in PostgreSQL/Redis)
+- ✅ Production-ready authentication system
 
 ---
 

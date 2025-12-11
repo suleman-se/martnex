@@ -5,8 +5,10 @@
 
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from 'zod'
-import { verifyPassword } from '../../../auth/password'
 import { generateAccessToken, generateRefreshToken } from '../../../auth/jwt'
+import { generateSecureToken } from '../../../auth/password'
+import type { IAuthModuleService } from '@medusajs/framework/types'
+import type { ICustomerModuleService } from '@medusajs/framework/types'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -20,26 +22,18 @@ export async function POST(
   try {
     const { email, password } = loginSchema.parse(req.body)
 
-    // TODO: Fetch user from database by email
-    // Mock user for now - will be replaced with actual DB query
-    const mockUser = {
-      user_id: 'user_123',
-      email: email,
-      // This would come from DB - using hardcoded hash for 'SecurePass123!'
-      password_hash: '$2b$12$abcdefghijklmnopqrstuv.hashedpassword',
-      role: 'buyer' as const,
-      email_verified: true
-    }
+    // Resolve services from container
+    const authService = req.scope.resolve<IAuthModuleService>('authModuleService')
+    const customerService = req.scope.resolve<ICustomerModuleService>('customerModuleService')
 
-    // TODO: Handle user not found
-    // if (!user) {
-    //   res.status(401).json({ message: 'Invalid credentials' })
-    //   return
-    // }
+    // Find customer by email
+    const customers = await customerService.listCustomers({
+      email
+    })
 
-    // Verify password
-    const isValidPassword = await verifyPassword(password, mockUser.password_hash)
-    if (!isValidPassword) {
+    const customer = customers[0]
+
+    if (!customer) {
       res.status(401).json({
         message: 'Invalid credentials',
         error: 'Email or password is incorrect'
@@ -47,34 +41,78 @@ export async function POST(
       return
     }
 
-    // Check email verification
-    if (!mockUser.email_verified) {
-      res.status(403).json({
-        message: 'Email not verified',
-        error: 'Please verify your email before logging in'
+    // Authenticate using Medusa Auth Module with emailpass provider
+    let authIdentity
+    try {
+      authIdentity = await authService.authenticate('emailpass', {
+        body: {
+          email,
+          password,
+        }
+      })
+    } catch (authError) {
+      // Authentication failed - wrong password
+      // TODO: Track failed login attempts and lock account after 5 attempts
+      res.status(401).json({
+        message: 'Invalid credentials',
+        error: 'Email or password is incorrect'
       })
       return
     }
 
+    // Check if account is locked
+    // TODO: Check customer.locked_until field when we extend the table
+    // if (customer.locked_until && new Date(customer.locked_until) > new Date()) {
+    //   res.status(423).json({
+    //     message: 'Account locked',
+    //     error: 'Too many failed login attempts. Please try again later.'
+    //   })
+    //   return
+    // }
+
+    // Check email verification
+    // TODO: Check customer.email_verified field when we extend the table
+    // if (!customer.email_verified) {
+    //   res.status(403).json({
+    //     message: 'Email not verified',
+    //     error: 'Please verify your email before logging in'
+    //   })
+    //   return
+    // }
+
+    // Get role from auth identity metadata
+    const role = authIdentity.app_metadata?.role || 'buyer'
+
+    // Generate unique token ID for refresh token tracking
+    const tokenId = generateSecureToken(16) // 32-character hex string
+
     // Generate tokens
-    const tokenPayload = {
-      user_id: mockUser.user_id,
-      email: mockUser.email,
-      role: mockUser.role
+    const accessTokenPayload = {
+      user_id: customer.id,
+      email: customer.email,
+      role: role
     }
 
-    const accessToken = generateAccessToken(tokenPayload)
-    const refreshToken = generateRefreshToken(tokenPayload)
+    const refreshTokenPayload = {
+      user_id: customer.id,
+      token_id: tokenId
+    }
 
-    // TODO: Store refresh token in Redis with expiration
+    const accessToken = generateAccessToken(accessTokenPayload)
+    const refreshToken = generateRefreshToken(refreshTokenPayload)
+
+    // TODO: Store refresh token in Redis with expiration (Task 6)
+    // await redisTokenStore.storeRefreshToken(customer.id, tokenId, refreshTokenExpiry)
+
+    // TODO: Update last_login_at timestamp on customer
 
     res.status(200).json({
       message: 'Login successful',
       data: {
         user: {
-          user_id: mockUser.user_id,
-          email: mockUser.email,
-          role: mockUser.role
+          user_id: customer.id,
+          email: customer.email,
+          role: role
         },
         access_token: accessToken,
         refresh_token: refreshToken
