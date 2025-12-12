@@ -5,7 +5,11 @@
 
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from 'zod'
-import { validatePassword, hashPassword } from '../../../auth/password'
+import { validatePassword } from '../../../auth/password'
+import { ACCOUNT_MODULE } from '../../../modules/account'
+import { getRedisTokenStore } from '../../../lib/redis-token-store'
+import { RateLimiter } from '../../../services/business-rules'
+import type { IAuthModuleService } from '@medusajs/framework/types'
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1, 'Reset token is required'),
@@ -19,6 +23,20 @@ export async function POST(
   try {
     const { token, password } = resetPasswordSchema.parse(req.body)
 
+    // Rate limiting: Max 5 password reset attempts per hour per token
+    // This prevents brute force attacks on the reset token
+    const rateLimitKey = `reset-password:${token.substring(0, 8)}` // Use first 8 chars to avoid storing full token
+    const rateLimit = RateLimiter.checkLimit(rateLimitKey, 5, 3600) // 3600 seconds = 1 hour
+
+    if (!rateLimit.allowed) {
+      res.status(429).json({
+        message: 'Too many password reset attempts',
+        error: `Please try again in ${Math.ceil((rateLimit.resetAt.getTime() - Date.now()) / 60000)} minutes`,
+        retry_after: rateLimit.resetAt.toISOString()
+      })
+      return
+    }
+
     // Validate password strength
     const passwordValidation = validatePassword(password)
     if (!passwordValidation.isValid) {
@@ -29,24 +47,39 @@ export async function POST(
       return
     }
 
-    // TODO: Query database for reset token
-    // TODO: Check if token exists and not expired
-    // TODO: Hash new password
-    // TODO: Update user password
-    // TODO: Delete reset token
-    // TODO: Invalidate all refresh tokens for this user (force re-login)
+    // Resolve services from container
+    const accountService = req.scope.resolve(ACCOUNT_MODULE)
+    const authService = req.scope.resolve<IAuthModuleService>('authModuleService')
 
-    const hashedPassword = await hashPassword(password)
+    // Verify the password reset token
+    const reset = await accountService.verifyPasswordResetToken(token)
 
-    // Mock implementation
-    // const reset = await db.passwordReset.findOne({ token })
-    // if (!reset || reset.expires_at < new Date()) {
-    //   res.status(400).json({ message: 'Invalid or expired token' })
-    //   return
-    // }
-    // await db.user.update({ password_hash: hashedPassword }, { where: { id: reset.user_id }})
-    // await db.passwordReset.delete({ token })
-    // await redis.del(`refresh_token:${reset.user_id}:*`) // Invalidate all refresh tokens
+    if (!reset) {
+      res.status(400).json({
+        message: 'Password reset failed',
+        error: 'Invalid or expired reset token'
+      })
+      return
+    }
+
+    // Update password using Medusa Auth Module
+    // The auth module will handle hashing
+    await authService.update({
+      entity_id: reset.user_id,
+      provider_metadata: {
+        password: password, // Medusa Auth will hash this
+      }
+    })
+
+    // Mark reset token as used
+    await accountService.markPasswordResetUsed(reset.id)
+
+    // Invalidate all password reset tokens for this user
+    await accountService.invalidatePasswordResetTokens(reset.user_id)
+
+    // Invalidate all refresh tokens in Redis (force re-login after password change)
+    const tokenStore = getRedisTokenStore()
+    await tokenStore.revokeAllUserTokens(reset.user_id)
 
     res.status(200).json({
       message: 'Password reset successful. You can now log in with your new password.'

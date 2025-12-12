@@ -5,7 +5,9 @@
 
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from 'zod'
-import { generateSecureToken } from '../../../auth/password'
+import { ACCOUNT_MODULE } from '../../../modules/account'
+import { RateLimiter } from '../../../services/business-rules'
+import type { ICustomerModuleService } from '@medusajs/framework/types'
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address')
@@ -18,20 +20,37 @@ export async function POST(
   try {
     const { email } = forgotPasswordSchema.parse(req.body)
 
-    // TODO: Check if user exists with this email
-    // TODO: Generate password reset token (32 chars)
-    // TODO: Save token with 15-minute expiration
-    // TODO: Send password reset email with token link
+    // Rate limiting: Max 3 password reset requests per hour per email
+    const rateLimitKey = `forgot-password:${email}`
+    const rateLimit = RateLimiter.checkLimit(rateLimitKey, 3, 3600) // 3600 seconds = 1 hour
 
-    const resetToken = generateSecureToken(32)
+    if (!rateLimit.allowed) {
+      res.status(429).json({
+        message: 'Too many password reset requests',
+        error: `Please try again in ${Math.ceil((rateLimit.resetAt.getTime() - Date.now()) / 60000)} minutes`,
+        retry_after: rateLimit.resetAt.toISOString()
+      })
+      return
+    }
 
-    // Mock implementation
-    // const user = await db.user.findOne({ email })
-    // if (user) {
-    //   const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
-    //   await db.passwordReset.create({ user_id: user.id, token: resetToken, expires_at: expiresAt })
-    //   await emailService.sendPasswordReset(user.email, resetToken)
-    // }
+    // Resolve services from container
+    const accountService = req.scope.resolve(ACCOUNT_MODULE)
+    const customerService = req.scope.resolve<ICustomerModuleService>('customerModuleService')
+
+    // Check if customer exists with this email
+    const customers = await customerService.listCustomers({ email })
+    const customer = customers[0]
+
+    if (customer) {
+      // Create password reset token (15-minute expiration)
+      await accountService.createPasswordResetToken(
+        customer.id,
+        email
+      )
+
+      // TODO: Send password reset email with resetToken.token
+      // await emailService.sendPasswordReset(customer.email, resetToken.token)
+    }
 
     // Always return success to prevent email enumeration attacks
     res.status(200).json({

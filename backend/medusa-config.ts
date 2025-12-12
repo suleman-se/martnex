@@ -38,6 +38,11 @@ module.exports = defineConfig({
       }
     },
 
+    // Account module (always loaded - handles authentication tokens)
+    {
+      resolve: "./src/modules/account",
+    },
+
     // Custom modules (conditionally loaded based on STORE_MODE)
     // Only loads if STORE_MODE=MULTI_VENDOR_MARKETPLACE
     ...(isMultiVendorMode() ? [
