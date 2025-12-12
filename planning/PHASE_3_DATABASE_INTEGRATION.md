@@ -44,6 +44,16 @@
 - Created comprehensive business rules test suite (30 tests) ✅
 - All business rules services ready: RateLimiter, PayoutEligibility, CommissionCalculator, SellerRiskScorer
 
+**Phase 3.6 - Account Security & Production Readiness:**
+- ✅ Account locking after 5 failed login attempts (15-minute lock)
+- ✅ Email verification enforcement on login
+- ✅ Failed login attempts tracking in database
+- ✅ last_login_at timestamp updated on successful login
+- ✅ Role retrieval from auth_identity metadata (no hardcoded defaults)
+- ✅ Removed test-only tokens from API responses (production-ready)
+- ✅ Auto-unlock after lock period expires
+- ✅ Reset failed attempts counter on successful login
+
 ### ⏳ Pending
 
 - **Frontend Pages** - Update to use database-backed authentication

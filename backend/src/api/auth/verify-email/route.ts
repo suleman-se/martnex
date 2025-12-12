@@ -35,12 +35,11 @@ export async function POST(
     }
 
     // Update customer email_verified field
-    // TODO: Uncomment when customer table is extended with email_verified column
-    // await customerService.updateCustomers({
-    //   id: verification.user_id,
-    //   email_verified: true,
-    //   email_verified_at: new Date()
-    // })
+    await customerService.updateCustomers({
+      id: verification.user_id,
+      email_verified: true,
+      email_verified_at: new Date()
+    })
 
     res.status(200).json({
       message: 'Email verified successfully. You can now log in.',

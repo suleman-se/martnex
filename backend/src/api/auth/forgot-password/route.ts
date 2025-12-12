@@ -43,21 +43,18 @@ export async function POST(
 
     if (customer) {
       // Create password reset token (15-minute expiration)
-      const resetToken = await accountService.createPasswordResetToken(
+      await accountService.createPasswordResetToken(
         customer.id,
         email
       )
 
       // TODO: Send password reset email with resetToken.token
-      // For now, we'll return the token in response (remove in production!)
       // await emailService.sendPasswordReset(customer.email, resetToken.token)
     }
 
     // Always return success to prevent email enumeration attacks
     res.status(200).json({
-      message: 'If an account with that email exists, a password reset link has been sent.',
-      // TODO: Remove this in production - only for testing
-      ...(customer && { reset_token: (await accountService.createPasswordResetToken(customer.id, email)).token })
+      message: 'If an account with that email exists, a password reset link has been sent.'
     })
   } catch (error) {
     if (error instanceof z.ZodError) {

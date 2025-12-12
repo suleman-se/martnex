@@ -74,13 +74,13 @@ export async function POST(
     })
 
     // Create email verification token
-    const verification = await accountService.createEmailVerificationToken(
+    await accountService.createEmailVerificationToken(
       customer.id,
       validatedData.email
     )
 
     // TODO: Send verification email with verification.token
-    // For now, we'll return the token in response (remove in production!)
+    // await emailService.sendVerificationEmail(customer.email, verification.token)
 
     res.status(201).json({
       message: 'User registered successfully. Please check your email to verify your account.',
@@ -90,9 +90,7 @@ export async function POST(
         first_name: customer.first_name,
         last_name: customer.last_name,
         role: validatedData.role,
-        email_verified: false,
-        // TODO: Remove this in production - only for testing
-        verification_token: verification.token,
+        email_verified: false
       }
     })
   } catch (error) {

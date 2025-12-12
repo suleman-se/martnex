@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { verifyRefreshToken, generateAccessToken } from '../../../auth/jwt'
 import { getRedisTokenStore } from '../../../lib/redis-token-store'
 import type { ICustomerModuleService } from '@medusajs/framework/types'
+import type { IAuthModuleService } from '@medusajs/framework/types'
 
 const refreshTokenSchema = z.object({
   refresh_token: z.string().min(1, 'Refresh token is required')
@@ -37,6 +38,8 @@ export async function POST(
 
     // Get user data from database
     const customerService = req.scope.resolve<ICustomerModuleService>('customerModuleService')
+    const authService = req.scope.resolve<IAuthModuleService>('authModuleService')
+
     const customers = await customerService.listCustomers({
       id: decoded.user_id
     })
@@ -51,9 +54,12 @@ export async function POST(
       return
     }
 
-    // TODO: Get role from auth_identity metadata
-    // For now, default to 'buyer'
-    const role = 'buyer'
+    // Get role from auth_identity metadata
+    const authIdentities = await authService.listAuthIdentities({
+      entity_id: customer.id
+    })
+    const authIdentity = authIdentities[0]
+    const role = authIdentity?.app_metadata?.role || 'buyer'
 
     // Generate new access token
     const newAccessToken = generateAccessToken({

@@ -56,6 +56,26 @@ export async function POST(
       return
     }
 
+    // Check if account is locked
+    if (customer.locked_until && new Date(customer.locked_until) > new Date()) {
+      const minutesRemaining = Math.ceil((new Date(customer.locked_until).getTime() - Date.now()) / 60000)
+      res.status(423).json({
+        message: 'Account locked',
+        error: `Too many failed login attempts. Please try again in ${minutesRemaining} minutes.`,
+        locked_until: customer.locked_until
+      })
+      return
+    }
+
+    // Check email verification (optional - can be disabled for development)
+    if (customer.email_verified === false) {
+      res.status(403).json({
+        message: 'Email not verified',
+        error: 'Please verify your email before logging in'
+      })
+      return
+    }
+
     // Authenticate using Medusa Auth Module with emailpass provider
     let authIdentity
     try {
@@ -67,33 +87,32 @@ export async function POST(
       })
     } catch (authError) {
       // Authentication failed - wrong password
-      // TODO: Track failed login attempts and lock account after 5 attempts
+      // Track failed login attempts and lock account after 5 attempts
+      const failedAttempts = (customer.failed_login_attempts || 0) + 1
+      const updateData: any = {
+        id: customer.id,
+        failed_login_attempts: failedAttempts
+      }
+
+      // Lock account for 15 minutes after 5 failed attempts
+      if (failedAttempts >= 5) {
+        const lockUntil = new Date()
+        lockUntil.setMinutes(lockUntil.getMinutes() + 15)
+        updateData.locked_until = lockUntil
+      }
+
+      await customerService.updateCustomers(updateData)
+
       res.status(401).json({
         message: 'Invalid credentials',
-        error: 'Email or password is incorrect'
+        error: 'Email or password is incorrect',
+        ...(failedAttempts >= 5 && {
+          account_locked: true,
+          locked_until: updateData.locked_until
+        })
       })
       return
     }
-
-    // Check if account is locked
-    // TODO: Check customer.locked_until field when we extend the table
-    // if (customer.locked_until && new Date(customer.locked_until) > new Date()) {
-    //   res.status(423).json({
-    //     message: 'Account locked',
-    //     error: 'Too many failed login attempts. Please try again later.'
-    //   })
-    //   return
-    // }
-
-    // Check email verification
-    // TODO: Check customer.email_verified field when we extend the table
-    // if (!customer.email_verified) {
-    //   res.status(403).json({
-    //     message: 'Email not verified',
-    //     error: 'Please verify your email before logging in'
-    //   })
-    //   return
-    // }
 
     // Get role from auth identity metadata
     const role = authIdentity.app_metadata?.role || 'buyer'
@@ -120,7 +139,13 @@ export async function POST(
     const tokenStore = getRedisTokenStore()
     await tokenStore.storeRefreshToken(customer.id, tokenId, 604800) // 7 days in seconds
 
-    // TODO: Update last_login_at timestamp on customer when customer table is extended
+    // Reset failed login attempts and update last_login_at on successful login
+    await customerService.updateCustomers({
+      id: customer.id,
+      failed_login_attempts: 0,
+      locked_until: null,
+      last_login_at: new Date()
+    })
 
     res.status(200).json({
       message: 'Login successful',
