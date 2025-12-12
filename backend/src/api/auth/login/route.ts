@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { generateAccessToken, generateRefreshToken } from '../../../auth/jwt'
 import { generateSecureToken } from '../../../auth/password'
 import { getRedisTokenStore } from '../../../lib/redis-token-store'
+import { RateLimiter } from '../../../services/business-rules'
 import type { IAuthModuleService } from '@medusajs/framework/types'
 import type { ICustomerModuleService } from '@medusajs/framework/types'
 
@@ -22,6 +23,19 @@ export async function POST(
 ): Promise<void> {
   try {
     const { email, password } = loginSchema.parse(req.body)
+
+    // Rate limiting: Max 5 login attempts per 15 minutes per email
+    const rateLimitKey = `login:${email}`
+    const rateLimit = RateLimiter.checkLimit(rateLimitKey, 5, 900) // 900 seconds = 15 minutes
+
+    if (!rateLimit.allowed) {
+      res.status(429).json({
+        message: 'Too many login attempts',
+        error: `Please try again in ${Math.ceil((rateLimit.resetAt.getTime() - Date.now()) / 60000)} minutes`,
+        retry_after: rateLimit.resetAt.toISOString()
+      })
+      return
+    }
 
     // Resolve services from container
     const authService = req.scope.resolve<IAuthModuleService>('authModuleService')

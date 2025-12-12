@@ -2,13 +2,13 @@
 
 **Objective:** Integrate the authentication system with Medusa's built-in User/Customer modules and database.
 
-**Status:** ✅ Complete (Backend authentication fully integrated with database and Redis)
+**Status:** ✅ Complete (Backend authentication fully integrated with database, Redis, and business rules)
 
 ---
 
 ## 🎯 Progress Summary
 
-### ✅ Completed (as of 2025-12-11)
+### ✅ Completed (as of 2025-12-12)
 
 **Phase 3.1 - Database Schema Extensions:**
 - Extended `user` table with 7 custom columns (role, email_verified, failed_login_attempts, locked_until, last_login_at, seller_id)
@@ -35,6 +35,14 @@
 - `/api/auth/refresh` - Validates tokens against Redis before refreshing
 - `/api/auth/logout` - Revokes refresh tokens from Redis
 - `/api/auth/reset-password` - Revokes all user tokens on password change
+
+**Phase 3.5 - Business Rules Integration:**
+- Integrated RateLimiter service into authentication endpoints
+- `/api/auth/login` - Max 5 attempts per 15 minutes per email
+- `/api/auth/forgot-password` - Max 3 requests per hour per email
+- `/api/auth/reset-password` - Max 5 attempts per hour per token
+- Created comprehensive business rules test suite (30 tests) ✅
+- All business rules services ready: RateLimiter, PayoutEligibility, CommissionCalculator, SellerRiskScorer
 
 ### ⏳ Pending
 
@@ -422,8 +430,10 @@ Phase 2.5 implemented in-memory authentication. Here's how we migrate:
 **Phase 3 Goal:** Fully integrate authentication with Medusa's built-in modules and database.
 
 **Success Criteria:**
-- All authentication flows use database (no in-memory storage)
-- All 106 Phase 2.5 tests still pass
-- Integration tests with database pass
-- Redis stores refresh tokens
-- Email verification and password reset work with database
+- ✅ All authentication flows use database (no in-memory storage)
+- ✅ All 106 Phase 2.5 tests still pass (now 155 tests passing)
+- ✅ Integration tests with database pass
+- ✅ Redis stores refresh tokens
+- ✅ Email verification and password reset work with database
+- ✅ Rate limiting integrated to prevent abuse
+- ✅ Business rules framework ready for seller features

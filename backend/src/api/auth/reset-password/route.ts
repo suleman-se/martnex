@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { validatePassword } from '../../../auth/password'
 import { ACCOUNT_MODULE } from '../../../modules/account'
 import { getRedisTokenStore } from '../../../lib/redis-token-store'
+import { RateLimiter } from '../../../services/business-rules'
 import type { IAuthModuleService } from '@medusajs/framework/types'
 
 const resetPasswordSchema = z.object({
@@ -21,6 +22,20 @@ export async function POST(
 ): Promise<void> {
   try {
     const { token, password } = resetPasswordSchema.parse(req.body)
+
+    // Rate limiting: Max 5 password reset attempts per hour per token
+    // This prevents brute force attacks on the reset token
+    const rateLimitKey = `reset-password:${token.substring(0, 8)}` // Use first 8 chars to avoid storing full token
+    const rateLimit = RateLimiter.checkLimit(rateLimitKey, 5, 3600) // 3600 seconds = 1 hour
+
+    if (!rateLimit.allowed) {
+      res.status(429).json({
+        message: 'Too many password reset attempts',
+        error: `Please try again in ${Math.ceil((rateLimit.resetAt.getTime() - Date.now()) / 60000)} minutes`,
+        retry_after: rateLimit.resetAt.toISOString()
+      })
+      return
+    }
 
     // Validate password strength
     const passwordValidation = validatePassword(password)

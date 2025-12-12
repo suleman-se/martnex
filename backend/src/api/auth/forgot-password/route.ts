@@ -6,6 +6,7 @@
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from 'zod'
 import { ACCOUNT_MODULE } from '../../../modules/account'
+import { RateLimiter } from '../../../services/business-rules'
 import type { ICustomerModuleService } from '@medusajs/framework/types'
 
 const forgotPasswordSchema = z.object({
@@ -18,6 +19,19 @@ export async function POST(
 ): Promise<void> {
   try {
     const { email } = forgotPasswordSchema.parse(req.body)
+
+    // Rate limiting: Max 3 password reset requests per hour per email
+    const rateLimitKey = `forgot-password:${email}`
+    const rateLimit = RateLimiter.checkLimit(rateLimitKey, 3, 3600) // 3600 seconds = 1 hour
+
+    if (!rateLimit.allowed) {
+      res.status(429).json({
+        message: 'Too many password reset requests',
+        error: `Please try again in ${Math.ceil((rateLimit.resetAt.getTime() - Date.now()) / 60000)} minutes`,
+        retry_after: rateLimit.resetAt.toISOString()
+      })
+      return
+    }
 
     // Resolve services from container
     const accountService = req.scope.resolve(ACCOUNT_MODULE)
