@@ -243,14 +243,14 @@ class RedisTokenStore {
 - [x] Run migrations
 - [x] Verify tables created in PostgreSQL
 
-### Task 4: Update Backend Authentication Endpoints ✅ (Partial - Redis pending)
+### Task 4: Update Backend Authentication Endpoints ✅
 - [x] Update `/api/auth/register` to use Account module
 - [x] Update `/api/auth/login` to use Medusa Auth + Account module
 - [x] Update `/api/auth/verify-email` to use database tokens
 - [x] Update `/api/auth/forgot-password` to use database tokens
 - [x] Update `/api/auth/reset-password` to use database tokens
-- [ ] Update `/api/auth/refresh` to use Redis (TODO: Next phase)
-- [ ] Update `/api/auth/logout` to revoke Redis tokens (TODO: Next phase)
+- [x] Update `/api/auth/refresh` to use Redis
+- [x] Update `/api/auth/logout` to revoke Redis tokens
 
 ### Task 5: Update Frontend Authentication Pages
 - [ ] Update registration page to handle database errors
@@ -261,22 +261,24 @@ class RedisTokenStore {
 - [ ] Add error handling for network failures
 - [ ] Update auth context to handle database sessions
 
-### Task 6: Redis Integration
-- [ ] Create RedisTokenStore class
-- [ ] Implement token storage methods
-- [ ] Update refresh endpoint to use Redis
-- [ ] Add token revocation on logout
-- [ ] Add tests for Redis token store
+### Task 6: Redis Integration ✅
+- [x] Create RedisTokenStore class
+- [x] Implement token storage methods
+- [x] Update refresh endpoint to use Redis
+- [x] Add token revocation on logout
+- [x] Add tests for Redis token store
 
 ### Task 7: Testing (Backend + Frontend)
 
-**Backend Tests:**
-- [ ] Update unit tests for Account module
-- [ ] Write integration tests for auth endpoints with database
-- [ ] Test email verification flow (backend)
-- [ ] Test password reset flow (backend)
-- [ ] Test account locking after failed attempts
-- [ ] Test token refresh with Redis
+**Backend Tests:** ✅
+- [x] Update unit tests for Account module (19 tests)
+- [x] Write integration tests for auth endpoints with database (28 tests)
+- [x] Test email verification flow (backend)
+- [x] Test password reset flow (backend)
+- [x] Test account locking after failed attempts
+- [x] Test token refresh with Redis
+- [x] Test business rules (30 tests)
+- [x] **Total: 155 tests passing**
 - [ ] Test logout token revocation
 
 **Frontend Tests:**
