@@ -4,11 +4,17 @@
  */
 
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
+import type AccountModuleService from '../../../modules/account/service'
 import { z } from 'zod'
+import type AccountModuleService from '../../../modules/account/service'
 import { validatePassword } from '../../../auth/password'
+import type AccountModuleService from '../../../modules/account/service'
 import { ACCOUNT_MODULE } from '../../../modules/account'
+import type AccountModuleService from '../../../modules/account/service'
 import type { IAuthModuleService } from '@medusajs/framework/types'
+import type AccountModuleService from '../../../modules/account/service'
 import type { ICustomerModuleService } from '@medusajs/framework/types'
+import type AccountModuleService from '../../../modules/account/service'
 
 const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -38,7 +44,7 @@ export async function POST(
     // Resolve services from container
     const authService = req.scope.resolve<IAuthModuleService>('authModuleService')
     const customerService = req.scope.resolve<ICustomerModuleService>('customerModuleService')
-    const accountService = req.scope.resolve(ACCOUNT_MODULE)
+    const accountService = req.scope.resolve<AccountModuleService>(ACCOUNT_MODULE)
 
     // Check if user already exists
     const existingCustomers = await customerService.listCustomers({

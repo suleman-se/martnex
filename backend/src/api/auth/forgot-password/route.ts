@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { ACCOUNT_MODULE } from '../../../modules/account'
 import { RateLimiter } from '../../../services/business-rules'
 import type { ICustomerModuleService } from '@medusajs/framework/types'
+import type AccountModuleService from '../../../modules/account/service'
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address')
@@ -34,7 +35,7 @@ export async function POST(
     }
 
     // Resolve services from container
-    const accountService = req.scope.resolve(ACCOUNT_MODULE)
+    const accountService = req.scope.resolve<AccountModuleService>(ACCOUNT_MODULE)
     const customerService = req.scope.resolve<ICustomerModuleService>('customerModuleService')
 
     // Check if customer exists with this email

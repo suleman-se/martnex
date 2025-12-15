@@ -4,9 +4,13 @@
  */
 
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
+import type AccountModuleService from '../../../modules/account/service'
 import { z } from 'zod'
+import type AccountModuleService from '../../../modules/account/service'
 import { ACCOUNT_MODULE } from '../../../modules/account'
+import type AccountModuleService from '../../../modules/account/service'
 import type { ICustomerModuleService } from '@medusajs/framework/types'
+import type AccountModuleService from '../../../modules/account/service'
 
 const verifyEmailSchema = z.object({
   token: z.string().min(1, 'Verification token is required')
@@ -20,7 +24,7 @@ export async function POST(
     const { token } = verifyEmailSchema.parse(req.body)
 
     // Resolve services from container
-    const accountService = req.scope.resolve(ACCOUNT_MODULE)
+    const accountService = req.scope.resolve<AccountModuleService>(ACCOUNT_MODULE)
     const customerService = req.scope.resolve<ICustomerModuleService>('customerModuleService')
 
     // Verify the email token using Account module
