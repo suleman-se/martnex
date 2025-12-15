@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
@@ -8,6 +10,20 @@ export default function Home() {
         <p className="text-xl text-center text-gray-600 mb-8">
           Next-Generation Multi-Vendor Marketplace Platform
         </p>
+        <div className="flex justify-center gap-4 mb-12">
+          <Link
+            href="/login"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+          >
+            Sign In
+          </Link>
+          <Link
+            href="/register"
+            className="px-6 py-3 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-semibold"
+          >
+            Get Started
+          </Link>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
           <div className="p-6 border rounded-lg hover:shadow-lg transition-shadow">
             <h2 className="text-2xl font-semibold mb-2">For Buyers</h2>
