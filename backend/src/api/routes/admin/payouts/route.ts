@@ -8,7 +8,8 @@
  */
 
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { PAYOUT_MODULE } from "../../../modules/payout"
+import { PAYOUT_MODULE } from "../../../../modules/payout"
+import type PayoutModuleService from "../../../../modules/payout/service"
 
 /**
  * GET /admin/payouts
@@ -21,8 +22,8 @@ import { PAYOUT_MODULE } from "../../../modules/payout"
  * - limit: number (default: 20)
  */
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  const payoutService = req.scope.resolve(PAYOUT_MODULE)
-  const { status, seller_id, page = 1, limit = 20 } = req.query
+  const payoutService = req.scope.resolve<PayoutModuleService>(PAYOUT_MODULE)
+  const { status, seller_id, page = 1, limit = 20 } = req.query as { status?: string; seller_id?: string; page?: number; limit?: number }
 
   try {
     const filters: any = {}

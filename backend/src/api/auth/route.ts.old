@@ -154,7 +154,7 @@ async function handleRegister(
     if (error instanceof z.ZodError) {
       res.status(400).json({
         message: 'Validation failed',
-        errors: error.errors
+        errors: error.issues
       })
       return
     }
@@ -231,7 +231,7 @@ async function handleLogin(
     if (error instanceof z.ZodError) {
       res.status(400).json({
         message: 'Validation failed',
-        errors: error.errors
+        errors: error.issues
       })
       return
     }
@@ -294,7 +294,7 @@ async function handleRefresh(
     if (error instanceof z.ZodError) {
       res.status(400).json({
         message: 'Validation failed',
-        errors: error.errors
+        errors: error.issues
       })
       return
     }
@@ -357,7 +357,7 @@ async function handleVerifyEmail(
     if (error instanceof z.ZodError) {
       res.status(400).json({
         message: 'Validation failed',
-        errors: error.errors
+        errors: error.issues
       })
       return
     }
@@ -390,7 +390,7 @@ async function handleForgotPassword(
     if (error instanceof z.ZodError) {
       res.status(400).json({
         message: 'Validation failed',
-        errors: error.errors
+        errors: error.issues
       })
       return
     }
@@ -435,7 +435,7 @@ async function handleResetPassword(
     if (error instanceof z.ZodError) {
       res.status(400).json({
         message: 'Validation failed',
-        errors: error.errors
+        errors: error.issues
       })
       return
     }

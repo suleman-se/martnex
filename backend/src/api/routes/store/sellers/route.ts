@@ -7,7 +7,8 @@
  */
 
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { SELLER_MODULE } from "../../../modules/seller"
+import { SELLER_MODULE } from "../../../../modules/seller"
+import type SellerModuleService from "../../../../modules/seller/service"
 
 /**
  * GET /store/sellers
@@ -19,8 +20,8 @@ import { SELLER_MODULE } from "../../../modules/seller"
  * - search: string (search by business name)
  */
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  const sellerService = req.scope.resolve(SELLER_MODULE)
-  const { page = 1, limit = 20, search } = req.query
+  const sellerService = req.scope.resolve<SellerModuleService>(SELLER_MODULE)
+  const { page = 1, limit = 20, search } = req.query as { page?: number; limit?: number; search?: string }
 
   try {
     const filters: any = {
@@ -76,8 +77,8 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
  * }
  */
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
-  const sellerService = req.scope.resolve(SELLER_MODULE)
-  const { customer_id, business_name, business_email, ...restData } = req.body
+  const sellerService = req.scope.resolve<SellerModuleService>(SELLER_MODULE)
+  const { customer_id, business_name, business_email, ...restData } = req.body as { customer_id?: string; business_name?: string; business_email?: string; [key: string]: any }
 
   try {
     // Validation

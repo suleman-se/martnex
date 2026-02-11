@@ -7,9 +7,12 @@
  * - GET /store/payouts/:id - get payout details
  */
 
-import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { PAYOUT_MODULE } from "../../../modules/payout"
-import { COMMISSION_MODULE } from "../../../modules/commission"
+import type { MedusaResponse } from "@medusajs/framework/http"
+import { AuthenticatedRequest } from "../../../../middleware/authenticate"
+import { PAYOUT_MODULE } from "../../../../modules/payout"
+import type PayoutModuleService from "../../../../modules/payout/service"
+import { COMMISSION_MODULE } from "../../../../modules/commission"
+import type CommissionModuleService from "../../../../modules/commission/service"
 
 /**
  * GET /store/payouts
@@ -20,8 +23,8 @@ import { COMMISSION_MODULE } from "../../../modules/commission"
  * - page: number (default: 1)
  * - limit: number (default: 20)
  */
-export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  const payoutService = req.scope.resolve(PAYOUT_MODULE)
+export async function GET(req: AuthenticatedRequest, res: MedusaResponse) {
+  const payoutService = req.scope.resolve<PayoutModuleService>(PAYOUT_MODULE)
   const sellerId = req.auth_context?.seller_id
 
   if (!sellerId) {
@@ -30,7 +33,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     })
   }
 
-  const { status, page = 1, limit = 20 } = req.query
+  const { status, page = 1, limit = 20 } = req.query as { status?: string; page?: number; limit?: number }
 
   try {
     const filters: any = { seller_id: sellerId }
@@ -38,10 +41,10 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 
     const [payouts, count] = await Promise.all([
       payoutService.getSellerPayouts(sellerId, {
-        status: status as string | undefined,
+        status,
         skip: (Number(page) - 1) * Number(limit),
         take: Number(limit),
-      }),
+      } as any),
       payoutService.listAndCountPayouts({ filters }),
     ])
 
@@ -82,9 +85,9 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
  *   amount: number (total amount to payout)
  * }
  */
-export async function POST(req: MedusaRequest, res: MedusaResponse) {
-  const payoutService = req.scope.resolve(PAYOUT_MODULE)
-  const commissionService = req.scope.resolve(COMMISSION_MODULE)
+export async function POST(req: AuthenticatedRequest, res: MedusaResponse) {
+  const payoutService = req.scope.resolve<PayoutModuleService>(PAYOUT_MODULE)
+  const commissionService = req.scope.resolve<CommissionModuleService>(COMMISSION_MODULE)
   const sellerId = req.auth_context?.seller_id
 
   if (!sellerId) {
@@ -93,7 +96,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     })
   }
 
-  const { commission_ids, amount } = req.body
+  const { commission_ids, amount } = req.body as { commission_ids?: string[]; amount?: number }
 
   try {
     if (!commission_ids || !Array.isArray(commission_ids)) {

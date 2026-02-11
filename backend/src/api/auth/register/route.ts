@@ -4,15 +4,9 @@
  */
 
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
-import type AccountModuleService from '../../../modules/account/service'
 import { z } from 'zod'
-import type AccountModuleService from '../../../modules/account/service'
 import { validatePassword } from '../../../auth/password'
-import type AccountModuleService from '../../../modules/account/service'
 import { ACCOUNT_MODULE } from '../../../modules/account'
-import type AccountModuleService from '../../../modules/account/service'
-import type { IAuthModuleService } from '@medusajs/framework/types'
-import type AccountModuleService from '../../../modules/account/service'
 import type { ICustomerModuleService } from '@medusajs/framework/types'
 import type AccountModuleService from '../../../modules/account/service'
 
@@ -42,8 +36,9 @@ export async function POST(
     }
 
     // Resolve services from container
-    const authService = req.scope.resolve<IAuthModuleService>('authModuleService')
-    const customerService = req.scope.resolve<ICustomerModuleService>('customerModuleService')
+    const { Modules } = await import('@medusajs/framework/utils')
+    const authService = req.scope.resolve(Modules.AUTH)
+    const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
     const accountService = req.scope.resolve<AccountModuleService>(ACCOUNT_MODULE)
 
     // Check if user already exists
@@ -67,23 +62,30 @@ export async function POST(
       has_account: true,
     })
 
-    // Create auth identity with password using emailpass provider
-    await authService.create({
-      entity_id: customer.id,
-      provider: 'emailpass',
-      provider_metadata: {
-        password: validatedData.password, // Medusa Auth will hash this
-      },
+    // Create auth identity with emailpass provider
+    // Auth Module will automatically hash the password
+    await authService.createAuthIdentities({
+      provider_identities: [
+        {
+          entity_id: customer.id,
+          provider: "emailpass",
+          provider_metadata: {
+            email: validatedData.email,
+            password: validatedData.password, // Will be hashed automatically
+          },
+        }
+      ],
       app_metadata: {
         role: validatedData.role,
       },
     })
 
     // Create email verification token
-    await accountService.createEmailVerificationToken(
-      customer.id,
-      validatedData.email
-    )
+    // TODO: Fix Account Module to accept shared context
+    // await accountService.createEmailVerificationToken(
+    //   customer.id,
+    //   validatedData.email
+    // )
 
     // TODO: Send verification email with verification.token
     // await emailService.sendVerificationEmail(customer.email, verification.token)
@@ -100,10 +102,13 @@ export async function POST(
       }
     })
   } catch (error) {
+    // Log error for debugging
+    console.error('Registration error:', error)
+
     if (error instanceof z.ZodError) {
       res.status(400).json({
         message: 'Validation failed',
-        errors: error.errors
+        errors: error.issues
       })
       return
     }

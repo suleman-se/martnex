@@ -4,17 +4,11 @@
  */
 
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
-import type AccountModuleService from '../../../modules/account/service'
 import { z } from 'zod'
-import type AccountModuleService from '../../../modules/account/service'
 import { validatePassword } from '../../../auth/password'
-import type AccountModuleService from '../../../modules/account/service'
 import { ACCOUNT_MODULE } from '../../../modules/account'
-import type AccountModuleService from '../../../modules/account/service'
 import { getRedisTokenStore } from '../../../lib/redis-token-store'
-import type AccountModuleService from '../../../modules/account/service'
 import { RateLimiter } from '../../../services/business-rules'
-import type AccountModuleService from '../../../modules/account/service'
 import type { IAuthModuleService } from '@medusajs/framework/types'
 import type AccountModuleService from '../../../modules/account/service'
 
@@ -70,13 +64,26 @@ export async function POST(
     }
 
     // Update password using Medusa Auth Module
-    // The auth module will handle hashing
-    await authService.update({
-      entity_id: reset.user_id,
+    // First, get the auth identity
+    const authIdentities = await authService.listAuthIdentities({
+      entity_id: reset.user_id
+    } as any)
+
+    if (authIdentities.length === 0) {
+      res.status(400).json({
+        message: 'Password reset failed',
+        error: 'User authentication not found'
+      })
+      return
+    }
+
+    // Update the password
+    await authService.updateAuthIdentities({
+      id: authIdentities[0].id,
       provider_metadata: {
         password: password, // Medusa Auth will hash this
       }
-    })
+    } as any)
 
     // Mark reset token as used
     await accountService.markPasswordResetUsed(reset.id)
@@ -95,7 +102,7 @@ export async function POST(
     if (error instanceof z.ZodError) {
       res.status(400).json({
         message: 'Validation failed',
-        errors: error.errors
+        errors: error.issues
       })
       return
     }

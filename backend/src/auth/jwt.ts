@@ -60,7 +60,7 @@ export function generateAccessToken(payload: JWTPayload): string {
     expiresIn: expiry,
     issuer: 'martnex-api',
     audience: 'martnex-client'
-  })
+  } as jwt.SignOptions)
 }
 
 /**
@@ -76,7 +76,7 @@ export function generateRefreshToken(payload: RefreshTokenPayload): string {
     expiresIn: expiry,
     issuer: 'martnex-api',
     audience: 'martnex-client'
-  })
+  } as jwt.SignOptions)
 }
 
 /**

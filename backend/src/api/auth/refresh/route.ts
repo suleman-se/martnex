@@ -57,7 +57,7 @@ export async function POST(
     // Get role from auth_identity metadata
     const authIdentities = await authService.listAuthIdentities({
       entity_id: customer.id
-    })
+    } as any)
     const authIdentity = authIdentities[0]
     const role = authIdentity?.app_metadata?.role || 'buyer'
 
@@ -78,7 +78,7 @@ export async function POST(
     if (error instanceof z.ZodError) {
       res.status(400).json({
         message: 'Validation failed',
-        errors: error.errors
+        errors: error.issues
       })
       return
     }

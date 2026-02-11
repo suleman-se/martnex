@@ -38,7 +38,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
 
         try {
-          const response = await fetch(`${API_URL}/api/auth/login`, {
+          const response = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password }),
@@ -76,7 +76,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
 
         try {
-          const response = await fetch(`${API_URL}/api/auth/register`, {
+          const response = await fetch(`${API_URL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(registerData),
@@ -100,7 +100,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           const refreshToken = localStorage.getItem('refresh_token');
           if (refreshToken) {
-            await fetch(`${API_URL}/api/auth/logout`, {
+            await fetch(`${API_URL}/auth/logout`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ refresh_token: refreshToken }),
@@ -123,7 +123,7 @@ export const useAuthStore = create<AuthState>()(
             throw new Error('No refresh token');
           }
 
-          const response = await fetch(`${API_URL}/api/auth/refresh`, {
+          const response = await fetch(`${API_URL}/auth/refresh`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ refresh_token: refreshTokenValue }),

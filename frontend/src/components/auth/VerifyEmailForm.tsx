@@ -28,7 +28,7 @@ export default function VerifyEmailForm({ token }: VerifyEmailFormProps) {
 
     startTransition(async () => {
       try {
-        const response = await fetch(`${API_URL}/api/auth/verify-email`, {
+        const response = await fetch(`${API_URL}/auth/verify-email`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: verificationToken }),

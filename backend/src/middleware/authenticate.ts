@@ -10,9 +10,15 @@ import { extractTokenFromHeader, verifyAccessToken, JWTPayload } from '../auth/j
 
 /**
  * Extended request type with authenticated user information
+ *
+ * Merges our JWTPayload with Medusa's built-in user type
  */
 export interface AuthenticatedRequest extends MedusaRequest {
-  user?: JWTPayload
+  user?: JWTPayload & {
+    customer_id?: string
+    userId?: string
+  }
+  auth_context?: JWTPayload
 }
 
 /**

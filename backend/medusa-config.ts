@@ -14,10 +14,14 @@ module.exports = defineConfig({
     http: {
       storeCors: process.env.STORE_CORS || "http://localhost:3000",
       adminCors: process.env.ADMIN_CORS || "http://localhost:7001",
-      authCors: process.env.AUTH_CORS || "http://localhost:7001,http://localhost:9001",
+      authCors: process.env.AUTH_CORS || "http://localhost:7001,http://localhost:9001,http://localhost:3000",
       jwtSecret: process.env.JWT_SECRET || "supersecret",
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
     },
+  },
+  admin: {
+    // Disable the built-in admin dashboard (we're using API only)
+    disable: true,
   },
   modules: [
     // Redis event bus (required for Medusa v2)
@@ -35,6 +39,19 @@ module.exports = defineConfig({
       key: "cache_redis",
       options: {
         redisUrl: process.env.REDIS_URL
+      }
+    },
+
+    // Auth Module (required for authentication)
+    {
+      resolve: "@medusajs/auth",
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/auth-emailpass",
+            id: "emailpass",
+          }
+        ]
       }
     },
 

@@ -57,18 +57,19 @@ export async function POST(
     }
 
     // Check if account is locked
-    if (customer.locked_until && new Date(customer.locked_until) > new Date()) {
-      const minutesRemaining = Math.ceil((new Date(customer.locked_until).getTime() - Date.now()) / 60000)
+    const customerAny = customer as any
+    if (customerAny.locked_until && new Date(customerAny.locked_until) > new Date()) {
+      const minutesRemaining = Math.ceil((new Date(customerAny.locked_until).getTime() - Date.now()) / 60000)
       res.status(423).json({
         message: 'Account locked',
         error: `Too many failed login attempts. Please try again in ${minutesRemaining} minutes.`,
-        locked_until: customer.locked_until
+        locked_until: customerAny.locked_until
       })
       return
     }
 
     // Check email verification (optional - can be disabled for development)
-    if (customer.email_verified === false) {
+    if (customerAny.email_verified === false) {
       res.status(403).json({
         message: 'Email not verified',
         error: 'Please verify your email before logging in'
@@ -88,9 +89,8 @@ export async function POST(
     } catch (authError) {
       // Authentication failed - wrong password
       // Track failed login attempts and lock account after 5 attempts
-      const failedAttempts = (customer.failed_login_attempts || 0) + 1
+      const failedAttempts = (customerAny.failed_login_attempts || 0) + 1
       const updateData: any = {
-        id: customer.id,
         failed_login_attempts: failedAttempts
       }
 
@@ -101,7 +101,7 @@ export async function POST(
         updateData.locked_until = lockUntil
       }
 
-      await customerService.updateCustomers(updateData)
+      await customerService.updateCustomers(customer.id, updateData as any)
 
       res.status(401).json({
         message: 'Invalid credentials',
@@ -140,12 +140,11 @@ export async function POST(
     await tokenStore.storeRefreshToken(customer.id, tokenId, 604800) // 7 days in seconds
 
     // Reset failed login attempts and update last_login_at on successful login
-    await customerService.updateCustomers({
-      id: customer.id,
+    await customerService.updateCustomers(customer.id, {
       failed_login_attempts: 0,
       locked_until: null,
       last_login_at: new Date()
-    })
+    } as any)
 
     res.status(200).json({
       message: 'Login successful',
@@ -163,7 +162,7 @@ export async function POST(
     if (error instanceof z.ZodError) {
       res.status(400).json({
         message: 'Validation failed',
-        errors: error.errors
+        errors: error.issues
       })
       return
     }
