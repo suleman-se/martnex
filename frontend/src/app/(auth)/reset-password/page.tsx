@@ -13,18 +13,18 @@ export default async function ResetPasswordPage({
   const resolvedParams = await searchParams;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900">Martnex</h1>
-          <h2 className="mt-6 text-3xl font-semibold text-gray-900">Create new password</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Enter your new password below
-          </p>
-        </div>
-
-        <ResetPasswordForm token={resolvedParams.token} />
+    <div className="w-full space-y-8 animate-in fade-in duration-500">
+      <div className="text-center">
+        <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">
+          Martnex
+        </h1>
+        <h2 className="mt-4 text-2xl font-semibold text-white">Create new password</h2>
+        <p className="mt-2 text-sm text-slate-400">
+          Enter your new password below
+        </p>
       </div>
+
+      <ResetPasswordForm token={resolvedParams.token} />
     </div>
   );
 }

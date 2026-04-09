@@ -65,12 +65,13 @@ export async function POST(
     }
 
     // Update password using Medusa Auth Module
-    // First, get the auth identity
-    const authIdentities = await authService.listAuthIdentities({
-      entity_id: reset.user_id
+    // First, get the provider identity linked to this customer
+    const providerIdentities = await authService.listProviderIdentities({
+      entity_id: reset.user_id,
+      provider: "emailpass"
     } as any)
 
-    if (authIdentities.length === 0) {
+    if (providerIdentities.length === 0) {
       res.status(400).json({
         message: 'Password reset failed',
         error: 'User authentication not found'
@@ -78,11 +79,12 @@ export async function POST(
       return
     }
 
-    // Update the password
-    await authService.updateAuthIdentities({
-      id: authIdentities[0].id,
+    // Update the password inside the provider metadata
+    await authService.updateProviderIdentities({
+      id: providerIdentities[0].id,
       provider_metadata: {
-        password: password, // Medusa Auth will hash this
+        email: providerIdentities[0].provider_metadata?.email,
+        password: password, // Medusa emailpass provider will automatically hash this
       }
     } as any)
 

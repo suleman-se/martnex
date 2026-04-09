@@ -14,37 +14,37 @@ export default async function LoginPage({
   const resolvedParams = await searchParams;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900">Martnex</h1>
-          <h2 className="mt-6 text-3xl font-semibold text-gray-900">Sign in to your account</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Welcome back to our marketplace
-          </p>
+    <div className="w-full space-y-8 animate-in fade-in duration-500">
+      <div className="text-center">
+        <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">
+          Martnex
+        </h1>
+        <h2 className="mt-4 text-2xl font-semibold text-white">Sign in to your account</h2>
+        <p className="mt-2 text-sm text-slate-400">
+          Welcome back to our marketplace
+        </p>
+      </div>
+
+      {resolvedParams.message && (
+        <div className="bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 px-4 py-3 rounded-lg text-sm backdrop-blur-sm">
+          {resolvedParams.message}
         </div>
+      )}
 
-        {resolvedParams.message && (
-          <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded text-sm">
-            {resolvedParams.message}
-          </div>
-        )}
+      <LoginForm />
 
-        <LoginForm />
-
-        <div className="flex items-center justify-between text-sm">
-          <Link
-            href="/forgot-password"
-            className="font-medium text-blue-600 hover:text-blue-500"
-          >
-            Forgot password?
+      <div className="flex items-center justify-between text-sm mt-6">
+        <Link
+          href="/forgot-password"
+          className="font-medium text-purple-400 hover:text-purple-300 transition-colors"
+        >
+          Forgot password?
+        </Link>
+        <div>
+          <span className="text-slate-400">Don't have an account? </span>
+          <Link href="/register" className="font-medium text-cyan-400 hover:text-cyan-300 transition-colors">
+            Sign up
           </Link>
-          <div>
-            <span className="text-gray-600">Don't have an account? </span>
-            <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              Sign up
-            </Link>
-          </div>
         </div>
       </div>
     </div>
