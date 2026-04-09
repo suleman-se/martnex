@@ -62,21 +62,21 @@ This is a modular implementation guide for building Martnex incrementally. As an
 
 ### Role-Based Authentication
 
-- [ ] Extend Medusa user model for roles (buyer/seller/admin)
-- [ ] Implement seller registration flow
-- [ ] Create role-based middleware
-- [ ] Set up JWT configuration
-- [ ] Implement email verification
-- [ ] Create password reset flow
+- [x] Extend Medusa user model for roles (buyer/seller/admin)
+- [x] Implement seller registration flow
+- [x] Create role-based middleware
+- [x] Set up JWT configuration
+- [x] Implement email verification
+- [x] Create password reset flow
 
 ### API Foundation
 
-- [ ] Plan custom API endpoints
-- [ ] Set up API route structure
-- [ ] Create base services for custom logic
-- [ ] Implement error handling
-- [ ] Set up API validation (Zod)
-- [ ] Create API documentation structure
+- [x] Plan custom API endpoints
+- [x] Set up API route structure
+- [x] Create base services for custom logic
+- [x] Implement error handling
+- [x] Set up API validation (Zod)
+- [x] Create API documentation structure
 
 **Milestone:** Extended database schema + Role-based auth working + Custom API foundation
 

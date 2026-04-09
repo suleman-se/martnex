@@ -421,6 +421,7 @@ The core unique feature of Martnex is the commission system:
 7. **Don't over-optimize early** - Make it work, then make it fast
 8. **Don't create files unnecessarily** - Prefer editing existing files
 9. **Don't mistake Auth Tokens payload architecture** - Access tokens are returned at the root of `data.data`, not nested in `data.data.tokens`.
+10. **Don't query AuthIdentity by entity_id directly in Medusa v2** - In Medusa v2, `entity_id` was decoupled from the root `AuthIdentity` object and shifted into the nested `ProviderIdentity` scope (e.g. emailpass). Always query using `listProviderIdentities({ entity_id })` instead.
 
 ## Resources
 
