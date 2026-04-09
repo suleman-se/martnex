@@ -7,6 +7,7 @@ import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from 'zod'
 import { validatePassword } from '../../../auth/password'
 import { ACCOUNT_MODULE } from '../../../modules/account'
+import { emailService } from '../../../services/email'
 import type { ICustomerModuleService } from '@medusajs/framework/types'
 import type AccountModuleService from '../../../modules/account/service'
 
@@ -81,14 +82,13 @@ export async function POST(
     })
 
     // Create email verification token
-    // TODO: Fix Account Module to accept shared context
-    // await accountService.createEmailVerificationToken(
-    //   customer.id,
-    //   validatedData.email
-    // )
+    const verification = await accountService.createEmailVerificationToken(
+      customer.id,
+      validatedData.email
+    )
 
-    // TODO: Send verification email with verification.token
-    // await emailService.sendVerificationEmail(customer.email, verification.token)
+    // Send verification email
+    await emailService.sendVerificationEmail(customer.email, verification.token, validatedData.first_name)
 
     res.status(201).json({
       message: 'User registered successfully. Please check your email to verify your account.',

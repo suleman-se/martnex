@@ -304,7 +304,7 @@ const setupTokenRefresh = () => {
 - [ ] Verify no console errors
 
 **Future Enhancements:**
-- [ ] Email service integration (actually send emails)
+- [x] Email service integration (actually send emails)
 - [ ] E2E tests with Playwright
 - [ ] Accessibility (a11y) improvements
 - [ ] Integration tests

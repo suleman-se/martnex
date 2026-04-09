@@ -18,7 +18,8 @@ export interface LoginResponse {
   message: string;
   data: {
     user: User;
-    tokens: AuthTokens;
+    access_token: string;
+    refresh_token: string;
   };
 }
 

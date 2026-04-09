@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User, LoginResponse, RegisterResponse, ApiError } from '@/types/auth';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000';
 
 interface AuthState {
   user: User | null;
@@ -52,14 +52,14 @@ export const useAuthStore = create<AuthState>()(
           const data: LoginResponse = await response.json();
 
           // Store tokens in localStorage
-          localStorage.setItem('access_token', data.data.tokens.access_token);
-          localStorage.setItem('refresh_token', data.data.tokens.refresh_token);
+          localStorage.setItem('access_token', data.data.access_token);
+          localStorage.setItem('refresh_token', data.data.refresh_token);
 
           // Set user
           set({
             user: data.data.user,
             isAuthenticated: true,
-            isLoading: false
+            isLoading: false,
           });
 
           // Setup auto-refresh (14 minutes - 1 minute before expiration)
@@ -136,8 +136,8 @@ export const useAuthStore = create<AuthState>()(
           const data: LoginResponse = await response.json();
 
           // Update tokens
-          localStorage.setItem('access_token', data.data.tokens.access_token);
-          localStorage.setItem('refresh_token', data.data.tokens.refresh_token);
+          localStorage.setItem('access_token', data.data.access_token);
+          localStorage.setItem('refresh_token', data.data.refresh_token);
 
           // Update user
           set({ user: data.data.user, isAuthenticated: true });

@@ -5,11 +5,13 @@ export const metadata = {
   description: 'Create a new password',
 };
 
-export default function ResetPasswordPage({
+export default async function ResetPasswordPage({
   searchParams,
 }: {
-  searchParams: { token?: string };
+  searchParams: Promise<{ token?: string }>;
 }) {
+  const resolvedParams = await searchParams;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
       <div className="max-w-md w-full space-y-8">
@@ -21,7 +23,7 @@ export default function ResetPasswordPage({
           </p>
         </div>
 
-        <ResetPasswordForm token={searchParams.token} />
+        <ResetPasswordForm token={resolvedParams.token} />
       </div>
     </div>
   );

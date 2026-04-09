@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { ACCOUNT_MODULE } from '../../../modules/account'
 import type { ICustomerModuleService } from '@medusajs/framework/types'
 import type AccountModuleService from '../../../modules/account/service'
+import { Modules } from '@medusajs/framework/utils'
 
 const verifyEmailSchema = z.object({
   token: z.string().min(1, 'Verification token is required')
@@ -22,7 +23,7 @@ export async function POST(
 
     // Resolve services from container
     const accountService = req.scope.resolve<AccountModuleService>(ACCOUNT_MODULE)
-    const customerService = req.scope.resolve<ICustomerModuleService>('customerModuleService')
+    const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
 
     // Verify the email token using Account module
     const verification = await accountService.verifyEmailToken(token)

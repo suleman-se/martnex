@@ -11,6 +11,7 @@ import { getRedisTokenStore } from '../../../lib/redis-token-store'
 import { RateLimiter } from '../../../services/business-rules'
 import type { IAuthModuleService } from '@medusajs/framework/types'
 import type AccountModuleService from '../../../modules/account/service'
+import { Modules } from '@medusajs/framework/utils'
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1, 'Reset token is required'),
@@ -50,7 +51,7 @@ export async function POST(
 
     // Resolve services from container
     const accountService = req.scope.resolve<AccountModuleService>(ACCOUNT_MODULE)
-    const authService = req.scope.resolve<IAuthModuleService>('authModuleService')
+    const authService = req.scope.resolve<IAuthModuleService>(Modules.AUTH)
 
     // Verify the password reset token
     const reset = await accountService.verifyPasswordResetToken(token)

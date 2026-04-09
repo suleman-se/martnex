@@ -7,8 +7,10 @@ import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from 'zod'
 import { ACCOUNT_MODULE } from '../../../modules/account'
 import { RateLimiter } from '../../../services/business-rules'
+import { emailService } from '../../../services/email'
 import type { ICustomerModuleService } from '@medusajs/framework/types'
 import type AccountModuleService from '../../../modules/account/service'
+import { Modules } from '@medusajs/framework/utils'
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address')
@@ -36,7 +38,7 @@ export async function POST(
 
     // Resolve services from container
     const accountService = req.scope.resolve<AccountModuleService>(ACCOUNT_MODULE)
-    const customerService = req.scope.resolve<ICustomerModuleService>('customerModuleService')
+    const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
 
     // Check if customer exists with this email
     const customers = await customerService.listCustomers({ email })
@@ -44,13 +46,13 @@ export async function POST(
 
     if (customer) {
       // Create password reset token (15-minute expiration)
-      await accountService.createPasswordResetToken(
+      const resetToken = await accountService.createPasswordResetToken(
         customer.id,
         email
       )
 
-      // TODO: Send password reset email with resetToken.token
-      // await emailService.sendPasswordReset(customer.email, resetToken.token)
+      // Send password reset email
+      await emailService.sendPasswordResetEmail(customer.email, resetToken.token)
     }
 
     // Always return success to prevent email enumeration attacks

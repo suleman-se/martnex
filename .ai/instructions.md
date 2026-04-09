@@ -114,6 +114,7 @@ Note: Simple two-folder structure (no monorepo). Backend and frontend are indepe
 - Test edge cases and error scenarios
 - Use descriptive test names: `it('should calculate 10% commission on $100 order')`
 - Mock external services (Stripe, SendGrid, etc.)
+- **Playwright E2E Tests:** Run from the `frontend` directory using `npx playwright test`. Use auto-wait assertions like `await expect(page.locator(...)).toBeVisible()` instead of instantly executing `isVisible()` checks after network activities.
 
 ## File Organization
 
@@ -419,6 +420,7 @@ The core unique feature of Martnex is the commission system:
 6. **Don't ignore security** - Follow OWASP guidelines
 7. **Don't over-optimize early** - Make it work, then make it fast
 8. **Don't create files unnecessarily** - Prefer editing existing files
+9. **Don't mistake Auth Tokens payload architecture** - Access tokens are returned at the root of `data.data`, not nested in `data.data.tokens`.
 
 ## Resources
 
@@ -462,6 +464,7 @@ The core unique feature of Martnex is the commission system:
 ## Version History
 
 - **v1.0** - Initial AI instructions (2024-11-26)
+- **v1.1** - Phase 4 Authentication E2E and Playwright testing standards added (2026-04-09)
 
 ---
 

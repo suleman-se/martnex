@@ -6,11 +6,13 @@ export const metadata = {
   description: 'Sign in to your Martnex account',
 };
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { message?: string };
+  searchParams: Promise<{ message?: string }>;
 }) {
+  const resolvedParams = await searchParams;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
       <div className="max-w-md w-full space-y-8">
@@ -22,9 +24,9 @@ export default function LoginPage({
           </p>
         </div>
 
-        {searchParams.message && (
+        {resolvedParams.message && (
           <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded text-sm">
-            {searchParams.message}
+            {resolvedParams.message}
           </div>
         )}
 

@@ -9,8 +9,6 @@ import { generateAccessToken, generateRefreshToken } from '../../../auth/jwt'
 import { generateSecureToken } from '../../../auth/password'
 import { getRedisTokenStore } from '../../../lib/redis-token-store'
 import { RateLimiter } from '../../../services/business-rules'
-import type { IAuthModuleService } from '@medusajs/framework/types'
-import type { ICustomerModuleService } from '@medusajs/framework/types'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -37,9 +35,10 @@ export async function POST(
       return
     }
 
-    // Resolve services from container
-    const authService = req.scope.resolve<IAuthModuleService>('authModuleService')
-    const customerService = req.scope.resolve<ICustomerModuleService>('customerModuleService')
+    // Resolve services from container using Module constants
+    const { Modules } = await import('@medusajs/framework/utils')
+    const authService = req.scope.resolve(Modules.AUTH)
+    const customerService = req.scope.resolve(Modules.CUSTOMER)
 
     // Find customer by email
     const customers = await customerService.listCustomers({
@@ -78,14 +77,14 @@ export async function POST(
     }
 
     // Authenticate using Medusa Auth Module with emailpass provider
-    let authIdentity
+    let authResponse
     try {
-      authIdentity = await authService.authenticate('emailpass', {
+      authResponse = await authService.authenticate('emailpass', {
         body: {
           email,
           password,
         }
-      })
+      } as any)
     } catch (authError) {
       // Authentication failed - wrong password
       // Track failed login attempts and lock account after 5 attempts
@@ -114,8 +113,8 @@ export async function POST(
       return
     }
 
-    // Get role from auth identity metadata
-    const role = authIdentity.app_metadata?.role || 'buyer'
+    // Get role from auth identity metadata  
+    const role = (authResponse as any)?.app_metadata?.role || 'buyer'
 
     // Generate unique token ID for refresh token tracking
     const tokenId = generateSecureToken(16) // 32-character hex string

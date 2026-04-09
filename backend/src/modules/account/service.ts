@@ -53,9 +53,9 @@ class AccountModuleService extends MedusaService({
    * )
    * // Send email with: verification.token
    */
-  async createEmailVerificationToken(userId: string, email: string) {
+  async createEmailVerificationToken(userId: string, email: string, sharedContext?: any) {
     // Invalidate any existing verification tokens for this user
-    await this.invalidateEmailVerificationTokens(userId);
+    await this.invalidateEmailVerificationTokens(userId, sharedContext);
 
     // Generate cryptographically secure token
     const token = crypto.randomBytes(32).toString("hex");
@@ -64,12 +64,12 @@ class AccountModuleService extends MedusaService({
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);
 
-    return await this.createEmailVerifications({
+    return await this.createEmailVerifications([{
       user_id: userId,
       email,
       token,
       expires_at: expiresAt,
-    });
+    }], sharedContext).then(res => res[0]);
   }
 
   /**
@@ -87,7 +87,7 @@ class AccountModuleService extends MedusaService({
    */
   async verifyEmailToken(token: string) {
     const verifications = await this.listEmailVerifications({
-      filters: { token },
+      token,
     });
 
     const verification = verifications[0];
@@ -120,16 +120,18 @@ class AccountModuleService extends MedusaService({
    *
    * Called when creating new token or when user verifies email.
    */
-  async invalidateEmailVerificationTokens(userId: string) {
-    const verifications = await this.listEmailVerifications({
-      filters: { user_id: userId, used_at: null },
-    });
+  async invalidateEmailVerificationTokens(userId: string, sharedContext?: any) {
+    const verifications = await this.listEmailVerifications(
+      { user_id: userId, used_at: null },
+      undefined,
+      sharedContext
+    );
 
     for (const verification of verifications) {
-      await this.updateEmailVerifications({
+      await this.updateEmailVerifications([{
         id: verification.id,
         used_at: new Date(), // Mark as used to invalidate
-      });
+      }], sharedContext);
     }
   }
 
@@ -140,7 +142,8 @@ class AccountModuleService extends MedusaService({
    */
   async getPendingVerification(userId: string) {
     const verifications = await this.listEmailVerifications({
-      filters: { user_id: userId, used_at: null },
+      user_id: userId,
+      used_at: null,
     });
 
     // Find the first non-expired token
@@ -168,9 +171,9 @@ class AccountModuleService extends MedusaService({
    * )
    * // Send email with: reset.token
    */
-  async createPasswordResetToken(userId: string, email: string) {
+  async createPasswordResetToken(userId: string, email: string, sharedContext?: any) {
     // Invalidate any existing reset tokens for this user
-    await this.invalidatePasswordResetTokens(userId);
+    await this.invalidatePasswordResetTokens(userId, sharedContext);
 
     // Generate cryptographically secure token
     const token = crypto.randomBytes(32).toString("hex");
@@ -179,12 +182,12 @@ class AccountModuleService extends MedusaService({
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 15);
 
-    return await this.createPasswordResets({
+    return await this.createPasswordResets([{
       user_id: userId,
       email,
       token,
       expires_at: expiresAt,
-    });
+    }], sharedContext).then(res => res[0]);
   }
 
   /**
@@ -203,7 +206,7 @@ class AccountModuleService extends MedusaService({
    */
   async verifyPasswordResetToken(token: string) {
     const resets = await this.listPasswordResets({
-      filters: { token },
+      token,
     });
 
     const reset = resets[0];
@@ -242,16 +245,18 @@ class AccountModuleService extends MedusaService({
    *
    * Called when creating new token or when password is changed.
    */
-  async invalidatePasswordResetTokens(userId: string) {
-    const resets = await this.listPasswordResets({
-      filters: { user_id: userId, used_at: null },
-    });
+  async invalidatePasswordResetTokens(userId: string, sharedContext?: any) {
+    const resets = await this.listPasswordResets(
+      { user_id: userId, used_at: null },
+      undefined,
+      sharedContext
+    );
 
     for (const reset of resets) {
-      await this.updatePasswordResets({
+      await this.updatePasswordResets([{
         id: reset.id,
         used_at: new Date(), // Mark as used to invalidate
-      });
+      }], sharedContext);
     }
   }
 
