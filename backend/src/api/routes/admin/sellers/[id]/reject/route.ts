@@ -5,7 +5,8 @@
  */
 
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { SELLER_MODULE } from "../../../../modules/seller"
+import { SELLER_MODULE } from "../../../../../../modules/seller"
+import type SellerModuleService from "../../../../../../modules/seller/service"
 
 /**
  * POST /admin/sellers/:id/reject
@@ -18,8 +19,8 @@ import { SELLER_MODULE } from "../../../../modules/seller"
  */
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
   const { id } = req.params
-  const { reason } = req.body
-  const sellerService = req.scope.resolve(SELLER_MODULE)
+  const { reason } = req.body as { reason?: string }
+  const sellerService = req.scope.resolve<SellerModuleService>(SELLER_MODULE)
 
   try {
     if (!reason) {

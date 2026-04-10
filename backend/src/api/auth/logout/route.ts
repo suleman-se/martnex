@@ -33,7 +33,7 @@ export async function POST(
     if (error instanceof z.ZodError) {
       res.status(400).json({
         message: 'Validation failed',
-        errors: error.errors
+        errors: error.issues
       })
       return
     }

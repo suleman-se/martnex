@@ -10,6 +10,8 @@ import { ACCOUNT_MODULE } from '../../../modules/account'
 import { getRedisTokenStore } from '../../../lib/redis-token-store'
 import { RateLimiter } from '../../../services/business-rules'
 import type { IAuthModuleService } from '@medusajs/framework/types'
+import type AccountModuleService from '../../../modules/account/service'
+import { Modules } from '@medusajs/framework/utils'
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1, 'Reset token is required'),
@@ -48,8 +50,8 @@ export async function POST(
     }
 
     // Resolve services from container
-    const accountService = req.scope.resolve(ACCOUNT_MODULE)
-    const authService = req.scope.resolve<IAuthModuleService>('authModuleService')
+    const accountService = req.scope.resolve<AccountModuleService>(ACCOUNT_MODULE)
+    const authService = req.scope.resolve<IAuthModuleService>(Modules.AUTH)
 
     // Verify the password reset token
     const reset = await accountService.verifyPasswordResetToken(token)
@@ -63,13 +65,28 @@ export async function POST(
     }
 
     // Update password using Medusa Auth Module
-    // The auth module will handle hashing
-    await authService.update({
+    // First, get the provider identity linked to this customer
+    const providerIdentities = await authService.listProviderIdentities({
       entity_id: reset.user_id,
+      provider: "emailpass"
+    } as any)
+
+    if (providerIdentities.length === 0) {
+      res.status(400).json({
+        message: 'Password reset failed',
+        error: 'User authentication not found'
+      })
+      return
+    }
+
+    // Update the password inside the provider metadata
+    await authService.updateProviderIdentities({
+      id: providerIdentities[0].id,
       provider_metadata: {
-        password: password, // Medusa Auth will hash this
+        email: providerIdentities[0].provider_metadata?.email,
+        password: password, // Medusa emailpass provider will automatically hash this
       }
-    })
+    } as any)
 
     // Mark reset token as used
     await accountService.markPasswordResetUsed(reset.id)
@@ -88,7 +105,7 @@ export async function POST(
     if (error instanceof z.ZodError) {
       res.status(400).json({
         message: 'Validation failed',
-        errors: error.errors
+        errors: error.issues
       })
       return
     }

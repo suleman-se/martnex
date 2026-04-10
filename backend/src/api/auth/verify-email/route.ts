@@ -7,6 +7,8 @@ import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from 'zod'
 import { ACCOUNT_MODULE } from '../../../modules/account'
 import type { ICustomerModuleService } from '@medusajs/framework/types'
+import type AccountModuleService from '../../../modules/account/service'
+import { Modules } from '@medusajs/framework/utils'
 
 const verifyEmailSchema = z.object({
   token: z.string().min(1, 'Verification token is required')
@@ -20,8 +22,8 @@ export async function POST(
     const { token } = verifyEmailSchema.parse(req.body)
 
     // Resolve services from container
-    const accountService = req.scope.resolve(ACCOUNT_MODULE)
-    const customerService = req.scope.resolve<ICustomerModuleService>('customerModuleService')
+    const accountService = req.scope.resolve<AccountModuleService>(ACCOUNT_MODULE)
+    const customerService = req.scope.resolve<ICustomerModuleService>(Modules.CUSTOMER)
 
     // Verify the email token using Account module
     const verification = await accountService.verifyEmailToken(token)
@@ -35,11 +37,10 @@ export async function POST(
     }
 
     // Update customer email_verified field
-    await customerService.updateCustomers({
-      id: verification.user_id,
+    await customerService.updateCustomers(verification.user_id, {
       email_verified: true,
       email_verified_at: new Date()
-    })
+    } as any)
 
     res.status(200).json({
       message: 'Email verified successfully. You can now log in.',
@@ -52,7 +53,7 @@ export async function POST(
     if (error instanceof z.ZodError) {
       res.status(400).json({
         message: 'Validation failed',
-        errors: error.errors
+        errors: error.issues
       })
       return
     }

@@ -9,37 +9,106 @@ This document provides an overview of the Martnex API endpoints. As the project 
 
 ## Authentication
 
+Martnex uses **Medusa v2's built-in Auth Module** with JWT tokens for authentication.
+
 All authenticated requests require a JWT token in the Authorization header:
 
 ```
 Authorization: Bearer <your-jwt-token>
 ```
 
-### Obtaining a Token
+### User Registration
 
-**Login:**
+**Register a new account:**
 ```http
-POST /store/auth
+POST /auth/register
+Content-Type: application/json
+
+{
+  "first_name": "John",
+  "last_name": "Doe",
+  "email": "user@example.com",
+  "password": "SecurePass123!",
+  "role": "buyer"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "message": "User registered successfully. Please check your email to verify your account.",
+  "data": {
+    "user_id": "cus_01ABC123XYZ",
+    "email": "user@example.com",
+    "first_name": "John",
+    "last_name": "Doe",
+    "role": "buyer",
+    "email_verified": false
+  }
+}
+```
+
+### Login
+
+**Login with email and password:**
+```http
+POST /auth/login
 Content-Type: application/json
 
 {
   "email": "user@example.com",
-  "password": "password123"
+  "password": "SecurePass123!"
 }
 ```
 
-**Response:**
+**Response (200 OK):**
 ```json
 {
-  "customer": {
-    "id": "cus_123",
-    "email": "user@example.com",
-    "first_name": "John",
-    "last_name": "Doe"
-  },
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  "message": "Login successful",
+  "data": {
+    "user": {
+      "user_id": "cus_01ABC123XYZ",
+      "email": "user@example.com",
+      "role": "buyer"
+    },
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
 }
 ```
+
+### Using the Token
+
+Include the access token in all authenticated requests:
+
+```http
+GET /api/seller/products
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### Password Reset
+
+**Request password reset:**
+```http
+POST /auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "user@example.com"
+}
+```
+
+**Reset password with token:**
+```http
+POST /auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "reset_token_from_email",
+  "password": "NewSecurePass123!"
+}
+```
+
+**Note:** Passwords are automatically hashed using `scrypt-kdf` by Medusa's Auth Module.
 
 ## API Endpoints
 

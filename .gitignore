@@ -65,3 +65,5 @@ tmp/
 
 # Personal/Marketing files (not part of codebase)
 .personal
+playwright-report/
+test-results/

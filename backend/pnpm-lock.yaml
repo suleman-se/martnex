@@ -8,18 +8,30 @@ importers:
 
   .:
     dependencies:
+      '@medusajs/auth':
+        specifier: 2.12.1
+        version: 2.12.1(@medusajs/framework@2.12.1(@medusajs/cli@2.12.1(@types/node@22.19.1))(@types/node@22.19.1)(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)))
+      '@medusajs/auth-emailpass':
+        specifier: ^2.12.1
+        version: 2.12.1(@medusajs/framework@2.12.1(@medusajs/cli@2.12.1(@types/node@22.19.1))(@types/node@22.19.1)(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)))
       '@medusajs/caching-redis':
         specifier: ^2.12.1
         version: 2.12.1(@medusajs/framework@2.12.1(@medusajs/cli@2.12.1(@types/node@22.19.1))(@types/node@22.19.1)(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)))
       '@medusajs/cli':
         specifier: 2.12.1
         version: 2.12.1(@types/node@22.19.1)
+      '@medusajs/draft-order':
+        specifier: 2.12.1
+        version: 2.12.1(@medusajs/cli@2.12.1(@types/node@22.19.1))(@medusajs/framework@2.12.1(@medusajs/cli@2.12.1(@types/node@22.19.1))(@types/node@22.19.1)(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)))(@medusajs/icons@2.12.1(react@18.3.1))(@medusajs/test-utils@2.12.1)(@medusajs/ui@4.0.29(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3))(react-dom@18.3.1(react@18.3.1))(react-router-dom@6.20.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@medusajs/framework':
         specifier: ^2.12.1
         version: 2.12.1(@medusajs/cli@2.12.1(@types/node@22.19.1))(@types/node@22.19.1)(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7))
       '@medusajs/medusa':
         specifier: ^2.12.1
         version: 2.12.1(@medusajs/cli@2.12.1(@types/node@22.19.1))(@medusajs/framework@2.12.1(@medusajs/cli@2.12.1(@types/node@22.19.1))(@types/node@22.19.1)(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)))(@medusajs/icons@2.12.1(react@18.3.1))(@medusajs/test-utils@2.12.1)(@medusajs/ui@4.0.29(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3))(@types/node@22.19.1)(awilix@12.0.5)(picomatch@4.0.3)(posthog-node@5.14.1)(react-dom@18.3.1(react@18.3.1))(react-router-dom@6.20.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
+      '@medusajs/types':
+        specifier: ^2.12.1
+        version: 2.12.1(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7))
       '@medusajs/utils':
         specifier: ^2.12.1
         version: 2.12.1(@types/node@22.19.1)(express@4.21.2)
@@ -41,6 +53,9 @@ importers:
       express:
         specifier: ^4.21.2
         version: 4.21.2
+      ioredis:
+        specifier: ^5.8.2
+        version: 5.8.2
       jsonwebtoken:
         specifier: ^9.0.3
         version: 9.0.3
@@ -50,16 +65,19 @@ importers:
       redis:
         specifier: ^4.7.0
         version: 4.7.1
+      zod:
+        specifier: ^4.2.0
+        version: 4.2.0
     devDependencies:
       '@medusajs/test-utils':
         specifier: ^2.12.1
         version: 2.12.1(@medusajs/framework@2.12.1(@medusajs/cli@2.12.1(@types/node@22.19.1))(@types/node@22.19.1)(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7)))(@medusajs/medusa@2.12.1)
-      '@medusajs/types':
-        specifier: ^2.12.1
-        version: 2.12.1(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7))
       '@types/bcrypt':
         specifier: ^6.0.0
         version: 6.0.0
+      '@types/cors':
+        specifier: ^2.8.19
+        version: 2.8.19
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.5
@@ -3526,6 +3544,9 @@ packages:
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
 
+  '@types/cors@2.8.19':
+    resolution: {integrity: sha512-mFNylyeyqN93lfe/9CSxOGREz8cpzAhH+E93xJ4xWQf62V8sQ/24reV2nyzUWM6H6Xji+GGHpkbLe7pVoUEskg==}
+
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
@@ -6564,6 +6585,9 @@ packages:
 
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+
+  zod@4.2.0:
+    resolution: {integrity: sha512-Bd5fw9wlIhtqCCxotZgdTOMwGm1a0u75wARVEY9HMs1X17trvA/lMi4+MGK5EUfYkXVTbX8UDiDKW4OgzHVUZw==}
 
 snapshots:
 
@@ -11275,6 +11299,10 @@ snapshots:
     dependencies:
       '@types/node': 22.19.1
 
+  '@types/cors@2.8.19':
+    dependencies:
+      '@types/node': 22.19.1
+
   '@types/estree@1.0.8': {}
 
   '@types/express-serve-static-core@4.19.7':
@@ -14525,3 +14553,5 @@ snapshots:
       zod: 3.25.76
 
   zod@3.25.76: {}
+
+  zod@4.2.0: {}

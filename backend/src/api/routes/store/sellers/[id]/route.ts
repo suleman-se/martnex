@@ -6,7 +6,8 @@
  */
 
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { SELLER_MODULE } from "../../../../modules/seller"
+import { SELLER_MODULE } from "../../../../../modules/seller"
+import type SellerModuleService from "../../../../../modules/seller/service"
 
 /**
  * GET /store/sellers/:id
@@ -22,7 +23,7 @@ import { SELLER_MODULE } from "../../../../modules/seller"
  */
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const { id } = req.params
-  const sellerService = req.scope.resolve(SELLER_MODULE)
+  const sellerService = req.scope.resolve<SellerModuleService>(SELLER_MODULE)
 
   try {
     const seller = await sellerService.retrieveSeller(id)

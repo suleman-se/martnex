@@ -4,8 +4,10 @@
  * POST /admin/payouts/:id/cancel - cancel a payout
  */
 
-import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { PAYOUT_MODULE } from "../../../../modules/payout"
+import type { MedusaResponse } from "@medusajs/framework/http"
+import { AuthenticatedRequest } from "../../../../../../middleware/authenticate"
+import { PAYOUT_MODULE } from "../../../../../../modules/payout"
+import type PayoutModuleService from "../../../../../../modules/payout/service"
 
 /**
  * POST /admin/payouts/:id/cancel
@@ -16,10 +18,10 @@ import { PAYOUT_MODULE } from "../../../../modules/payout"
  *   reason: string (required - why was payout cancelled)
  * }
  */
-export async function POST(req: MedusaRequest, res: MedusaResponse) {
+export async function POST(req: AuthenticatedRequest, res: MedusaResponse) {
   const { id } = req.params
-  const { reason } = req.body
-  const payoutService = req.scope.resolve(PAYOUT_MODULE)
+  const { reason } = req.body as { reason?: string }
+  const payoutService = req.scope.resolve<PayoutModuleService>(PAYOUT_MODULE)
   const adminId = req.auth_context?.user_id
 
   if (!adminId) {

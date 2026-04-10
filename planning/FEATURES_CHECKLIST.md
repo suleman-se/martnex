@@ -151,7 +151,7 @@ Track all feature implementation progress here. Update status as features are co
 - 🔴 Evidence upload (images, documents)
 
 ### Notifications
-- 🔴 Email notifications setup (SendGrid/Mailgun)
+- 🟢 Email notifications setup (SendGrid/Mailgun)
 - 🔴 Order confirmation email
 - 🔴 Order status update email
 - 🔴 Shipping notification email

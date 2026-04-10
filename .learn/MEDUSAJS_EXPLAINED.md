@@ -3374,3 +3374,182 @@ docker exec -i martnex-postgres psql -U martnex -d martnex < backend/migrations/
 ---
 
 **Questions?** Check [Medusa Documentation](https://docs.medusajs.com) or ask!
+
+## Medusa v2 Auth Module Implementation (Phase 4: Feb 2026)
+
+### The Challenge
+
+After implementing custom modules in Phase 3, we encountered persistent errors during user registration:
+- **Error**: `Could not resolve 'authModuleService'`
+- **Root Cause**: Attempting to use Medusa's Auth Module without proper configuration
+
+### Key New Learnings
+
+#### 1. Auth Module Configuration Syntax
+
+**Correct Configuration**:
+```typescript
+// medusa-config.ts
+{
+  resolve: "@medusajs/auth",
+  options: {
+    providers: [
+      {
+        resolve: "@medusajs/auth-emailpass",
+        id: "emailpass",  // Provider has 'id'
+      }
+    ]
+  }
+  // ❌ NO 'id' or 'key' at module level
+}
+```
+
+**Common Mistake**: Adding `id: "auth"` at the module level causes compilation errors.
+
+---
+
+#### 2. Module Service Resolution with Constants
+
+**❌ WRONG - String Names Don't Work**:
+```typescript
+const customerService = req.scope.resolve('customerModuleService')  // Error!
+const authService = req.scope.resolve('authModuleService')  // Error!
+```
+
+**✅ CORRECT - Use Module Constants**:
+```typescript
+import { Modules } from '@medusajs/framework/utils'
+
+const authService = req.scope.resolve(Modules.AUTH)
+const customerService = req.scope.resolve(Modules.CUSTOMER)
+```
+
+**Why**: Medusa v2 uses dependency injection with registered constants, not string lookups.
+
+---
+
+#### 3. Auth Identity Creation API Structure
+
+**❌ WRONG - Flat Structure**:
+```typescript
+await authService.createAuthIdentities({
+  entity_id: customer.id,        // Error: property doesn't exist
+  provider: "emailpass",
+  // ...
+})
+```
+
+**✅ CORRECT - Nested with provider_identities Array**:
+```typescript
+await authService.createAuthIdentities({
+  provider_identities: [  // Must be an array
+    {
+      entity_id: customer.id,
+      provider: "emailpass",
+      provider_metadata: {
+        email: validatedData.email,
+        password: validatedData.password,  // Auto-hashed
+      },
+    }
+  ],
+  app_metadata: {
+    role: validatedData.role,
+  },
+})
+```
+
+**Why**: The Auth Module supports multiple authentication providers per identity.
+
+---
+
+#### 4. Automatic Password Hashing
+
+```typescript
+// ✅ No manual hashing needed!
+provider_metadata: {
+  email: validatedData.email,
+  password: validatedData.password,  // Plain text input
+}
+// Auth Module hashes it using scrypt-kdf automatically
+```
+
+**Storage**: Password hash stored in `provider_identity.provider_metadata` as JSON.
+
+---
+
+#### 5. Custom Module Context Requirements
+
+**Problem**: Custom modules using `MedusaService` need transaction context:
+
+```typescript
+// ❌ Fails with "Cannot read properties of undefined (reading 'fork')"
+await accountService.createEmailVerificationToken(userId, email)
+```
+
+**Cause**: `MedusaService` auto-generated methods use `@InjectManager()` decorator expecting `sharedContext`.
+
+**Solution**: Add optional context parameter to custom module methods:
+
+```typescript
+async createEmailVerificationToken(
+  userId: string,
+  email: string,
+  sharedContext?: Context  // Add this
+) {
+  // Implementation
+}
+```
+
+---
+
+### Database Schema Created by Auth Module
+
+**Tables**:
+1. **`auth_identity`** - Core authentication identity
+2. **`provider_identity`** - Provider-specific data (password hashes, OAuth tokens)
+
+**Relationship**:
+```
+customer.id → provider_identity.entity_id
+provider_identity.auth_identity_id → auth_identity.id
+```
+
+---
+
+### Common Errors & Quick Fixes
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `Could not resolve 'authModuleService'` | Auth Module not in config | Add to `medusa-config.ts` modules |
+| `Could not resolve 'customerModuleService'` | Using string instead of constant | Use `Modules.CUSTOMER` |
+| `Property 'create' does not exist` | Wrong method name | Use `createAuthIdentities()` |
+| `entity_id does not exist in CreateAuthIdentityDTO` | Wrong structure | Wrap in `provider_identities` array |
+| `Cannot read properties of undefined (reading 'fork')` | Missing shared context | Add `sharedContext?` param |
+
+---
+
+### Updated Best Practices
+
+**From Phase 4 Implementation**:
+
+1. ✅ **Use Medusa's Built-in Auth** - Don't build custom auth from scratch
+2. ✅ **Always Use Module Constants** - `Modules.AUTH`, `Modules.CUSTOMER`, etc.
+3. ✅ **Trust Auto-Generated Methods** - `MedusaService` provides CRUD for free
+4. ✅ **Include Shared Context** - For custom modules compatibility
+5. ✅ **Nested API Structures** - Auth Module uses `provider_identities` array
+6. ✅ **Let Framework Handle Hashing** - scrypt-kdf is automatic
+
+---
+
+### Documentation References
+
+For complete implementation guide, see: **[2.5_AUTH_SUMMARY.md](file:///Users/macair/Documents/Project/martnex/.learn/2.5_AUTH_SUMMARY.md)**
+
+**Official Medusa Docs**:
+- [Auth Module](https://docs.medusajs.com/v2/resources/commerce-modules/auth)
+- [emailpass Provider](https://docs.medusajs.com/v2/resources/commerce-modules/auth/auth-providers/emailpass)
+- [Customer Module](https://docs.medusajs.com/v2/resources/commerce-modules/customer)
+
+---
+
+**Last Updated**: February 11, 2026 - Phase 4 Auth Module Implementation

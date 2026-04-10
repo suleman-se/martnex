@@ -7,7 +7,8 @@
  */
 
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { COMMISSION_MODULE } from "../../../modules/commission"
+import { COMMISSION_MODULE } from "../../../../modules/commission"
+import type CommissionModuleService from "../../../../modules/commission/service"
 
 /**
  * GET /admin/commissions
@@ -21,8 +22,8 @@ import { COMMISSION_MODULE } from "../../../modules/commission"
  * - limit: number (default: 20)
  */
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  const commissionService = req.scope.resolve(COMMISSION_MODULE)
-  const { status, seller_id, order_id, page = 1, limit = 20 } = req.query
+  const commissionService = req.scope.resolve<CommissionModuleService>(COMMISSION_MODULE)
+  const { status, seller_id, order_id, page = 1, limit = 20 } = req.query as { status?: string; seller_id?: string; order_id?: string; page?: number; limit?: number }
 
   try {
     const filters: any = {}
@@ -78,8 +79,8 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
  */
 export async function PATCH(req: MedusaRequest, res: MedusaResponse) {
   const { id } = req.params
-  const { status } = req.body
-  const commissionService = req.scope.resolve(COMMISSION_MODULE)
+  const { status } = req.body as { status?: string }
+  const commissionService = req.scope.resolve<CommissionModuleService>(COMMISSION_MODULE)
 
   try {
     if (!status) {
@@ -88,16 +89,17 @@ export async function PATCH(req: MedusaRequest, res: MedusaResponse) {
       })
     }
 
-    const validStatuses = ["pending", "approved", "paid", "disputed", "cancelled"]
-    if (!validStatuses.includes(status)) {
+    const validStatuses = ["pending", "approved", "paid", "disputed", "cancelled"] as const
+    if (!validStatuses.includes(status as any)) {
       return res.status(400).json({
         error: "Invalid status",
         validStatuses,
       })
     }
 
-    const commission = await commissionService.updateCommissions(id, {
-      status,
+    const commission = await commissionService.updateCommissions({
+      id,
+      status: status as "pending" | "approved" | "paid" | "disputed" | "cancelled",
     })
 
     res.status(200).json({

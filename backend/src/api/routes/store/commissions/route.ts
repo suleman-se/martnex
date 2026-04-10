@@ -6,8 +6,10 @@
  * - GET /store/commissions/:id - get commission details
  */
 
-import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { COMMISSION_MODULE } from "../../../modules/commission"
+import type { MedusaResponse } from "@medusajs/framework/http"
+import { AuthenticatedRequest } from "../../../../middleware/authenticate"
+import { COMMISSION_MODULE } from "../../../../modules/commission"
+import type CommissionModuleService from "../../../../modules/commission/service"
 
 /**
  * GET /store/commissions
@@ -20,8 +22,8 @@ import { COMMISSION_MODULE } from "../../../modules/commission"
  * - fromDate: ISO date string
  * - toDate: ISO date string
  */
-export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  const commissionService = req.scope.resolve(COMMISSION_MODULE)
+export async function GET(req: AuthenticatedRequest, res: MedusaResponse) {
+  const commissionService = req.scope.resolve<CommissionModuleService>(COMMISSION_MODULE)
   const sellerId = req.auth_context?.seller_id // From middleware
 
   if (!sellerId) {
@@ -30,7 +32,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     })
   }
 
-  const { status, page = 1, limit = 20, fromDate, toDate } = req.query
+  const { status, page = 1, limit = 20, fromDate, toDate } = req.query as { status?: string; page?: number; limit?: number; fromDate?: string; toDate?: string }
 
   try {
     const filters: any = {

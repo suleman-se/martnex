@@ -10,7 +10,8 @@
  */
 
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { SELLER_MODULE } from "../../../modules/seller"
+import { SELLER_MODULE } from "../../../../modules/seller"
+import type SellerModuleService from "../../../../modules/seller/service"
 
 /**
  * GET /admin/sellers
@@ -22,8 +23,8 @@ import { SELLER_MODULE } from "../../../modules/seller"
  * - limit: number (default: 20)
  */
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  const sellerService = req.scope.resolve(SELLER_MODULE)
-  const { status, page = 1, limit = 20 } = req.query
+  const sellerService = req.scope.resolve<SellerModuleService>(SELLER_MODULE)
+  const { status, page = 1, limit = 20 } = req.query as { status?: string; page?: number; limit?: number }
 
   try {
     const filters: any = {}
@@ -64,11 +65,11 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
  */
 export async function PATCH(req: MedusaRequest, res: MedusaResponse) {
   const { id } = req.params
-  const sellerService = req.scope.resolve(SELLER_MODULE)
-  const updateData = req.body
+  const sellerService = req.scope.resolve<SellerModuleService>(SELLER_MODULE)
+  const updateData = req.body as Record<string, any>
 
   try {
-    const seller = await sellerService.updateSellers(id, updateData)
+    const seller = await sellerService.updateSellers({ id, ...updateData })
 
     res.status(200).json({
       message: "Seller updated successfully",

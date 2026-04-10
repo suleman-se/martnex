@@ -4,8 +4,10 @@
  * POST /admin/payouts/:id/approve - approve a payout
  */
 
-import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { PAYOUT_MODULE } from "../../../../modules/payout"
+import type { MedusaResponse } from "@medusajs/framework/http"
+import { AuthenticatedRequest } from "../../../../../../middleware/authenticate"
+import { PAYOUT_MODULE } from "../../../../../../modules/payout"
+import type PayoutModuleService from "../../../../../../modules/payout/service"
 
 /**
  * POST /admin/payouts/:id/approve
@@ -16,10 +18,10 @@ import { PAYOUT_MODULE } from "../../../../modules/payout"
  *   notes?: string
  * }
  */
-export async function POST(req: MedusaRequest, res: MedusaResponse) {
+export async function POST(req: AuthenticatedRequest, res: MedusaResponse) {
   const { id } = req.params
-  const { notes } = req.body
-  const payoutService = req.scope.resolve(PAYOUT_MODULE)
+  const { notes } = req.body as { notes?: string }
+  const payoutService = req.scope.resolve<PayoutModuleService>(PAYOUT_MODULE)
   const adminId = req.auth_context?.user_id // From middleware
 
   if (!adminId) {
