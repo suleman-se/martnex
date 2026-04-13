@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User, LoginResponse, RegisterResponse, ApiError } from '@/types/auth';
+import type { User, RegisterResponse, ApiError } from '@/types/auth';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9001';
+const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || '';
 
 interface AuthState {
   user: User | null;
@@ -13,8 +14,9 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<RegisterResponse>;
   logout: () => Promise<void>;
-  refreshToken: () => Promise<void>;
   setUser: (user: User | null) => void;
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
 }
 
 interface RegisterData {
@@ -31,41 +33,67 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       isLoading: false,
+      _hasHydrated: false,
 
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
       setUser: (user) => set({ user, isAuthenticated: !!user }),
 
       login: async (email: string, password: string) => {
         set({ isLoading: true });
 
         try {
-          const response = await fetch(`${API_URL}/auth/login`, {
+          // Medusa v2 native auth endpoint
+          const response = await fetch(`${API_URL}/auth/customer/emailpass`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password }),
           });
 
           if (!response.ok) {
-            const error: ApiError = await response.json();
-            throw new Error(error.error || error.message);
+            const error = await response.json();
+            throw new Error(error.message || 'Verification failed. Password incorrect or account does not exist.');
           }
 
-          const data: LoginResponse = await response.json();
+          const data = await response.json();
 
-          // Store tokens in localStorage
-          localStorage.setItem('access_token', data.data.access_token);
-          localStorage.setItem('refresh_token', data.data.refresh_token);
+          // Store native Medusa token
+          const token = data.token;
+          if (token) {
+            localStorage.setItem('access_token', token);
+          }
+
+          // Fetch customer details from Medusa
+          let userData: any = { user_id: 'unknown', email, role: 'buyer' };
+          
+          if (token) {
+            const meResponse = await fetch(`${API_URL}/store/customers/me`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'x-publishable-api-key': PUBLISHABLE_KEY,
+              }
+            });
+            
+            if (meResponse.ok) {
+              const meData = await meResponse.json();
+              if (meData.customer) {
+                userData = {
+                  user_id: meData.customer.id,
+                  email: meData.customer.email,
+                  role: 'buyer',
+                  first_name: meData.customer.first_name,
+                  last_name: meData.customer.last_name
+                };
+              }
+            }
+          }
 
           // Set user
           set({
-            user: data.data.user,
+            user: userData,
             isAuthenticated: true,
             isLoading: false,
           });
 
-          // Setup auto-refresh (14 minutes - 1 minute before expiration)
-          setTimeout(() => {
-            get().refreshToken();
-          }, 14 * 60 * 1000);
         } catch (error) {
           set({ isLoading: false });
           throw error;
@@ -84,7 +112,7 @@ export const useAuthStore = create<AuthState>()(
 
           if (!response.ok) {
             const error: ApiError = await response.json();
-            throw new Error(error.error || error.message);
+            throw new Error(error.message || 'Registration failed');
           }
 
           const data: RegisterResponse = await response.json();
@@ -98,12 +126,11 @@ export const useAuthStore = create<AuthState>()(
 
       logout: async () => {
         try {
-          const refreshToken = localStorage.getItem('refresh_token');
-          if (refreshToken) {
-            await fetch(`${API_URL}/auth/logout`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ refresh_token: refreshToken }),
+          const token = localStorage.getItem('access_token');
+          if (token) {
+            await fetch(`${API_URL}/auth/customer/emailpass`, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${token}` }
             });
           }
         } catch (error) {
@@ -111,53 +138,23 @@ export const useAuthStore = create<AuthState>()(
         } finally {
           // Clear local state
           localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          set({ user: null, isAuthenticated: false });
-        }
-      },
-
-      refreshToken: async () => {
-        try {
-          const refreshTokenValue = localStorage.getItem('refresh_token');
-          if (!refreshTokenValue) {
-            throw new Error('No refresh token');
-          }
-
-          const response = await fetch(`${API_URL}/auth/refresh`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ refresh_token: refreshTokenValue }),
-          });
-
-          if (!response.ok) {
-            throw new Error('Token refresh failed');
-          }
-
-          const data: LoginResponse = await response.json();
-
-          // Update tokens
-          localStorage.setItem('access_token', data.data.access_token);
-          localStorage.setItem('refresh_token', data.data.refresh_token);
-
-          // Update user
-          set({ user: data.data.user, isAuthenticated: true });
-
-          // Setup next refresh
-          setTimeout(() => {
-            get().refreshToken();
-          }, 14 * 60 * 1000);
-        } catch (error) {
-          console.error('Token refresh failed:', error);
-          // Clear tokens and user
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
           set({ user: null, isAuthenticated: false });
         }
       },
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
+      partialize: (state) => ({ 
+        user: state.user, 
+        isAuthenticated: state.isAuthenticated 
+      }),
+      onRehydrateStorage: () => {
+        return (state, error) => {
+          if (!error) {
+            state?.setHasHydrated(true);
+          }
+        };
+      },
     }
   )
 );

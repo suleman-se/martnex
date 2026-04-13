@@ -601,3 +601,48 @@ Cannot find module '@medusajs/framework/utils'
 ---
 
 **Ready to start testing!** 🚀
+
+---
+
+## 9️⃣ **End-to-End (E2E) Testing (Playwright)**
+
+We use [Playwright](https://playwright.dev/) for verifying full user journeys. This ensures that the frontend React components correctly interact with the Medusa v2 backend and the persistence layer.
+
+### **Testing Environment**
+E2E tests are designed to run against the **Docker-based development environment**.
+- **Frontend URL**: `http://localhost:3000`
+- **Backend API**: `http://localhost:9001`
+
+### **Stabilization Configuration**
+To ensure reliable tests in local development environments (where resource contention might occur), the [playwright.config.ts](../frontend/playwright.config.ts) is configured with:
+- `workers: 1`: Restricted to a single worker to prevent database locks and race conditions during concurrent authentication attempts.
+- `timeout: 60000ms`: Extended timeout to account for occasional backend latency during password hashing (scrypt).
+- `fullyParallel: false`: Sequential execution for maximum reliability.
+
+### **Running Tests**
+```bash
+cd frontend
+export PATH=$PATH:/usr/local/bin
+npx playwright test
+```
+
+To run a specific test file:
+```bash
+npx playwright test e2e/auth.spec.ts --reporter=list
+```
+
+### **Rate-Limit Bypass Strategy**
+The Medusa backend implements rate-limiting for auth tokens (e.g., 3 forgot-password requests per hour). To bypass this during development tests, our E2E journeys use a **randomized email/token strategy**:
+
+```typescript
+// Example from auth.spec.ts
+const uniqueEmail = `testuser_${Date.now()}@example.com`;
+const mockToken = `token_${Math.random().toString(36).substring(2, 10)}_${Date.now()}`;
+```
+Using a randomized value in the first 8 characters of the token ensuring every test run hits a unique rate-limit bucket.
+
+### **Verified Journeys**
+- **Complete User Journey**: Register → Automatic Redirect → Login → Dashboard.
+- **Refresh Persistence**: Verifies the session remains active after a full page reload (Hydration Guard).
+- **Guest-Only Protection**: Verifies that logged-in users are redirected away from `/login`.
+- **Password Reset Journey**: Request Reset → SQL token retrieval (via Script/DB) → Reset Password → Login.

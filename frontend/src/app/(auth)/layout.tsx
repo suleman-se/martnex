@@ -1,8 +1,34 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/lib/store/auth-store';
+
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const { isAuthenticated, _hasHydrated } = useAuthStore();
+
+  useEffect(() => {
+    if (_hasHydrated && isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [_hasHydrated, isAuthenticated, router]);
+
+  // Prevent rendering auth pages if user is already logged in or state is unknown
+  if (!_hasHydrated || isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0A0A0B]">
+        <div className="relative">
+          <div className="w-12 h-12 rounded-full border-2 border-cyan-500/20 border-t-cyan-500 animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen relative flex items-center justify-center overflow-hidden bg-[#0A0A0B] text-slate-100 font-sans selection:bg-cyan-500/30">
       {/* Animated Gradient Orbs */}

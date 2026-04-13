@@ -7,8 +7,7 @@
  * - GET /store/payouts/:id - get payout details
  */
 
-import type { MedusaResponse } from "@medusajs/framework/http"
-import { AuthenticatedRequest } from "../../../../middleware/authenticate"
+import type { MedusaResponse, MedusaRequest } from "@medusajs/framework/http"
 import { PAYOUT_MODULE } from "../../../../modules/payout"
 import type PayoutModuleService from "../../../../modules/payout/service"
 import { COMMISSION_MODULE } from "../../../../modules/commission"
@@ -23,9 +22,9 @@ import type CommissionModuleService from "../../../../modules/commission/service
  * - page: number (default: 1)
  * - limit: number (default: 20)
  */
-export async function GET(req: AuthenticatedRequest, res: MedusaResponse) {
+export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const payoutService = req.scope.resolve<PayoutModuleService>(PAYOUT_MODULE)
-  const sellerId = req.auth_context?.seller_id
+  const sellerId = (req as any).auth_context?.actor_id as string
 
   if (!sellerId) {
     return res.status(401).json({
@@ -85,10 +84,10 @@ export async function GET(req: AuthenticatedRequest, res: MedusaResponse) {
  *   amount: number (total amount to payout)
  * }
  */
-export async function POST(req: AuthenticatedRequest, res: MedusaResponse) {
+export async function POST(req: MedusaRequest, res: MedusaResponse) {
   const payoutService = req.scope.resolve<PayoutModuleService>(PAYOUT_MODULE)
   const commissionService = req.scope.resolve<CommissionModuleService>(COMMISSION_MODULE)
-  const sellerId = req.auth_context?.seller_id
+  const sellerId = (req as any).auth_context?.actor_id as string
 
   if (!sellerId) {
     return res.status(401).json({

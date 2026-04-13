@@ -13,5 +13,5 @@
 
 ### Frontend Integration & Styling
 5. **Dark Space Glassmorphism:** Overhauled all Next.js React templates associated with auth (`/login`, `/register`, etc.) utilizing frosted blurs, animated neon background meshes, and glowing call-to-action gradients.
-6. **Token Resolution Handling:** Corrected the Zustand `auth-store` schema mismatches mapping the backend JWT drops correctly to `localStorage`.
-7. **Playwright Stability:** Corrected UI timing issues by migrating from isolated `isVisible()` checks to Playwright's `expect().toBeVisible()` auto-waiting handlers, allowing comprehensive tests of the Reset and Registration workflows end-to-end.
+6. **Session Persistence (Hydration Guard):** Added explicit hydration tracking to the Zustand `auth-store` to ensure the session is fully reloaded from `localStorage` before application logic (like redirects) executes, preventing unwanted logouts on page refresh.
+7. **Guest-Only Protection & E2E Stability:** implemented a global redirect in the `AuthLayout` to protect auth pages from logged-in users, and stabilized the Playwright suite using a single-worker model and randomized email strategy to bypass rate limits.

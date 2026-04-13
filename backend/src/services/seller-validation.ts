@@ -5,7 +5,7 @@
  * Ensures data integrity and compliance with marketplace rules
  */
 
-import { SELLER_MODULE } from "../../modules/seller"
+import { SELLER_MODULE } from "../modules/seller"
 
 /**
  * Validation rules

@@ -97,7 +97,7 @@ All components using `useRouter` have it mocked with:
 The auth store is mocked to test component behavior in isolation without actual API calls.
 
 ### Environment Variables
-- `NEXT_PUBLIC_API_URL` is set to `http://localhost:9000` for tests
+- `NEXT_PUBLIC_API_URL` is set to `http://localhost:9001` for tests
 
 ## Known Issues
 

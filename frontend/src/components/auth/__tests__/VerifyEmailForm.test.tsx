@@ -39,7 +39,7 @@ describe('VerifyEmailForm', () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        'http://localhost:9000/api/auth/verify-email',
+        'http://localhost:9001/api/auth/verify-email',
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify({ token: 'valid-token-123' }),

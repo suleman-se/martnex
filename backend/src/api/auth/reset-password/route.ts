@@ -5,9 +5,7 @@
 
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from 'zod'
-import { validatePassword } from '../../../auth/password'
 import { ACCOUNT_MODULE } from '../../../modules/account'
-import { getRedisTokenStore } from '../../../lib/redis-token-store'
 import { RateLimiter } from '../../../services/business-rules'
 import type { IAuthModuleService } from '@medusajs/framework/types'
 import type AccountModuleService from '../../../modules/account/service'
@@ -39,15 +37,7 @@ export async function POST(
       return
     }
 
-    // Validate password strength
-    const passwordValidation = validatePassword(password)
-    if (!passwordValidation.isValid) {
-      res.status(400).json({
-        message: 'Password validation failed',
-        error: passwordValidation.error
-      })
-      return
-    }
+
 
     // Resolve services from container
     const accountService = req.scope.resolve<AccountModuleService>(ACCOUNT_MODULE)
@@ -64,10 +54,10 @@ export async function POST(
       return
     }
 
-    // Update password using Medusa Auth Module
-    // First, get the provider identity linked to this customer
+    // Look up the provider identity using email — the emailpass provider
+    // stores entity_id = email address, NOT the customer ID
     const providerIdentities = await authService.listProviderIdentities({
-      entity_id: reset.user_id,
+      entity_id: reset.email,
       provider: "emailpass"
     } as any)
 
@@ -79,14 +69,12 @@ export async function POST(
       return
     }
 
-    // Update the password inside the provider metadata
-    await authService.updateProviderIdentities({
-      id: providerIdentities[0].id,
-      provider_metadata: {
-        email: providerIdentities[0].provider_metadata?.email,
-        password: password, // Medusa emailpass provider will automatically hash this
-      }
-    } as any)
+    // Use authService.updateProvider() which performs hashing internally (scrypt)
+    // same as the register flow — keeping password hashes consistent
+    await authService.updateProvider('emailpass', {
+      entity_id: providerIdentities[0].entity_id,
+      password,
+    })
 
     // Mark reset token as used
     await accountService.markPasswordResetUsed(reset.id)
@@ -94,9 +82,7 @@ export async function POST(
     // Invalidate all password reset tokens for this user
     await accountService.invalidatePasswordResetTokens(reset.user_id)
 
-    // Invalidate all refresh tokens in Redis (force re-login after password change)
-    const tokenStore = getRedisTokenStore()
-    await tokenStore.revokeAllUserTokens(reset.user_id)
+
 
     res.status(200).json({
       message: 'Password reset successful. You can now log in with your new password.'

@@ -7,7 +7,7 @@ import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from 'zod'
 import { ACCOUNT_MODULE } from '../../../modules/account'
 import { RateLimiter } from '../../../services/business-rules'
-import { emailService } from '../../../services/email'
+
 import type { ICustomerModuleService } from '@medusajs/framework/types'
 import type AccountModuleService from '../../../modules/account/service'
 import { Modules } from '@medusajs/framework/utils'
@@ -51,8 +51,16 @@ export async function POST(
         email
       )
 
-      // Send password reset email
-      await emailService.sendPasswordResetEmail(customer.email, resetToken.token)
+      // Emit event for notification subscriber
+      const eventBus = req.scope.resolve(Modules.EVENT_BUS)
+      await eventBus.emit({
+        name: "auth.password_reset",
+        data: {
+          entity_id: customer.id,
+          email: customer.email,
+          token: resetToken.token,
+        }
+      })
     }
 
     // Always return success to prevent email enumeration attacks

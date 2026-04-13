@@ -4,8 +4,7 @@
  * GET /store/commissions/:id - get commission details
  */
 
-import type { MedusaResponse } from "@medusajs/framework/http"
-import { AuthenticatedRequest } from "../../../../../middleware/authenticate"
+import type { MedusaResponse, MedusaRequest } from "@medusajs/framework/http"
 import { COMMISSION_MODULE } from "../../../../../modules/commission"
 import type CommissionModuleService from "../../../../../modules/commission/service"
 
@@ -13,10 +12,10 @@ import type CommissionModuleService from "../../../../../modules/commission/serv
  * GET /store/commissions/:id
  * Get commission details (seller can only view their own commissions)
  */
-export async function GET(req: AuthenticatedRequest, res: MedusaResponse) {
+export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const { id } = req.params
   const commissionService = req.scope.resolve<CommissionModuleService>(COMMISSION_MODULE)
-  const sellerId = req.auth_context?.seller_id
+  const sellerId = (req as any).auth_context?.actor_id as string
 
   if (!sellerId) {
     return res.status(401).json({

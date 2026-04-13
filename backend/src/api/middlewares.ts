@@ -6,6 +6,7 @@
  */
 
 import type { MiddlewaresConfig } from "@medusajs/framework/http"
+import { authenticate } from "@medusajs/framework/http"
 import type { MedusaNextFunction, MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { parseCorsOrigins } from "@medusajs/utils"
 
@@ -50,5 +51,19 @@ export default {
       matcher: "/auth/*",
       middlewares: [corsMiddleware],
     },
+    // Protect store seller routes using the native Medusa auth method
+    {
+      matcher: "/store/commissions*",
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/payouts*",
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    // Protect admin routes
+    {
+      matcher: "/admin/payouts*",
+      middlewares: [authenticate("user", ["session", "bearer"])],
+    }
   ],
 } as MiddlewaresConfig

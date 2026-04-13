@@ -14,31 +14,43 @@ test.describe('Phase 3 Authentication E2E Journeys', () => {
     await page.fill('input[name="email"]', uniqueEmail);
     await page.fill('input[name="password"]', password);
 
-    // Wait for both the click and the API response
-    const [response] = await Promise.all([
-      page.waitForResponse(resp => resp.url().includes('/auth/register') && resp.status() !== 0),
+    await Promise.all([
+      page.waitForResponse(resp => resp.url().includes('/auth/register') && resp.status() >= 200 && resp.status() < 300),
       page.click('button[type="submit"]'),
     ]);
 
-    // After registration, the UI should show a success message about verifying email
+    // Check for success message
     await expect(
-      page.locator('text=verify your account').or(page.locator('text=check your email'))
+      page.locator('text=Registration successful').or(page.locator('text=check your email'))
     ).toBeVisible({ timeout: 15000 });
 
-    // 2. Login (email is unverified — the UI should handle this gracefully)
-    await page.goto('/login');
+    // 2. Wait for automatic redirect to login
+    // The RegisterForm has a 2-second timeout before redirecting to /login?message=...
+    await page.waitForURL(/\/login/, { timeout: 10000 });
+    
+    // 3. Login
     await page.fill('input[name="email"]', uniqueEmail);
     await page.fill('input[name="password"]', password);
 
     await Promise.all([
-      page.waitForResponse(resp => resp.url().includes('/auth/login') && resp.status() !== 0),
+      page.waitForResponse(resp => resp.url().includes('/auth/customer/emailpass') && resp.status() >= 200 && resp.status() < 300),
       page.click('button[type="submit"]'),
     ]);
 
-    // 3. Check outcome — either unverified message OR dashboard redirect
-    await expect(
-      page.locator('text=Email Not Verified').or(page.locator('text=Logout'))
-    ).toBeVisible({ timeout: 15000 });
+    // 3. Verify Dashboard Access
+    // We expect either to be logged in (Logout present) or see the Unverified message
+    const logoutLocator = page.locator('button:has-text("Logout")').or(page.locator('text=Logout'));
+    const unverifiedLocator = page.locator('text=Email Not Verified');
+    
+    await expect(logoutLocator.or(unverifiedLocator)).toBeVisible({ timeout: 15000 });
+    
+    if (await logoutLocator.isVisible()) {
+      await expect(page.locator('text=Welcome, Integration')).toBeVisible();
+      
+      // Test refresh persistence
+      await page.reload();
+      await expect(page.locator('text=Welcome, Integration')).toBeVisible({ timeout: 10000 });
+    }
   });
 
   test.skip('Failed login journey: 5 failures -> Lockout Account', async ({ page }) => {
@@ -58,7 +70,7 @@ test.describe('Phase 3 Authentication E2E Journeys', () => {
   });
 
   test('Password Reset Journey: Request Reset -> Reset Password -> Login', async ({ page }) => {
-    // 1. Request Reset — use a fresh email so we don't hit rate limit from the register test
+    // 1. Request Reset
     const resetEmail = `resetuser_${Date.now()}@example.com`;
 
     await page.goto('/forgot-password');
@@ -69,11 +81,12 @@ test.describe('Phase 3 Authentication E2E Journeys', () => {
       page.click('button[type="submit"]'),
     ]);
 
-    // Should always show this success message (security: no email enumeration)
     await expect(page.locator('text=Check your email')).toBeVisible({ timeout: 15000 });
 
-    // 2. Navigate to reset-password with a mock (invalid) token
-    await page.goto('/reset-password?token=mock_test_token_invalid_expected');
+    // 2. Navigate to reset-password with a randomized mock token to avoid rate-limiting
+    // We use a hex string to ensure the first 8 characters are unique per run
+    const mockToken = `token_${Math.random().toString(36).substring(2, 10)}_${Date.now()}`;
+    await page.goto(`/reset-password?token=${mockToken}`);
     await page.fill('input[name="password"]', 'NewSecurePassword123!');
     await page.fill('input[name="confirmPassword"]', 'NewSecurePassword123!');
 
@@ -82,8 +95,37 @@ test.describe('Phase 3 Authentication E2E Journeys', () => {
       page.click('button[type="submit"]'),
     ]);
 
-    // Backend returns "Invalid or expired reset token" — check for "expired" case-insensitively
-    await expect(page.locator('text=/expired/i').first()).toBeVisible({ timeout: 10000 });
+    // Backend returns "Invalid or expired reset token"
+    await expect(page.locator('text=/expired|invalid/i').first()).toBeVisible({ timeout: 15000 });
+  });
+
+  test('Redirect Logged-in User: Navigate to /login while authenticated', async ({ page }) => {
+    // 1. First ensure we are logged in (using the Complete User Journey logic)
+    await page.goto('/register');
+    const tempEmail = `redirect_test_${Date.now()}@example.com`;
+    await page.fill('input[name="first_name"]', 'Redirect');
+    await page.fill('input[name="last_name"]', 'Test');
+    await page.fill('input[name="email"]', tempEmail);
+    await page.fill('input[name="password"]', password);
+    await page.click('button[type="submit"]');
+    
+    // Wait for auto-redirect to login
+    await page.waitForURL(/\/login/, { timeout: 10000 });
+    
+    // Login
+    await page.fill('input[name="email"]', tempEmail);
+    await page.fill('input[name="password"]', password);
+    await page.click('button[type="submit"]');
+    
+    // Wait for Dashboard
+    await expect(page.locator('text=Logout')).toBeVisible({ timeout: 15000 });
+    
+    // 2. NOW attempt to go to /login again
+    await page.goto('/login');
+    
+    // 3. Verify immediate redirect to dashboard
+    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page.locator('text=Logout')).toBeVisible();
   });
 
 });

@@ -20,4 +20,4 @@ vi.mock('next/navigation', () => ({
 }));
 
 // Mock environment variables
-process.env.NEXT_PUBLIC_API_URL = 'http://localhost:9000';
+process.env.NEXT_PUBLIC_API_URL = 'http://localhost:9001';

@@ -46,7 +46,7 @@ describe('ForgotPasswordForm', () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        'http://localhost:9000/api/auth/forgot-password',
+        'http://localhost:9001/api/auth/forgot-password',
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify({ email: 'test@example.com' }),
