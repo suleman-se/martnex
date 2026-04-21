@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User, RegisterResponse, ApiError } from '@/types/auth';
+import { buildStoreHeaders, getBackendUrl, medusa } from '@/lib/medusa-client';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9001';
-const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || '';
+const API_URL = getBackendUrl();
 
 interface AuthState {
   user: User | null;
@@ -14,7 +14,9 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<RegisterResponse>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   setUser: (user: User | null) => void;
+  setCredentials: (user: User, token: string) => void;
   _hasHydrated: boolean;
   setHasHydrated: (state: boolean) => void;
 }
@@ -37,6 +39,10 @@ export const useAuthStore = create<AuthState>()(
 
       setHasHydrated: (state) => set({ _hasHydrated: state }),
       setUser: (user) => set({ user, isAuthenticated: !!user }),
+      setCredentials: (user, token) => {
+        localStorage.setItem('access_token', token);
+        set({ user, isAuthenticated: true });
+      },
 
       login: async (email: string, password: string) => {
         set({ isLoading: true });
@@ -63,25 +69,25 @@ export const useAuthStore = create<AuthState>()(
           }
 
           // Fetch customer details from Medusa
-          let userData: any = { user_id: 'unknown', email, role: 'buyer' };
+          let userData: User | null = null;
           
           if (token) {
+            const headers = await buildStoreHeaders(token);
+
             const meResponse = await fetch(`${API_URL}/store/customers/me`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                'x-publishable-api-key': PUBLISHABLE_KEY,
-              }
+              headers,
             });
             
             if (meResponse.ok) {
               const meData = await meResponse.json();
               if (meData.customer) {
                 userData = {
-                  user_id: meData.customer.id,
+                  id: meData.customer.id,
                   email: meData.customer.email,
-                  role: 'buyer',
+                  role: (meData.customer.metadata?.role as any) || 'buyer',
                   first_name: meData.customer.first_name,
-                  last_name: meData.customer.last_name
+                  last_name: meData.customer.last_name,
+                  email_verified: !!meData.customer.metadata?.email_verified
                 };
               }
             }
@@ -90,7 +96,7 @@ export const useAuthStore = create<AuthState>()(
           // Set user
           set({
             user: userData,
-            isAuthenticated: true,
+            isAuthenticated: !!userData,
             isLoading: false,
           });
 
@@ -125,20 +131,46 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: async () => {
+        // 1. Clear local session state immediately
+        localStorage.removeItem('access_token');
+        set({ user: null, isAuthenticated: false });
+
+        // 2. Clear backend session using the official JS SDK
+        try {
+          // The SDK handles headers and session invalidation according to Medusa v2 standards
+          await medusa.auth.logout();
+        } catch (error) {
+          // If the session is already gone or invalid, we ignore the error as local state is already wiped
+          console.debug('Background session termination:', error);
+        }
+      },
+
+      refreshUser: async () => {
         try {
           const token = localStorage.getItem('access_token');
-          if (token) {
-            await fetch(`${API_URL}/auth/customer/emailpass`, {
-              method: 'DELETE',
-              headers: { Authorization: `Bearer ${token}` }
-            });
+          if (!token) return;
+
+          const headers = await buildStoreHeaders(token);
+          const response = await fetch(`${API_URL}/store/customers/me`, {
+            headers,
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.customer) {
+              const userData: User = {
+                id: data.customer.id,
+                email: data.customer.email,
+                role: (data.customer.metadata?.role as any) || 'buyer',
+                first_name: data.customer.first_name,
+                last_name: data.customer.last_name,
+                email_verified: !!data.customer.metadata?.email_verified
+              };
+              set({ user: userData, isAuthenticated: true });
+            }
           }
         } catch (error) {
-          console.error('Logout error:', error);
-        } finally {
-          // Clear local state
-          localStorage.removeItem('access_token');
-          set({ user: null, isAuthenticated: false });
+          console.error('Refresh user error:', error);
         }
       },
     }),

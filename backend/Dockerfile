@@ -13,10 +13,13 @@ RUN pnpm install
 # Copy project files
 COPY . .
 
+# Make entrypoint executable
+RUN chmod +x /app/entrypoint.sh
+
 # Expose ports
 # 9001 - API
 # 7001 - Admin Panel
 EXPOSE 9001 7001
 
-# Start development server
-CMD ["pnpm", "run", "dev"]
+# Run migrations then start server
+ENTRYPOINT ["/app/entrypoint.sh"]

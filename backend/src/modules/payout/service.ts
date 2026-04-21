@@ -51,7 +51,7 @@ class PayoutModuleService extends MedusaService({
       queryFilters.status = filters.status
     }
 
-    return await this.listPayouts({ filters: queryFilters })
+    return await this.listPayouts(queryFilters)
   }
 
   /**
@@ -61,9 +61,7 @@ class PayoutModuleService extends MedusaService({
    */
   async getPendingPayouts() {
     return await this.listPayouts({
-      filters: {
-        status: "pending_review",
-      },
+      status: "pending_review",
     })
   }
 

@@ -4,8 +4,12 @@ import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { getBackendUrl } from '@/lib/medusa-client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9001';
+const API_URL = getBackendUrl();
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -59,59 +63,54 @@ export default function ForgotPasswordForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && (
-        <div className={`px-4 py-3 rounded-xl border backdrop-blur-sm ${
+        <div className={`p-4 rounded-lg border text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-300 ${
           rateLimited
-            ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'
-            : 'bg-red-500/10 border-red-500/20 text-red-500'
+            ? 'bg-amber-50 border-amber-200 text-amber-900'
+            : 'bg-red-50 border-red-200 text-red-900'
         }`}>
-          <p className="text-sm">{error}</p>
-          {rateLimited && (
-            <p className="text-xs mt-2 text-yellow-500/70">
-              You can request a password reset up to 3 times per hour.
-            </p>
-          )}
+          <div className="flex items-center gap-3">
+             <div className="h-2 w-2 rounded-full bg-current animate-pulse shrink-0"></div>
+             <p>{error}</p>
+          </div>
         </div>
       )}
 
       {success && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-xl backdrop-blur-sm">
-          <p className="font-semibold text-white">Check your email</p>
-          <p className="text-sm mt-1">
-            If an account with that email exists, we've sent password reset instructions.
-          </p>
-          <p className="text-xs mt-2 text-emerald-500/70">
-            The reset link will expire in 15 minutes.
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg space-y-2 animate-in fade-in duration-500">
+          <p className="text-[11px] font-black uppercase tracking-wider">Email sent</p>
+          <p className="text-[10px] font-bold opacity-80 leading-relaxed uppercase tracking-widest">
+            Check your inbox for instructions to reset your password.
           </p>
         </div>
       )}
 
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-slate-300">
-          Email Address
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="email" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email address</Label>
+        <Input
           id="email"
           type="email"
           {...register('email')}
-          className="mt-2 block w-full px-4 py-3 bg-slate-950/50 border border-white/10 rounded-xl text-white placeholder-slate-500 shadow-inner focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all duration-300"
+          placeholder="your@email.com"
           disabled={isPending || success}
           autoComplete="email"
-          placeholder="you@example.com"
+          className="h-14 px-6"
         />
         {errors.email && (
-          <p className="mt-1.5 text-sm text-red-400 font-medium">{errors.email.message}</p>
+          <p className="text-[10px] font-extrabold uppercase tracking-widest text-destructive ml-1 mt-1.5">{errors.email.message}</p>
         )}
       </div>
 
-      <button
+      <Button
         type="submit"
+        variant="premium"
+        size="lg"
         disabled={isPending || success || rateLimited}
-        className="w-full relative flex justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 transition-all duration-200 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)]"
+        className="w-full h-14 font-black uppercase tracking-widest text-[11px] shadow-lg shadow-primary/5"
       >
-        {isPending ? 'Sending...' : success ? 'Email sent' : 'Send reset link'}
-      </button>
+        {isPending ? 'Sending...' : success ? 'Sent' : 'Send reset link'}
+      </Button>
     </form>
   );
 }

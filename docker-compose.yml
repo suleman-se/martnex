@@ -48,18 +48,22 @@ services:
       DATABASE_URL: postgres://martnex:martnex_dev_password@postgres:5432/martnex?sslmode=disable
       REDIS_URL: redis://redis:6379
       JWT_SECRET: supersecret-change-in-production
+      JWT_REFRESH_SECRET: supersecret-refresh-change-in-production
       COOKIE_SECRET: supersecret-cookie-change-in-production
       PORT: 9001
       ADMIN_CORS: http://localhost:7001,http://localhost:9001
-      STORE_CORS: http://localhost:3000
-      AUTH_CORS: http://localhost:7001,http://localhost:9001,http://localhost:3000
+      STORE_CORS: http://localhost:3000,http://127.0.0.1:3000
+      AUTH_CORS: http://localhost:7001,http://127.0.0.1:7001,http://localhost:9001,http://localhost:3000,http://127.0.0.1:3000
+      STORE_MODE: MULTI_VENDOR_MARKETPLACE
+      ENABLE_STRIPE: "true"
+      ENABLE_LOCAL_STORAGE: "true"
     ports:
       - "9001:9001"
       - "7001:7001"
     volumes:
       - ./backend:/app
-      - /app/node_modules
-      - /app/.pnpm-store
+      - backend_node_modules:/app/node_modules
+      - backend_pnpm_store:/app/.pnpm-store
       - backend_uploads:/app/uploads
     depends_on:
       postgres:
@@ -68,7 +72,7 @@ services:
         condition: service_healthy
     networks:
       - martnex-network
-    command: pnpm run dev
+    # ENTRYPOINT in Dockerfile runs: db:migrate -> db:sync-links -> create-publishable-key -> pnpm dev
 
   # Next.js Frontend
   frontend:
@@ -77,16 +81,14 @@ services:
       dockerfile: Dockerfile
     container_name: martnex-frontend
     environment:
-      NODE_ENV: development
       NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9001
       NEXT_PUBLIC_BASE_URL: http://localhost:3000
     ports:
       - "3000:3000"
     volumes:
       - ./frontend:/app
-      - /app/node_modules
-      - /app/.pnpm-store
-      - /app/.next
+      - frontend_node_modules:/app/node_modules
+      - frontend_pnpm_store:/app/.pnpm-store
     depends_on:
       - backend
     networks:
@@ -97,6 +99,10 @@ volumes:
   postgres_data:
   redis_data:
   backend_uploads:
+  backend_node_modules:
+  backend_pnpm_store:
+  frontend_node_modules:
+  frontend_pnpm_store:
 
 networks:
   martnex-network:

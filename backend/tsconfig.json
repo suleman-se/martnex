@@ -20,7 +20,11 @@
     "emitDecoratorMetadata": true,
     "strictPropertyInitialization": false,
     "sourceMap": true,
-    "noImplicitReturns": false
+    "noImplicitReturns": false,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@modules/*": ["./src/modules/*"]
+    }
   },
   "include": ["src"],
   "exclude": [

@@ -108,6 +108,16 @@ Should show:
 - ✅ martnex-backend (running)
 - ✅ martnex-frontend (running)
 
+## Environment Variables
+
+The only required frontend env variable is:
+
+```env
+NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9001
+```
+
+No publishable key is needed — the frontend fetches it automatically from `GET /auth/publishable-key`.
+
 ---
 
 ## Making Changes

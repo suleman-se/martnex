@@ -1,30 +1,35 @@
 import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import Link from 'next/link';
+import { AuthContainer } from '@/components/ui/auth-container';
+import { ArrowLeft } from 'lucide-react';
 
 export const metadata = {
   title: 'Reset Password - Martnex',
-  description: 'Create a new password',
+  description: 'Security update for your Martnex account.',
 };
 
-export default async function ResetPasswordPage({
+export default function ResetPasswordPage({
   searchParams,
 }: {
-  searchParams: Promise<{ token?: string }>;
+  searchParams: { token?: string };
 }) {
-  const resolvedParams = await searchParams;
-
   return (
-    <div className="w-full space-y-8 animate-in fade-in duration-500">
-      <div className="text-center">
-        <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">
-          Martnex
-        </h1>
-        <h2 className="mt-4 text-2xl font-semibold text-white">Create new password</h2>
-        <p className="mt-2 text-sm text-slate-400">
-          Enter your new password below
-        </p>
-      </div>
+    <AuthContainer
+      title="Reset Password"
+      description="Create a new password for your account."
+    >
+      <ResetPasswordForm token={searchParams.token} />
 
-      <ResetPasswordForm token={resolvedParams.token} />
-    </div>
+      <div className="mt-8 pt-8 border-t border-border/10 flex justify-center">
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Login
+        </Link>
+      </div>
+    </AuthContainer>
   );
 }

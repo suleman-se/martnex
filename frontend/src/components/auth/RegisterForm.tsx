@@ -6,6 +6,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthStore } from '@/lib/store/auth-store';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ShoppingBag, Store } from 'lucide-react';
 
 const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -19,7 +23,7 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterForm() {
   const router = useRouter();
-  const register = useAuthStore((state) => state.register);
+  const registerAction = useAuthStore((state) => state.register);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -27,6 +31,7 @@ export default function RegisterForm() {
   const {
     register: registerField,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -35,19 +40,19 @@ export default function RegisterForm() {
     },
   });
 
+  const selectedRole = watch('role');
+
   const onSubmit = async (data: RegisterFormData) => {
     setError(null);
     setSuccess(false);
 
     startTransition(async () => {
       try {
-        const result = await register(data);
+        await registerAction(data);
         setSuccess(true);
-
-        // Show success message for 2 seconds, then redirect to login
         setTimeout(() => {
-          router.push('/login?message=Please check your email to verify your account');
-        }, 2000);
+          router.push('/login?message=Account created. Please verify your email.');
+        }, 3000);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Registration failed');
       }
@@ -55,135 +60,139 @@ export default function RegisterForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl backdrop-blur-sm text-sm">
-          {error}
+        <div className="p-4 bg-red-50 border border-red-200 text-red-900 rounded-lg text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-300">
+          <p className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-red-900 animate-pulse"></div>
+            {error}
+          </p>
         </div>
       )}
 
       {success && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-xl backdrop-blur-sm text-sm">
-          Registration successful! Please check your email to verify your account.
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-500">
+          <p className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-emerald-900 animate-pulse"></div>
+            Account created successfully. Verifying...
+          </p>
         </div>
       )}
 
-      <div className="space-y-4">
-        {/* First Name */}
-        <div>
-          <label htmlFor="first_name" className="block text-sm font-medium text-slate-300">
-            First Name
-          </label>
-          <input
-            id="first_name"
-            type="text"
-            {...registerField('first_name')}
-            className="mt-2 block w-full px-4 py-3 bg-slate-950/50 border border-white/10 rounded-xl text-white placeholder-slate-500 shadow-inner focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all duration-300"
-            disabled={isPending}
-          />
-          {errors.first_name && (
-            <p className="mt-1.5 text-sm text-red-400 font-medium">{errors.first_name.message}</p>
-          )}
-        </div>
-
-        {/* Last Name */}
-        <div>
-          <label htmlFor="last_name" className="block text-sm font-medium text-slate-300">
-            Last Name
-          </label>
-          <input
-            id="last_name"
-            type="text"
-            {...registerField('last_name')}
-            className="mt-2 block w-full px-4 py-3 bg-slate-950/50 border border-white/10 rounded-xl text-white placeholder-slate-500 shadow-inner focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all duration-300"
-            disabled={isPending}
-          />
-          {errors.last_name && (
-            <p className="mt-1.5 text-sm text-red-400 font-medium">{errors.last_name.message}</p>
-          )}
-        </div>
-
-        {/* Email */}
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-slate-300">
-            Email Address
-          </label>
-          <input
-            id="email"
-            type="email"
-            {...registerField('email')}
-            className="mt-2 block w-full px-4 py-3 bg-slate-950/50 border border-white/10 rounded-xl text-white placeholder-slate-500 shadow-inner focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all duration-300"
-            disabled={isPending}
-            placeholder="alex.thompson@email.com"
-          />
-          {errors.email && (
-            <p className="mt-1.5 text-sm text-red-400 font-medium">{errors.email.message}</p>
-          )}
-        </div>
-
-        {/* Password */}
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-slate-300">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            {...registerField('password')}
-            className="mt-2 block w-full px-4 py-3 bg-slate-950/50 border border-white/10 rounded-xl text-white placeholder-slate-500 shadow-inner focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300"
-            disabled={isPending}
-            placeholder="••••••••"
-          />
-          {errors.password && (
-            <p className="mt-1.5 text-sm text-red-400 font-medium">{errors.password.message}</p>
-          )}
-          <p className="mt-1.5 text-xs text-slate-500">Must be at least 8 characters</p>
-        </div>
-
-        {/* Role */}
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-3">
-            I want to
-          </label>
-          <div className="space-y-3">
-            <label className="flex items-center p-3 border border-white/10 rounded-xl bg-slate-950/30 hover:bg-slate-950/50 cursor-pointer transition-colors">
+      <div className="space-y-5">
+        <div className="space-y-3">
+          <Label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Account Type</Label>
+          <div className="grid grid-cols-2 gap-3">
+            <label 
+              className={`flex flex-col items-center justify-center p-4 rounded-lg cursor-pointer transition-all active:scale-95 border-2 ${
+                selectedRole === 'buyer' 
+                  ? 'bg-background border-primary text-primary shadow-sm' 
+                  : 'bg-secondary border-transparent text-muted-foreground hover:bg-accent'
+              }`}
+            >
               <input
                 type="radio"
                 value="buyer"
                 {...registerField('role')}
-                className="h-4 w-4 text-cyan-500 focus:ring-cyan-500/50 border-white/20 bg-slate-900"
+                className="hidden"
                 disabled={isPending}
               />
-              <span className="ml-3 text-sm text-slate-300 font-medium">
-                Buy products (Buyer)
-              </span>
+              <ShoppingBag className={`w-6 h-6 mb-2 ${selectedRole === 'buyer' ? 'text-primary' : 'text-muted-foreground'}`} />
+              <span className="text-xs font-black uppercase tracking-wider">Buyer</span>
             </label>
-            <label className="flex items-center p-3 border border-white/10 rounded-xl bg-slate-950/30 hover:bg-slate-950/50 cursor-pointer transition-colors">
+            <label 
+              className={`flex flex-col items-center justify-center p-4 rounded-lg cursor-pointer transition-all active:scale-95 border-2 ${
+                selectedRole === 'seller' 
+                  ? 'bg-background border-primary text-primary shadow-sm' 
+                  : 'bg-secondary border-transparent text-muted-foreground hover:bg-accent'
+              }`}
+            >
               <input
                 type="radio"
                 value="seller"
                 {...registerField('role')}
-                className="h-4 w-4 text-cyan-500 focus:ring-cyan-500/50 border-white/20 bg-slate-900"
+                className="hidden"
                 disabled={isPending}
               />
-              <span className="ml-3 text-sm text-slate-300 font-medium">
-                Sell products (Seller)
-              </span>
+              <Store className={`w-6 h-6 mb-2 ${selectedRole === 'seller' ? 'text-primary' : 'text-muted-foreground'}`} />
+              <span className="text-xs font-black uppercase tracking-wider">Seller</span>
             </label>
           </div>
-          {errors.role && (
-            <p className="mt-2 text-sm text-red-400 font-medium">{errors.role.message}</p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="first_name" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">First Name</Label>
+            <Input
+              id="first_name"
+              type="text"
+              placeholder="John"
+              {...registerField('first_name')}
+              disabled={isPending}
+              className="h-12"
+            />
+            {errors.first_name && (
+              <p className="text-[10px] font-extrabold uppercase tracking-widest text-destructive ml-1 mt-1.5">{errors.first_name.message}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="last_name" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Last Name</Label>
+            <Input
+              id="last_name"
+              type="text"
+              placeholder="Doe"
+              {...registerField('last_name')}
+              disabled={isPending}
+              className="h-12"
+            />
+            {errors.last_name && (
+              <p className="text-[10px] font-extrabold uppercase tracking-widest text-destructive ml-1 mt-1.5">{errors.last_name.message}</p>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email address</Label>
+          <Input
+            id="email"
+            type="email"
+            {...registerField('email')}
+            placeholder="your@email.com"
+            disabled={isPending}
+            className="h-12"
+          />
+          {errors.email && (
+            <p className="text-[10px] font-extrabold uppercase tracking-widest text-destructive ml-1 mt-1.5">{errors.email.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="password" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            {...registerField('password')}
+            placeholder="••••••••"
+            disabled={isPending}
+            className="h-12"
+          />
+          {errors.password ? (
+            <p className="text-[10px] font-extrabold uppercase tracking-widest text-destructive ml-1 mt-1.5">{errors.password.message}</p>
+          ) : (
+            <p className="text-[10px] text-muted-foreground font-bold tracking-tight ml-1 mt-1.5">Use at least 8 characters.</p>
           )}
         </div>
       </div>
 
-      <button
+      <Button
         type="submit"
+        variant="premium"
+        size="lg"
+        className="w-full h-14 font-black uppercase tracking-widest text-[11px] shadow-lg shadow-primary/5 mt-4"
         disabled={isPending || success}
-        className="w-full relative flex justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 transition-all duration-200 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)]"
       >
-        {isPending ? 'Creating account...' : 'Create account'}
-      </button>
+        {isPending ? 'Signing up...' : 'Create Account'}
+      </Button>
     </form>
   );
 }

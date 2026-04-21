@@ -107,9 +107,9 @@ Martnex is a powerful, scalable platform that enables entrepreneurs and business
 - [Shadcn/UI](https://ui.shadcn.com/)
 
 **Backend:**
-- [Medusa.js v2.12.1](https://medusajs.com/) (Module-first architecture, Workflows)
+- [Medusa.js v2](https://medusajs.com/) (Module-first architecture, Workflows SDK)
 - [Node.js 18+](https://nodejs.org/)
-- [PostgreSQL 15+](https://www.postgresql.org/)
+- [PostgreSQL 17+](https://www.postgresql.org/)
 - [Redis 7+](https://redis.io/) (Required for events, workflows, cache)
 - [MikroORM](https://mikro-orm.io/) (Medusa v2 ORM)
 
@@ -171,7 +171,7 @@ For more Docker commands, see [Docker Setup Guide](README.docker.md).
    cd ../frontend
    pnpm install
    cp .env.example .env.local
-   # Edit .env.local with your backend URL
+   # Only NEXT_PUBLIC_MEDUSA_BACKEND_URL is required — no publishable key needed
    pnpm run dev
    ```
 
@@ -266,21 +266,21 @@ Please read our [Contributing Guide](CONTRIBUTING.md) to get started.
 - [x] Business rules engine
 
 ### Phase 2.5: Authentication & Authorization ✅ (Complete)
-- [x] JWT authentication system
-- [x] Role-based access control (RBAC)
-- [x] Email verification
-- [x] Password reset
-- [x] Session management
-- [x] Protected API routes
-- [x] End-to-End (E2E) testing suite
+- [x] JWT authentication system (Medusa native `emailpass` provider)
+- [x] Role-based access control (RBAC) — buyer, seller, admin
+- [x] Email verification and password reset flows
+- [x] Protected API routes with `authenticate()` middleware
+- [x] Custom UI component library (Button, Card, Input, Label, Badge)
+- [x] Auth pages redesigned (Login, Register, Forgot/Reset Password)
+- [x] Seller onboarding multi-step form
+- [x] Seller dashboard (Overview, Products, Orders pages)
 
-### Phase 3: Product Integration & Workflows
-- [ ] Product-seller relationships
+### Phase 3: Product Integration & Workflows (In Progress)
+- [ ] Product-seller relationships and listings
 - [ ] Order automation workflows
 - [ ] Payment processing (Stripe/PayPal)
-- [ ] Admin dashboard
-- [ ] Seller dashboard
-- [ ] Buyer features
+- [ ] Full admin dashboard
+- [ ] Buyer product browsing and cart
 
 ### Phase 4: Enhanced Features
 - [ ] Advanced analytics
@@ -289,12 +289,6 @@ Please read our [Contributing Guide](CONTRIBUTING.md) to get started.
 - [ ] Mobile app (React Native)
 - [ ] Seller subscription plans
 - [ ] Marketing tools (coupons, campaigns)
-
-### Phase 3: Scale & Optimize
-- [ ] Performance optimization
-- [ ] API for third-party integrations
-- [ ] White-label solutions
-- [ ] AI-powered recommendations
 
 See the [Implementation Plan](planning/IMPLEMENTATION_PLAN.md) for detailed feature breakdown.
 

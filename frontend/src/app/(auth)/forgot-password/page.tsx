@@ -1,34 +1,31 @@
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 import Link from 'next/link';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { AuthContainer } from '@/components/ui/auth-container';
+import { ArrowLeft } from 'lucide-react';
 
 export const metadata = {
   title: 'Forgot Password - Martnex',
-  description: 'Reset your password',
+  description: 'Recovery options for your Martnex account.',
 };
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="w-full space-y-8 animate-in fade-in duration-500">
-      <div className="text-center">
-        <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">
-          Martnex
-        </h1>
-        <h2 className="mt-4 text-2xl font-semibold text-white">Reset your password</h2>
-        <p className="mt-2 text-sm text-slate-400">
-          Enter your email and we'll send you a reset link
-        </p>
-      </div>
-
+    <AuthContainer
+      title="Forgot Password"
+      description="Enter your email to reset your password."
+    >
       <ForgotPasswordForm />
 
-      <div className="text-center mt-6">
+      <div className="mt-8 pt-8 border-t border-border/10 flex justify-center">
         <Link
           href="/login"
-          className="text-sm font-medium text-purple-400 hover:text-purple-300 transition-colors"
+          className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors"
         >
-          ← Back to sign in
+          <ArrowLeft className="w-4 h-4" />
+          Back to Login
         </Link>
       </div>
-    </div>
+    </AuthContainer>
   );
 }

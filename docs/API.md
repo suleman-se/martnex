@@ -9,13 +9,22 @@ This document provides an overview of the Martnex API endpoints. As the project 
 
 ## Authentication
 
-Martnex uses **Medusa v2's built-in Auth Module** with JWT tokens for authentication.
+Martnex uses **Medusa v2's native Auth Module** (`/auth/customer/emailpass`) for storefront authentication and custom routes for registration/reset flows.
 
 All authenticated requests require a JWT token in the Authorization header:
 
 ```
 Authorization: Bearer <your-jwt-token>
 ```
+
+Store requests additionally require the publishable API key header:
+
+```
+x-publishable-api-key: <publishable-key>
+```
+
+> **Publishable key is safe to expose in frontend.** It is a scope-limited public identifier, not a secret.
+> The frontend resolves it automatically from `GET /auth/publishable-key` at runtime.
 
 ### User Registration
 
@@ -48,11 +57,11 @@ Content-Type: application/json
 }
 ```
 
-### Login
+### Login (Medusa Native)
 
-**Login with email and password:**
+**Login with email and password using Medusa's built-in auth provider:**
 ```http
-POST /auth/login
+POST /auth/customer/emailpass
 Content-Type: application/json
 
 {
@@ -64,16 +73,18 @@ Content-Type: application/json
 **Response (200 OK):**
 ```json
 {
-  "message": "Login successful",
-  "data": {
-    "user": {
-      "user_id": "cus_01ABC123XYZ",
-      "email": "user@example.com",
-      "role": "buyer"
-    },
-    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
+```
+
+Store the returned `token` as the bearer token for all subsequent store requests.
+
+### Fetch Authenticated Customer Profile
+
+```http
+GET /store/customers/me
+Authorization: Bearer <token>
+x-publishable-api-key: <publishable-key>
 ```
 
 ### Using the Token
@@ -81,8 +92,9 @@ Content-Type: application/json
 Include the access token in all authenticated requests:
 
 ```http
-GET /api/seller/products
+GET /store/sellers/me
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+x-publishable-api-key: <publishable-key>
 ```
 
 ### Password Reset
@@ -108,7 +120,7 @@ Content-Type: application/json
 }
 ```
 
-**Note:** Passwords are automatically hashed using `scrypt-kdf` by Medusa's Auth Module.
+**Note:** Passwords are hashed using `scrypt` by Medusa's native Auth Module. The custom `/auth/token` route has been removed in favour of the native provider.
 
 ## API Endpoints
 
@@ -141,66 +153,46 @@ Content-Type: application/json
 - `PUT /api/review/:id` - Update my review
 - `DELETE /api/review/:id` - Delete my review
 
-### Seller Endpoints (Seller Auth Required)
+### Seller Endpoints (Customer Auth + Seller Role)
 
-#### Seller Registration
-- `POST /api/seller/register` - Register as seller
-- `GET /api/seller/me` - Get my seller profile
-- `PUT /api/seller/me` - Update seller profile
+#### Seller Registration & Profile
+- `POST /store/sellers` — Register as a seller (requires `Authorization` bearer token)
+- `GET /store/sellers/me` — Get authenticated seller's own profile
 
-#### Seller Products
-- `GET /api/seller/products` - Get my products
-- `POST /api/seller/products` - Create product
-- `PUT /api/seller/products/:id` - Update product
-- `DELETE /api/seller/products/:id` - Delete product
+#### Seller Commissions
+- `GET /store/commissions` — Get seller's commission records
+- `GET /store/commissions/:id` — Get specific commission
 
-#### Seller Orders
-- `GET /api/seller/orders` - Get my orders
-- `PUT /api/seller/orders/:id/status` - Update order status
+#### Seller Payout Requests
+- `POST /store/payouts` — Create a payout request
+- `GET /store/payouts` — Get seller's payout history
 
-#### Seller Earnings
-- `GET /api/seller/earnings` - Get earnings summary
-- `GET /api/seller/commissions` - Get commission details
-- `POST /api/seller/payout/request` - Request payout
-- `GET /api/seller/payouts` - Get payout history
-
-### Admin Endpoints (Admin Auth Required)
+### Admin Endpoints (Admin/User Auth Required)
 
 #### User Management
-- `GET /admin/customers` - List all users
-- `GET /admin/customers/:id` - Get user details
-- `PUT /admin/customers/:id` - Update user
-- `DELETE /admin/customers/:id` - Delete user
+- `GET /admin/customers` — List all users
+- `GET /admin/customers/:id` — Get user details
+- `PUT /admin/customers/:id` — Update user
+- `DELETE /admin/customers/:id` — Delete user
 
 #### Seller Management
-- `GET /api/admin/sellers` - List all sellers
-- `PUT /api/admin/sellers/:id/verify` - Verify seller
-- `PUT /api/admin/sellers/:id/reject` - Reject seller
-
-#### Product Moderation
-- `GET /api/admin/products/pending` - Get pending products
-- `PUT /api/admin/products/:id/approve` - Approve product
-- `PUT /api/admin/products/:id/reject` - Reject product
+- `GET /admin/sellers` — List all sellers
+- `POST /admin/sellers` — Update seller details
+- `POST /admin/sellers/:id/verify` — Verify seller
+- `POST /admin/sellers/:id/reject` — Reject seller
+- `POST /admin/sellers/:id/suspend` — Suspend seller
 
 #### Commission Management
-- `GET /api/admin/commissions` - List all commissions
-- `PUT /api/admin/commission/config` - Update commission rates
+- `GET /admin/commissions` — List all commissions
+- `POST /admin/commissions` — Update commission status
 
 #### Payout Management
-- `GET /api/admin/payouts/pending` - Get pending payouts
-- `PUT /api/admin/payouts/:id/approve` - Approve payout
-- `PUT /api/admin/payouts/:id/reject` - Reject payout
+- `GET /admin/payouts` — List payouts
+- `POST /admin/payouts/:id/approve` — Approve payout
+- `POST /admin/payouts/:id/cancel` — Cancel payout
 
-#### Disputes
-- `GET /api/admin/disputes` - List all disputes
-- `GET /api/admin/disputes/:id` - Get dispute details
-- `POST /api/admin/disputes/:id/message` - Add message to dispute
-- `PUT /api/admin/disputes/:id/resolve` - Resolve dispute
-
-#### Reports
-- `GET /api/admin/reports/sales` - Sales reports
-- `GET /api/admin/reports/revenue` - Revenue analytics
-- `GET /api/admin/reports/users` - User activity reports
+#### Store Authentication / Key
+- `GET /auth/publishable-key` — Returns the active publishable key for storefront requests (used by frontend to auto-resolve key at runtime)
 
 ## Response Format
 

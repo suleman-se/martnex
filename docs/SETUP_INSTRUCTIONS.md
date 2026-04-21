@@ -121,8 +121,12 @@ Create `frontend/.env.local`:
 
 ```env
 NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9001
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...  # Add later
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
+
+> **No publishable key required.** The frontend resolves it automatically from
+> `GET /auth/publishable-key` on startup. Do not add `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`
+> to your local env — it is unnecessary for local development.
 
 ### Step 4: Start Frontend
 

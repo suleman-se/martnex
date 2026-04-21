@@ -9,7 +9,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-#### Phase 2: Multi-Vendor Marketplace Core (December 4, 2025)
+#### Phase 3: Frontend UI, Auth Hardening & Medusa Compliance (April 2026)
+
+- **Custom UI component library** (`frontend/src/components/ui/`):
+  - `Button` — variants: default, premium, destructive, outline, secondary, ghost, link; sizes: sm, default, lg, xl, icon
+  - `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`
+  - `Input` — borderless with focus ring, consistent height
+  - `Label` — `cva`-based with disabled peer styling
+  - `Badge` — default, secondary, destructive, outline, vendor variants
+  - `Select` — native select with `ChevronDown` overlay
+  - `AuthContainer` — shared header/brand block used on all auth pages
+- **Auth page redesigns** (Login, Register, Forgot Password, Reset Password):
+  - Switched from dark glassmorphic layout to clean light Swiss-minimalism design
+  - All pages now use shared `AuthContainer` + `Card` layout
+  - Form inputs replaced with new `Input`/`Label`/`Button` components
+  - Auth layout (`(auth)/layout.tsx`) simplified to light `bg-mesh` wrapper
+- **Seller Onboarding** (`frontend/src/app/onboarding/seller/page.tsx`):
+  - 3-step wizard: Business Info → Tax & Identification → Payout Details
+  - Step progress bar and animated transitions
+  - Payout method selection (bank transfer, PayPal)
+  - Submits to `POST /store/sellers` with bearer token
+- **Seller Dashboard** (`frontend/src/app/seller/`):
+  - Persistent sidebar layout (`seller/layout.tsx`) with nav, search, user info
+  - Overview page (`seller/page.tsx`) with stats grid and activity feed
+  - Products page (`seller/products/page.tsx`) with table and image thumbnails
+  - Orders page (`seller/orders/page.tsx`) with status badges and table
+- **Home page redesign** (`frontend/src/app/page.tsx`):
+  - Full Swiss-modernism treatment with feature cards and CTA buttons
+- **Dashboard page updates** (`frontend/src/app/dashboard/page.tsx`):
+  - Role-specific seller profile check on load (`/store/sellers/me`)
+  - Deduplication guard on seller check via `useRef` (prevents React Strict Mode double-fire)
+- **Medusa-compliance workflows** (`backend/src/workflows/`):
+  - `update-seller.ts`, `update-commission-status.ts`, `approve-seller.ts`,
+    `reject-seller.ts`, `suspend-seller.ts`, `approve-payout.ts`,
+    `cancel-payout.ts`, `create-payout-request.ts`
+- **Dynamic publishable key endpoint** (`backend/src/api/auth/publishable-key/route.ts`):
+  - `GET /auth/publishable-key` — returns first active publishable API key token
+  - Frontend helper (`frontend/src/lib/medusa-client.ts`) caches key at runtime; no env var needed
+- **Global CSS redesign** (`frontend/src/app/globals.css`):
+  - Migrated to `@theme` block (Tailwind v4 native)
+  - Custom fonts: Work Sans (body), Outfit (headings) via Google Fonts
+  - Custom utilities: `shadow-premium`, `bg-mesh`
+
+### Changed
+
+#### Phase 3: Auth & API Updates (April 2026)
+
+- **Login flow switched to Medusa native auth** (`/auth/customer/emailpass`):
+  - `LoginForm.tsx` now calls `useAuthStore.login()` which uses Medusa's native token flow
+  - Token issued is valid for all `/store/*` authenticated routes including `/store/sellers/me`
+  - Removed dependency on legacy custom `/auth/token` route from login form
+- **Auth store** (`frontend/src/lib/store/auth-store.ts`):
+  - Added `setCredentials(user, token)` action for direct token injection
+  - `login()` now uses `POST /auth/customer/emailpass` then `GET /store/customers/me`
+  - User shape updated: `id` field, `email_verified` from metadata
+- **Middleware** (`backend/src/api/middlewares.ts`):
+  - Added coverage for `/store/sellers POST`, `/store/sellers/me*`, `/store/commissions*`, `/store/payouts*`
+  - Added coverage for `/admin/sellers*`, `/admin/commissions*`, `/admin/payouts*`
+- **CORS** (`backend/medusa-config.ts`):
+  - `authCors` broadened to include `http://localhost:3000` and `http://127.0.0.1:3000`
+- **`docker-compose.yml`**:
+  - Removed `NODE_ENV: development` from frontend service (was causing non-standard Next.js build warnings and prerender failures)
+  - Removed `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` env passthrough (auto-resolved at runtime)
+- **Auth pages** — `searchParams` changed from `Promise<{...}>` to synchronous `{...}` to allow static generation:
+  - `(auth)/login/page.tsx`
+  - `(auth)/reset-password/page.tsx`
+- **`start.sh`** — Improved idempotent startup: waits for Postgres health, checks schema before running migrations/seed/key creation
+
+### Removed
+
+#### Phase 3: Cleanup (April 2026)
+
+- `backend/src/api/auth/route.ts.old` — obsolete backup file deleted
+- `frontend/src/lib/store/api-client.ts` — duplicate helper removed
+- `backend/backend/` — orphaned nested directory removed
+- `frontend/.next/` and `backend/dist/` — generated artifacts removed from repo
 
 - **Store Mode System** (`backend/src/config/store-mode.ts`): Single environment variable (`STORE_MODE`) controls entire platform behavior
   - `SINGLE_STORE` mode: Regular e-commerce functionality

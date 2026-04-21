@@ -28,6 +28,15 @@ This will start:
 - **Medusa Backend** on ports 9001 (API) and 7001 (Admin)
 - **Next.js Frontend** on port 3000
 
+The backend startup is idempotent and will also:
+
+- run migrations
+- sync module links
+- ensure a publishable API key exists
+
+The frontend resolves the key automatically from `GET /auth/publishable-key`
+if `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` is not set.
+
 ### 3. Wait for services to be ready
 
 The first time you run this, it will:
@@ -196,6 +205,11 @@ Key environment variables are in:
 - `frontend/.env.local` (frontend-specific)
 
 For production, update these with secure values!
+
+### Publishable key note
+
+You no longer need to manually copy a publishable key between backend and frontend
+for local Docker development. The frontend fetches it from the backend at runtime.
 
 ## Project Structure
 

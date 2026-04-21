@@ -3552,4 +3552,108 @@ For complete implementation guide, see: **[2.5_AUTH_SUMMARY.md](file:///Users/ma
 
 ---
 
-**Last Updated**: February 11, 2026 - Phase 4 Auth Module Implementation
+## Our Medusa v2 Setup Experience (Latest Findings)
+
+During the development of Martnex, we encountered several "gotchas" in Medusa v2.12.1+ that resulted in persistent backend crashes. Here is the definitive guide on how we resolved them:
+
+### 1. The "Key not linkable" Error
+**Situation**: Creating a `defineLink` between a core module (Product) and a custom module (Seller).
+**Fix**: 
+- **Consistency is King**: The module name exported in `index.ts` must match precisely the key used in `medusa-config.ts`.
+- **Auto-Generation**: Do NOT manually define the `linkable` object unless the framework fails to find it. Medusa generates this automatically from DML models registered in your `MedusaService`.
+- **Command**: Always run `npx medusa db:sync-links` after changing any link file.
+
+### 2. Custom Module Resolution
+- **Import Paths**: Always use `@medusajs/utils` for core decorators (`Module`, `MedusaService`, `model`).
+- **File Structure**: Custom modules should be resolved in `medusa-config.ts` using the full path starting from `./src/` (e.g., `resolve: "./src/modules/seller"`).
+
+### 3. Workflow Inversion of Control
+- Avoid importing internal module logic into workflows directly if it causes circular dependencies. Use string literals for module names (`const SELLER_MODULE = "seller"`) to decouple the workflow from the module registration.
+
+---
+
+## The Martnex Multi-Vendor Implementation Plan
+
+| Step | Feature | Description | Status |
+| :--- | :--- | :--- | :--- |
+| **1** | **Core Backend Setup** | Medusa v2 installation + Custom Module Architecture | ✅ COMPLETE |
+| **2** | **Seller Module** | DML Models (Seller, Commission, Payout, Dispute) | ✅ COMPLETE |
+| **3** | **Module Links** | Linking Seller to Product & Customer | ✅ COMPLETE |
+| **4** | **Seller Onboarding** | `register-seller` Workflow & API Routes | 🏗️ IN PROGRESS |
+| **5** | **Merchant Dashboard** | Frontend UI for Sellers to manage products/orders | ⏳ NEXT |
+| **6** | **Payout System** | Logic for splitting payments & generating payouts | ⏳ PLANNED |
+| **7** | **Dispute Management** | Workflow for handling customer complaints | ⏳ PLANNED |
+
+---
+
+*Last Updated: April 14, 2026 - Stabilized Backend Links and Refined Onboarding Workflow.*
+
+### Module Link Definitions (defineLink)
+
+**The Challenge:**
+When bridging our custom `seller` module with Medusa's standard `product` module using `defineLink`, the backend crashed with `Invalid linkable passed` and `Key seller is not linkable on service seller`.
+
+**Root Cause:**
+In Medusa v2, you **MUST NOT** manually craft a `linkable` object export. The framework automatically generates this metadata under the hood.
+
+**❌ WRONG - Manual Linkable Object:**
+```typescript
+// src/modules/seller/index.ts
+export const linkable = {
+  seller: { serviceName: "seller", field: "seller", linkable: "seller", primaryKey: "id" }
+}
+
+// src/links/seller-product.ts
+export default defineLink(ProductModule.linkable.product, linkable.seller)
+```
+
+**✅ CORRECT - Auto-Generated Linkable:**
+Use the auto-generated `.linkable.[modelName]` off the default exported module itself contextually.
+
+```typescript
+// src/modules/seller/index.ts
+export default Module("seller", {
+  service: SellerModuleService,
+}) // Do NOT manually export linkable!
+
+// src/links/seller-product.ts
+import SellerModule from "../modules/seller"
+import ProductModule from "@medusajs/medusa/product"
+
+export default defineLink(
+  ProductModule.linkable.product,
+  SellerModule.linkable.seller // <--- Uses auto-generated property
+)
+```
+
+**Final step after changing links:** Always run `npx medusa db:sync-links` to create the pivot tables.
+
+### Common Gotcha: MedusaService List Filters
+
+**The Challenge:**
+Using auto-generated listing queries (like `this.listSellers()`) failed or did not filter correctly because the exact argument format changed in v2 `MedusaService`.
+
+**❌ WRONG - Nested Filters Property:**
+```typescript
+const sellers = await this.listSellers({
+  filters: { verification_status: status } // WRONG! 
+})
+```
+
+**✅ CORRECT - Top-level Filters with separate config parameter (for skip/take):**
+```typescript
+// Filters are at the top-level of the first parameter object
+const sellers = await this.listSellers({
+  verification_status: status
+})
+
+// With skip/take (which goes in the SECOND parameter 'config')
+const [sellers, count] = await this.listAndCountSellers(
+  { is_active: true }, // Filters 
+  { skip: 0, take: 20 } // Config (skip/limit/relations)
+)
+```
+
+---
+
+**Last Updated**: April 14, 2026 - Phase 4 Module Links & MedusaService Filtering Implementation

@@ -6,6 +6,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthStore } from '@/lib/store/auth-store';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -16,7 +19,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
   const router = useRouter();
-  const login = useAuthStore((state) => state.login);
+  const loginAction = useAuthStore((state) => state.login);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [lockedMinutes, setLockedMinutes] = useState<number | null>(null);
@@ -37,110 +40,82 @@ export default function LoginForm() {
 
     startTransition(async () => {
       try {
-        await login(data.email, data.password);
-
-        // Redirect to dashboard after successful login
+        await loginAction(data.email, data.password);
         router.push('/dashboard');
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Login failed';
-
-        // Parse account locked error
-        if (errorMessage.includes('Account locked') || errorMessage.includes('try again in')) {
-          const match = errorMessage.match(/try again in (\d+) minutes/);
-          if (match) {
-            setLockedMinutes(parseInt(match[1]));
-          }
-          setError(errorMessage);
-        }
-        // Parse email not verified error
-        else if (errorMessage.includes('verify your email') || errorMessage.includes('Email not verified')) {
+        const message = err instanceof Error ? err.message : 'Login failed';
+        if (message.toLowerCase().includes('verify')) {
           setEmailNotVerified(true);
-          setError('Please verify your email before logging in. Check your inbox for the verification link.');
         }
-        // General errors
-        else {
-          setError(errorMessage);
-        }
+        setError(message);
       }
     });
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && (
-        <div className={`px-4 py-3 rounded-xl border backdrop-blur-sm ${
+        <div className={`p-4 rounded-lg text-xs font-bold flex items-center gap-3 animate-in fade-in duration-300 ${
           lockedMinutes !== null
-            ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'
+            ? 'bg-amber-50 text-amber-900 border border-amber-200'
             : emailNotVerified
-            ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
-            : 'bg-red-500/10 border-red-500/20 text-red-500'
+            ? 'bg-secondary text-primary'
+            : 'bg-red-50 text-red-900 border border-red-200'
         }`}>
-          <div className="flex">
-            <div>
-              {lockedMinutes !== null && (
-                <p className="font-semibold text-white">Account Locked</p>
-              )}
-              {emailNotVerified && (
-                <p className="font-semibold text-white">Email Not Verified</p>
-              )}
-              <p className="text-sm mt-1">{error}</p>
-              {lockedMinutes !== null && (
-                <p className="text-xs mt-2 text-yellow-500/70">
-                  Your account will automatically unlock in {lockedMinutes} minute{lockedMinutes !== 1 ? 's' : ''}.
-                </p>
-              )}
-            </div>
+          <div className="h-2 w-2 rounded-full bg-current animate-pulse shrink-0"></div>
+          <div>
+            {lockedMinutes !== null && <p className="font-black uppercase tracking-wider mb-0.5 text-[10px]">Account Locked</p>}
+            {emailNotVerified && <p className="font-black uppercase tracking-wider mb-0.5 text-[10px]">Verification Required</p>}
+            <p className="opacity-90 font-semibold">{error}</p>
           </div>
         </div>
       )}
 
-      <div className="space-y-4">
-        {/* Email */}
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-slate-300">
-            Email Address
-          </label>
-          <input
+      <div className="space-y-5">
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email</Label>
+          <Input
             id="email"
             type="email"
             {...register('email')}
-            className="mt-2 block w-full px-4 py-3 bg-slate-950/50 border border-white/10 rounded-xl text-white placeholder-slate-500 shadow-inner focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all duration-300"
+            placeholder="your@email.com"
             disabled={isPending}
             autoComplete="email"
-            placeholder="alex.thompson@email.com"
+            className="h-14 px-6"
           />
           {errors.email && (
-            <p className="mt-1.5 text-sm text-red-400 font-medium">{errors.email.message}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-destructive ml-1 mt-1.5">{errors.email.message}</p>
           )}
         </div>
 
-        {/* Password */}
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-slate-300">
-            Password
-          </label>
-          <input
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <Label htmlFor="password" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Password</Label>
+          </div>
+          <Input
             id="password"
             type="password"
             {...register('password')}
-            className="mt-2 block w-full px-4 py-3 bg-slate-950/50 border border-white/10 rounded-xl text-white placeholder-slate-500 shadow-inner focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300"
+            placeholder="••••••••"
             disabled={isPending}
             autoComplete="current-password"
-            placeholder="••••••••"
+            className="h-14 px-6"
           />
           {errors.password && (
-            <p className="mt-1.5 text-sm text-red-400 font-medium">{errors.password.message}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-destructive ml-1 mt-1.5">{errors.password.message}</p>
           )}
         </div>
       </div>
 
-      <button
+      <Button
         type="submit"
+        variant="premium"
+        size="lg"
+        className="w-full h-14 shadow-lg shadow-primary/5 font-black uppercase tracking-wider text-[11px]"
         disabled={isPending || lockedMinutes !== null}
-        className="w-full relative flex justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 transition-all duration-200 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)]"
       >
-        {isPending ? 'Authenticating...' : lockedMinutes !== null ? 'Account Locked' : 'Sign in'}
-      </button>
+        {isPending ? 'Signing in...' : 'Sign In'}
+      </Button>
     </form>
   );
 }

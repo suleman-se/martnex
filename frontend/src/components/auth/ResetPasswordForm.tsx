@@ -5,17 +5,22 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import Link from 'next/link';
+import { getBackendUrl } from '@/lib/medusa-client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9001';
+const API_URL = getBackendUrl();
 
-const resetPasswordSchema = z.object({
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
+const resetPasswordSchema = z
+  .object({
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
@@ -39,7 +44,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     if (!token) {
-      setError('No reset token provided');
+      setError('Invalid reset token');
       return;
     }
 
@@ -59,117 +64,95 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || errorData.message || 'Password reset failed');
+          throw new Error(errorData.error || errorData.message || 'Reset failed');
         }
 
         setSuccess(true);
-
-        // Redirect to login after 3 seconds
         setTimeout(() => {
-          router.push('/login?message=Password reset successful! You can now log in with your new password.');
+          router.push('/login?message=Password reset successful. Please sign in.');
         }, 3000);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Password reset failed';
-
-        if (errorMessage.includes('expired') || errorMessage.includes('invalid')) {
-          setError('This reset link has expired or is invalid. Please request a new password reset.');
-        } else {
-          setError(errorMessage);
-        }
+        setError(err instanceof Error ? err.message : 'Failed to reset password');
       }
     });
   };
 
   if (!token) {
     return (
-      <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 px-4 py-4 rounded-xl backdrop-blur-sm">
-        <p className="font-semibold text-white">No reset token provided</p>
-        <p className="text-sm mt-1">
-          Please use the link from your password reset email.
-        </p>
-        <Link
-          href="/forgot-password"
-          className="mt-4 inline-block text-sm font-medium text-cyan-400 hover:text-cyan-300 transition-colors"
+      <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm font-medium">
+        <p>Invalid or expired reset link. Please request a new one.</p>
+        <Button 
+          variant="link" 
+          onClick={() => router.push('/forgot-password')}
+          className="mt-2 text-red-900 font-bold p-0"
         >
-          Request new reset link
-        </Link>
+          Request reset link &rarr;
+        </Button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl backdrop-blur-sm">
-          <p className="text-sm">{error}</p>
-          {(error.includes('expired') || error.includes('invalid')) && (
-            <Link
-              href="/forgot-password"
-              className="mt-3 inline-block text-sm font-medium text-cyan-400 hover:text-cyan-300 transition-colors"
-            >
-              Request new reset link →
-            </Link>
-          )}
+        <div className="p-4 bg-red-50 border border-red-200 text-red-900 rounded-lg text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-300">
+          <div className="flex items-center gap-3">
+             <div className="h-2 w-2 rounded-full bg-red-900 animate-pulse shrink-0"></div>
+             <p>{error}</p>
+          </div>
         </div>
       )}
 
       {success && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-xl backdrop-blur-sm">
-          <p className="font-semibold text-white">✓ Password reset successful!</p>
-          <p className="text-sm mt-1 text-emerald-400/80">
-            Redirecting you to login...
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg space-y-2 animate-in fade-in duration-500">
+          <p className="text-[11px] font-black uppercase tracking-wider text-emerald-900">Password updated</p>
+          <p className="text-[10px] font-bold opacity-80 leading-relaxed uppercase tracking-widest">
+            Your password has been changed successfully. Redirecting to login...
           </p>
         </div>
       )}
 
-      <div className="space-y-4">
-        {/* New Password */}
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-slate-300">
-            New Password
-          </label>
-          <input
+      <div className="space-y-5">
+        <div className="space-y-2">
+          <Label htmlFor="password" title="Use at least 8 characters" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">New Password</Label>
+          <Input
             id="password"
             type="password"
             {...register('password')}
-            className="mt-2 block w-full px-4 py-3 bg-slate-950/50 border border-white/10 rounded-xl text-white placeholder-slate-500 shadow-inner focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all duration-300"
-            disabled={isPending || success}
-            autoComplete="new-password"
             placeholder="••••••••"
+            disabled={isPending || success}
+            className="h-14 px-6"
           />
           {errors.password && (
-            <p className="mt-1.5 text-sm text-red-400 font-medium">{errors.password.message}</p>
+            <p className="text-[10px] font-extrabold uppercase tracking-widest text-destructive ml-1 mt-1.5">{errors.password.message}</p>
           )}
-          <p className="mt-1.5 text-xs text-slate-500">Must be at least 8 characters</p>
         </div>
 
-        {/* Confirm Password */}
-        <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300">
-            Confirm New Password
-          </label>
-          <input
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Confirm Password</Label>
+          <Input
             id="confirmPassword"
             type="password"
             {...register('confirmPassword')}
-            className="mt-2 block w-full px-4 py-3 bg-slate-950/50 border border-white/10 rounded-xl text-white placeholder-slate-500 shadow-inner focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all duration-300"
-            disabled={isPending || success}
-            autoComplete="new-password"
             placeholder="••••••••"
+            disabled={isPending || success}
+            className="h-14 px-6"
           />
           {errors.confirmPassword && (
-            <p className="mt-1.5 text-sm text-red-400 font-medium">{errors.confirmPassword.message}</p>
+            <p className="text-[10px] font-extrabold uppercase tracking-widest text-destructive ml-1 mt-1.5">{errors.confirmPassword.message}</p>
           )}
         </div>
       </div>
 
-      <button
+      <Button
         type="submit"
+        variant="premium"
+        size="lg"
         disabled={isPending || success}
-        className="w-full relative flex justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 transition-all duration-200 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)]"
+        className="w-full h-14 font-black uppercase tracking-widest text-[11px] shadow-lg shadow-primary/5 mt-4"
       >
-        {isPending ? 'Resetting password...' : success ? 'Password reset!' : 'Reset password'}
-      </button>
+        {isPending ? 'Updating...' : 'Update Password'}
+      </Button>
     </form>
   );
 }

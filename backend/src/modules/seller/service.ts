@@ -36,7 +36,7 @@ class SellerModuleService extends MedusaService({
     status: "pending" | "verified" | "rejected" | "suspended"
   ) {
     return await this.listSellers({
-      filters: { verification_status: status },
+      verification_status: status,
     })
   }
 
@@ -53,7 +53,7 @@ class SellerModuleService extends MedusaService({
    */
   async getSellerByCustomerId(customerId: string) {
     const sellers = await this.listSellers({
-      filters: { customer_id: customerId },
+      customer_id: customerId,
     })
 
     return sellers[0] || null
@@ -179,10 +179,8 @@ class SellerModuleService extends MedusaService({
    */
   async getActiveSellerCount(): Promise<number> {
     const result = await this.listAndCountSellers({
-      filters: {
-        verification_status: "verified",
-        is_active: true,
-      },
+      verification_status: "verified",
+      is_active: true,
     })
 
     return result[1] // Second element is count

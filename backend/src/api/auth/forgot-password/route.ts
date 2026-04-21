@@ -5,11 +5,11 @@
 
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from 'zod'
-import { ACCOUNT_MODULE } from '../../../modules/account'
+import { ACCOUNT_MODULE } from "@modules/account"
 import { RateLimiter } from '../../../services/business-rules'
 
 import type { ICustomerModuleService } from '@medusajs/framework/types'
-import type AccountModuleService from '../../../modules/account/service'
+import type AccountModuleService from "@modules/account/service"
 import { Modules } from '@medusajs/framework/utils'
 
 const forgotPasswordSchema = z.object({

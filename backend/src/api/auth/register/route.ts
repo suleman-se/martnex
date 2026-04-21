@@ -15,9 +15,9 @@
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from 'zod'
 import { Modules } from '@medusajs/framework/utils'
-import { ACCOUNT_MODULE } from '../../../modules/account'
+import { ACCOUNT_MODULE } from "@modules/account"
 import type { ICustomerModuleService, IAuthModuleService } from '@medusajs/framework/types'
-import type AccountModuleService from '../../../modules/account/service'
+import type AccountModuleService from "@modules/account/service"
 
 const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -76,6 +76,9 @@ export async function POST(
       first_name: validatedData.first_name,
       last_name: validatedData.last_name || '',
       has_account: true,
+      metadata: {
+        role: validatedData.role,
+      },
     })
 
     // Step 3: Link the AuthIdentity to the Customer + set role

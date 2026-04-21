@@ -3,18 +3,16 @@ FROM node:22-alpine
 # Enable corepack for pnpm
 RUN corepack enable && corepack prepare pnpm@10.24.0 --activate
 
-# Set working directory
 WORKDIR /app
 
-# Install dependencies
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile || pnpm install
+# Copy package manifests first for layer caching
+COPY package.json pnpm-lock.yaml ./
 
-# Copy project files
-COPY . .
+# Install dependencies at BUILD time so node_modules are baked into the image.
+# The docker-compose named volume will preserve these on first mount.
+RUN pnpm install --frozen-lockfile
 
-# Expose port
 EXPOSE 3000
 
-# Start development server
+# Run the dev server (source is live-mounted via docker-compose volume)
 CMD ["pnpm", "run", "dev"]

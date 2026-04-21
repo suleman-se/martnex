@@ -88,7 +88,7 @@ class CommissionModuleService extends MedusaService({
       }
     }
 
-    return await this.listCommissions({ filters: queryFilters })
+    return await this.listCommissions(queryFilters)
   }
 
   /**
@@ -98,7 +98,7 @@ class CommissionModuleService extends MedusaService({
    */
   async getOrderCommissions(orderId: string) {
     return await this.listCommissions({
-      filters: { order_id: orderId },
+      order_id: orderId,
     })
   }
 
