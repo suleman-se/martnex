@@ -9,17 +9,19 @@ export const metadata = {
   description: 'Security update for your Martnex account.',
 };
 
-export default function ResetPasswordPage({
+export default async function ResetPasswordPage({
   searchParams,
 }: {
-  searchParams: { token?: string };
+  searchParams: Promise<{ token?: string }>;
 }) {
+  const { token } = await searchParams;
+  
   return (
     <AuthContainer
       title="Reset Password"
       description="Create a new password for your account."
     >
-      <ResetPasswordForm token={searchParams.token} />
+      <ResetPasswordForm token={token} />
 
       <div className="mt-8 pt-8 border-t border-border/10 flex justify-center">
         <Link

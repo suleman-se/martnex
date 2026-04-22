@@ -9,6 +9,7 @@ import { getBackendUrl } from '@/lib/medusa-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Lock, ShieldCheck, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 
 const API_URL = getBackendUrl();
 
@@ -33,7 +34,6 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-
   const {
     register,
     handleSubmit,
@@ -70,7 +70,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         setSuccess(true);
         setTimeout(() => {
           router.push('/login?message=Password reset successful. Please sign in.');
-        }, 3000);
+        }, 2500);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to reset password');
       }
@@ -79,15 +79,35 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
   if (!token) {
     return (
-      <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm font-medium">
-        <p>Invalid or expired reset link. Please request a new one.</p>
-        <Button 
-          variant="link" 
-          onClick={() => router.push('/forgot-password')}
-          className="mt-2 text-red-900 font-bold p-0"
-        >
-          Request reset link &rarr;
+      <div className="p-8 bg-red-50 rounded-2xl flex flex-col items-center text-center space-y-6 animate-in fade-in zoom-in duration-500">
+        <div className="w-16 h-16 rounded-[2rem] bg-red-100 flex items-center justify-center">
+          <AlertCircle className="w-8 h-8 text-red-600" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-lg font-black uppercase tracking-tight text-red-900">Invalid Link</h3>
+          <p className="text-sm font-medium text-red-700/80 leading-relaxed max-w-[240px]">
+            This reset link is either invalid or has expired.
+          </p>
+        </div>
+        <Button variant="outline" onClick={() => router.push('/forgot-password')} className="w-full h-12 rounded-xl text-[10px] font-black uppercase tracking-widest border-red-200 text-red-900 hover:bg-red-100">
+          Request New Link
         </Button>
+      </div>
+    );
+  }
+
+  if (success) {
+    return (
+      <div className="p-8 bg-emerald-50 rounded-2xl flex flex-col items-center text-center space-y-6 animate-in fade-in zoom-in duration-500">
+        <div className="w-16 h-16 rounded-[2rem] bg-emerald-100 flex items-center justify-center">
+          <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-lg font-black uppercase tracking-tight text-emerald-900">Success</h3>
+          <p className="text-sm font-medium text-emerald-700/80 leading-relaxed max-w-[240px]">
+            Your password has been updated. Redirecting to the login portal...
+          </p>
+        </div>
       </div>
     );
   }
@@ -95,51 +115,49 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-900 rounded-lg text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-300">
+        <div className="p-5 bg-red-50 border border-red-100 rounded-2xl space-y-2 animate-in fade-in duration-300">
           <div className="flex items-center gap-3">
-             <div className="h-2 w-2 rounded-full bg-red-900 animate-pulse shrink-0"></div>
-             <p>{error}</p>
+             <div className="h-2 w-2 rounded-full bg-red-600 animate-pulse shrink-0"></div>
+             <h3 className="text-[11px] font-black uppercase tracking-wider text-red-900">Update Failed</h3>
           </div>
-        </div>
-      )}
-
-      {success && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg space-y-2 animate-in fade-in duration-500">
-          <p className="text-[11px] font-black uppercase tracking-wider text-emerald-900">Password updated</p>
-          <p className="text-[10px] font-bold opacity-80 leading-relaxed uppercase tracking-widest">
-            Your password has been changed successfully. Redirecting to login...
-          </p>
+          <p className="text-sm font-semibold text-red-700/80 leading-relaxed">{error}</p>
         </div>
       )}
 
       <div className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="password" title="Use at least 8 characters" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">New Password</Label>
-          <Input
-            id="password"
-            type="password"
-            {...register('password')}
-            placeholder="••••••••"
-            disabled={isPending || success}
-            className="h-14 px-6"
-          />
+          <Label htmlFor="password" title="Use at least 8 characters" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">New Secure Password</Label>
+          <div className="relative group">
+            <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+            <Input
+              id="password"
+              type="password"
+              {...register('password')}
+              placeholder="••••••••"
+              disabled={isPending}
+              className="h-14 pl-14 pr-6 bg-slate-100/50 border-none focus:ring-2 focus:ring-primary/10"
+            />
+          </div>
           {errors.password && (
-            <p className="text-[10px] font-extrabold uppercase tracking-widest text-destructive ml-1 mt-1.5">{errors.password.message}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-destructive ml-1 mt-1.5">{errors.password.message}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Confirm Password</Label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            {...register('confirmPassword')}
-            placeholder="••••••••"
-            disabled={isPending || success}
-            className="h-14 px-6"
-          />
+          <Label htmlFor="confirmPassword" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Confirm Identity</Label>
+          <div className="relative group">
+            <ShieldCheck className="absolute left-5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+            <Input
+              id="confirmPassword"
+              type="password"
+              {...register('confirmPassword')}
+              placeholder="••••••••"
+              disabled={isPending}
+              className="h-14 pl-14 pr-6 bg-slate-100/50 border-none focus:ring-2 focus:ring-primary/10"
+            />
+          </div>
           {errors.confirmPassword && (
-            <p className="text-[10px] font-extrabold uppercase tracking-widest text-destructive ml-1 mt-1.5">{errors.confirmPassword.message}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-destructive ml-1 mt-1.5">{errors.confirmPassword.message}</p>
           )}
         </div>
       </div>
@@ -148,10 +166,15 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         type="submit"
         variant="premium"
         size="lg"
-        disabled={isPending || success}
+        disabled={isPending}
         className="w-full h-14 font-black uppercase tracking-widest text-[11px] shadow-lg shadow-primary/5 mt-4"
       >
-        {isPending ? 'Updating...' : 'Update Password'}
+        {isPending ? (
+          <span className="flex items-center gap-2">
+            <RefreshCw className="w-4 h-4 animate-spin" />
+            Synchronizing...
+          </span>
+        ) : 'Reset Password'}
       </Button>
     </form>
   );

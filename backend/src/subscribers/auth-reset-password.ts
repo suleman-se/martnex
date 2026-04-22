@@ -1,12 +1,15 @@
 import { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
+import EmailService from "../services/email-service"
 
 export default async function authPasswordResetHandler({ event: { data }, container }: SubscriberArgs) {
   const logger = container.resolve("logger")
+  const emailService = new EmailService({ logger: logger as any })
   const payload = data as any
   
-  // In a production environment with @medusajs/notification installed, 
-  // you would resolve Modules.NOTIFICATION here and dispatch an email.
-  logger.info(`[Notification] Would send Mock Password Reset Email to: ${payload.entity_id} with token: ${payload.token}`)
+  await emailService.sendPasswordResetEmail(
+    payload.email,
+    payload.token
+  )
 }
 
 export const config: SubscriberConfig = {

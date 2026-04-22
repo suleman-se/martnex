@@ -23,21 +23,23 @@ const AppleLogo = () => (
   </svg>
 );
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { message?: string };
+  searchParams: Promise<{ message?: string }>;
 }) {
+  const { message } = await searchParams;
+  
   return (
     <AuthContainer
       title="Login"
       description="Welcome back to Martnex marketplace"
     >
       <div className="-mt-4 mb-8">
-        {searchParams.message && (
+        {message && (
           <div className="p-4 bg-indigo-50/50 text-primary rounded-xl text-[11px] font-black uppercase tracking-wider flex items-center gap-3 border border-indigo-100">
              <div className="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
-             {searchParams.message}
+             {message}
           </div>
         )}
       </div>

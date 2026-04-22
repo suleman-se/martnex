@@ -1,28 +1,36 @@
 import VerifyEmailForm from '@/components/auth/VerifyEmailForm';
+import { AuthContainer } from '@/components/ui/auth-container';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 export const metadata = {
   title: 'Verify Email - Martnex',
-  description: 'Verify your email address',
+  description: 'Confirm your email to activate your account.',
 };
 
-export default function VerifyEmailPage({
+export default async function VerifyEmailPage({
   searchParams,
 }: {
-  searchParams: { token?: string };
+  searchParams: Promise<{ token?: string }>;
 }) {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900">Martnex</h1>
-          <h2 className="mt-6 text-3xl font-semibold text-gray-900">Verify your email</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Confirm your email address to activate your account
-          </p>
-        </div>
+  const { token } = await searchParams;
 
-        <VerifyEmailForm token={searchParams.token} />
+  return (
+    <AuthContainer
+      title="Verify Email"
+      description="Click the button below to confirm your account."
+    >
+      <VerifyEmailForm token={token} />
+
+      <div className="mt-8 pt-8 border-t border-border/10 flex justify-center">
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Login
+        </Link>
       </div>
-    </div>
+    </AuthContainer>
   );
 }

@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getBackendUrl } from '@/lib/medusa-client';
+import { Button } from '@/components/ui/button';
+import { Loader2, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 
 const API_URL = getBackendUrl();
 
@@ -16,9 +18,11 @@ export default function VerifyEmailForm({ token }: VerifyEmailFormProps) {
   const [isPending, startTransition] = useTransition();
   const [status, setStatus] = useState<'idle' | 'verifying' | 'success' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
+  const verifyInitiated = useRef(false);
 
   useEffect(() => {
-    if (token && status === 'idle') {
+    if (token && status === 'idle' && !verifyInitiated.current) {
+      verifyInitiated.current = true;
       verifyEmail(token);
     }
   }, [token, status]);
@@ -42,10 +46,10 @@ export default function VerifyEmailForm({ token }: VerifyEmailFormProps) {
 
         setStatus('success');
 
-        // Redirect to login after 3 seconds
+        // Redirect to login after a short delay
         setTimeout(() => {
           router.push('/login?message=Email verified successfully! You can now log in.');
-        }, 3000);
+        }, 2500);
       } catch (err) {
         setStatus('error');
         setError(err instanceof Error ? err.message : 'Verification failed');
@@ -55,68 +59,74 @@ export default function VerifyEmailForm({ token }: VerifyEmailFormProps) {
 
   if (!token) {
     return (
-      <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 px-4 py-4 rounded-xl backdrop-blur-sm">
-        <p className="font-semibold text-white">No verification token provided</p>
-        <p className="text-sm mt-1">
-          Please check your email for the verification link.
-        </p>
-        <Link
-          href="/register"
-          className="mt-4 inline-block text-sm font-medium text-cyan-400 hover:text-cyan-300 transition-colors"
-        >
-          ← Back to register
-        </Link>
+      <div className="p-8 bg-red-50 rounded-2xl flex flex-col items-center text-center space-y-6 animate-in fade-in zoom-in duration-500">
+        <div className="w-16 h-16 rounded-[2rem] bg-red-100 flex items-center justify-center">
+          <AlertCircle className="w-8 h-8 text-red-600" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-lg font-black uppercase tracking-tight text-red-900">Link Missing</h3>
+          <p className="text-sm font-medium text-red-700/80 max-w-[240px] leading-relaxed">
+            We couldn&apos;t find a verification token. Please check your inbox for a valid link.
+          </p>
+        </div>
+        <Button variant="outline" asChild className="w-full h-12 rounded-xl text-[10px] font-black uppercase tracking-widest border-red-200 text-red-900 hover:bg-red-100">
+          <Link href="/register">Register Again</Link>
+        </Button>
       </div>
     );
   }
 
   if (status === 'verifying') {
     return (
-      <div className="bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 px-4 py-4 rounded-xl backdrop-blur-sm">
-        <div className="flex items-center">
-          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-cyan-400 mr-3"></div>
-          <p className="font-medium text-white">Verifying your email...</p>
+      <div className="p-12 flex flex-col items-center justify-center space-y-6 animate-in fade-in duration-500">
+        <div className="w-16 h-16 rounded-[2rem] bg-slate-100 flex items-center justify-center">
+          <RefreshCw className="w-8 h-8 text-primary animate-spin" />
         </div>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground animate-pulse">
+          Authenticating Identity
+        </p>
       </div>
     );
   }
 
   if (status === 'success') {
     return (
-      <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-4 rounded-xl backdrop-blur-sm">
-        <p className="font-semibold text-white">✓ Email verified successfully!</p>
-        <p className="text-sm mt-1 text-emerald-400/80">
-          Redirecting you to login...
-        </p>
+      <div className="p-8 bg-emerald-50 rounded-2xl flex flex-col items-center text-center space-y-6 animate-in fade-in zoom-in duration-500">
+        <div className="w-16 h-16 rounded-[2rem] bg-emerald-100 flex items-center justify-center">
+          <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-lg font-black uppercase tracking-tight text-emerald-900">Verified</h3>
+          <p className="text-sm font-medium text-emerald-700/80 max-w-[240px] leading-relaxed">
+            Your account is active. Redirecting you to the portal shortly...
+          </p>
+        </div>
       </div>
     );
   }
 
   if (status === 'error') {
     return (
-      <div className="space-y-6">
-        <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-4 rounded-xl backdrop-blur-sm">
-          <p className="font-semibold text-white">Verification failed</p>
-          <p className="text-sm mt-1">{error}</p>
-          {error?.includes('expired') && (
-            <p className="text-sm mt-2 text-red-400">
-              Your verification link may have expired. Please request a new one.
+      <div className="space-y-6 animate-in fade-in duration-300">
+        <div className="p-8 bg-red-50 rounded-2xl flex flex-col items-center text-center space-y-6 animate-in fade-in zoom-in duration-500">
+          <div className="w-16 h-16 rounded-[2rem] bg-red-100 flex items-center justify-center">
+            <AlertCircle className="w-8 h-8 text-red-600" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-lg font-black uppercase tracking-tight text-red-900">Failed</h3>
+            <p className="text-sm font-medium text-red-700/80 leading-relaxed max-w-[240px]">
+              {error || 'The verification link is invalid or has already been used.'}
             </p>
-          )}
+          </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Link
-            href="/register"
-            className="flex-1 flex justify-center items-center py-3 px-4 border border-white/20 rounded-xl text-sm font-semibold text-slate-300 bg-slate-900/50 hover:bg-slate-800/50 hover:text-white transition-all shadow-inner"
-          >
-            Register again
-          </Link>
-          <Link
-            href="/login"
-            className="flex-1 flex justify-center items-center py-3 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all"
-          >
-            Go to login
-          </Link>
+        
+        <div className="grid grid-cols-1 gap-3">
+          <Button variant="premium" size="lg" className="h-14 font-black uppercase tracking-widest text-[11px]" onClick={() => verifyEmail(token)}>
+            Retry Verification
+          </Button>
+          <Button variant="secondary" asChild className="h-14 font-black uppercase tracking-widest text-[11px] bg-slate-100">
+            <Link href="/login">Return to Login</Link>
+          </Button>
         </div>
       </div>
     );

@@ -1,6 +1,5 @@
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 import Link from 'next/link';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { AuthContainer } from '@/components/ui/auth-container';
 import { ArrowLeft } from 'lucide-react';
 

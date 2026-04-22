@@ -8,6 +8,7 @@ import { getBackendUrl } from '@/lib/medusa-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Mail, CheckCircle2, History } from 'lucide-react';
 
 const API_URL = getBackendUrl();
 
@@ -20,7 +21,7 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export default function ForgotPasswordForm() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [rateLimited, setRateLimited] = useState(false);
 
   const {
@@ -33,7 +34,7 @@ export default function ForgotPasswordForm() {
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setError(null);
-    setSuccess(false);
+    setSuccessMessage(null);
     setRateLimited(false);
 
     startTransition(async () => {
@@ -50,55 +51,69 @@ export default function ForgotPasswordForm() {
           return;
         }
 
+        const responseData = await response.json();
+
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || errorData.message || 'Request failed');
+          throw new Error(responseData.error || responseData.message || 'Request failed');
         }
 
-        setSuccess(true);
+        setSuccessMessage(responseData.message || 'Check your inbox for a recovery link to reset your password.');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to send reset email');
       }
     });
   };
 
+  if (successMessage) {
+    return (
+      <div className="p-8 bg-emerald-50 rounded-2xl flex flex-col items-center text-center space-y-6 animate-in fade-in zoom-in duration-500">
+        <div className="w-16 h-16 rounded-[2rem] bg-emerald-100 flex items-center justify-center">
+          <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-lg font-black uppercase tracking-tight text-emerald-900">Email Sent</h3>
+          <p className="text-sm font-medium text-emerald-700/80 leading-relaxed max-w-[240px]">
+            {successMessage}
+          </p>
+        </div>
+        <Button variant="outline" onClick={() => setSuccessMessage(null)} className="w-full h-12 rounded-xl text-[10px] font-black uppercase tracking-widest">
+          Try Different Email
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && (
-        <div className={`p-4 rounded-lg border text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-300 ${
+        <div className={`p-5 rounded-2xl border text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-300 ${
           rateLimited
-            ? 'bg-amber-50 border-amber-200 text-amber-900'
-            : 'bg-red-50 border-red-200 text-red-900'
+            ? 'bg-amber-50 border-amber-100 text-amber-900'
+            : 'bg-red-50 border-red-100 text-red-900'
         }`}>
           <div className="flex items-center gap-3">
-             <div className="h-2 w-2 rounded-full bg-current animate-pulse shrink-0"></div>
+             <div className={`h-2 w-2 rounded-full animate-pulse shrink-0 ${rateLimited ? 'bg-amber-600' : 'bg-red-600'}`}></div>
              <p>{error}</p>
           </div>
         </div>
       )}
 
-      {success && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg space-y-2 animate-in fade-in duration-500">
-          <p className="text-[11px] font-black uppercase tracking-wider">Email sent</p>
-          <p className="text-[10px] font-bold opacity-80 leading-relaxed uppercase tracking-widest">
-            Check your inbox for instructions to reset your password.
-          </p>
-        </div>
-      )}
-
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email address</Label>
-        <Input
-          id="email"
-          type="email"
-          {...register('email')}
-          placeholder="your@email.com"
-          disabled={isPending || success}
-          autoComplete="email"
-          className="h-14 px-6"
-        />
+        <Label htmlFor="email" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Account Email</Label>
+        <div className="relative group">
+          <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+          <Input
+            id="email"
+            type="email"
+            {...register('email')}
+            placeholder="your@email.com"
+            disabled={isPending}
+            autoComplete="email"
+            className="h-14 pl-14 pr-6 bg-slate-100/50 border-none focus:ring-2 focus:ring-primary/10"
+          />
+        </div>
         {errors.email && (
-          <p className="text-[10px] font-extrabold uppercase tracking-widest text-destructive ml-1 mt-1.5">{errors.email.message}</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-destructive ml-1 mt-1.5">{errors.email.message}</p>
         )}
       </div>
 
@@ -106,10 +121,15 @@ export default function ForgotPasswordForm() {
         type="submit"
         variant="premium"
         size="lg"
-        disabled={isPending || success || rateLimited}
-        className="w-full h-14 font-black uppercase tracking-widest text-[11px] shadow-lg shadow-primary/5"
+        disabled={isPending || rateLimited}
+        className="w-full h-14 font-black uppercase tracking-widest text-[11px] shadow-lg shadow-primary/5 mt-2"
       >
-        {isPending ? 'Sending...' : success ? 'Sent' : 'Send reset link'}
+        {isPending ? (
+          <span className="flex items-center gap-2">
+            <History className="w-4 h-4 animate-spin" />
+            Requesting...
+          </span>
+        ) : 'Request Recovery Link'}
       </Button>
     </form>
   );
