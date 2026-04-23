@@ -4,11 +4,10 @@
 Martnex - Next-Generation Multi-Vendor Marketplace Platform
 
 ## Current Status
-- **Version:** 0.2.0
-- **Phase:** 2.5 Complete (Authentication & Authorization)
-- **Phase 3:** Ready to Start (Database Integration & Product Linking)
+- **Version:** 0.3.0
+- **Phase:** 3.0 In Progress (Frontend & Email Integration)
 - **Test Coverage:** 106 tests (all passing ✅)
-- **Last Updated:** December 8, 2025
+- **Last Updated:** April 22, 2026
 
 ## Objective
 Build a scalable, secure multi-vendor marketplace with custom commission logic, role-based access, and comprehensive e-commerce features using Medusa.js as the foundation.
@@ -172,17 +171,17 @@ Build a scalable, secure multi-vendor marketplace with custom commission logic, 
 - 8 authentication endpoints
 - 97 comprehensive tests (all passing)
 
-### Phase 3: Database Integration & Product Linking 📋 (Pending)
-**Status:** Ready to Start
-- User model creation and integration
-- Email verification token storage and sending
-- Password reset token storage
-- Refresh token storage (Redis)
-- Email service integration (SendGrid)
-- Product model with seller mapping
-- Product-seller relationship
-- Order event automation (commission creation)
-- Complete integration testing
+### Phase 3: Database Integration & Product Linking 📋 (In Progress)
+**Status:** In Progress
+- ✅ User model creation and integration
+- ✅ Email verification token flow (implemented in auth flow)
+- ✅ Password reset token flow (implemented in auth flow)
+- ✅ Email service integration (Nodemailer + SMTP)
+- 📋 Refresh token storage (Redis)
+- 📋 Product model with seller mapping
+- 📋 Product-seller relationship
+- 📋 Order event automation (commission creation)
+- 📋 Complete integration testing
 
 ### Phase 4+: Frontend & Advanced Features 📋 (Future)
 - Buyer/Seller/Admin dashboards
@@ -232,11 +231,11 @@ Build a scalable, secure multi-vendor marketplace with custom commission logic, 
 - Password reset tokens table
 - Refresh token storage (Redis)
 
-**Email Services:**
-- Email verification sending
-- Password reset email sending
-- Order confirmation emails
-- Payout notification emails
+**Email Services (Nodemailer) ✅:**
+- ✅ Email verification sending
+- ✅ Password reset email sending
+- 📋 Order confirmation emails
+- 📋 Payout notification emails
 
 **Product Integration:**
 - Product model modification (add seller_id)

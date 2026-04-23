@@ -36,11 +36,36 @@ export async function POST(
       return
     }
 
-    // Update customer email_verified field
+    // 1. Fetch current customer with metadata
+    const customer = await customerService.retrieveCustomer(verification.user_id, {
+      select: ['id', 'email', 'metadata'] as any
+    })
+
+    // 2. Update customer verification status in metadata
     await customerService.updateCustomers(verification.user_id, {
-      email_verified: true,
-      email_verified_at: new Date()
+      metadata: {
+        ...(customer.metadata || {}),
+        email_verified: true,
+        email_verified_at: new Date().toISOString()
+      }
     } as any)
+
+    // 3. If user is a seller, also verify their seller profile
+    if (customer.metadata?.role === 'seller') {
+      try {
+        // Resolve seller module service
+        const sellerService = req.scope.resolve<any>("seller")
+        
+        if (sellerService) {
+          const seller = await sellerService.getSellerByCustomerId(customer.id)
+          if (seller) {
+            await sellerService.approveSeller(seller.id, "Auto-verified via email confirmation")
+          }
+        }
+      } catch (e) {
+        console.warn('Could not auto-verify seller profile:', e)
+      }
+    }
 
     res.status(200).json({
       message: 'Email verified successfully. You can now log in.',

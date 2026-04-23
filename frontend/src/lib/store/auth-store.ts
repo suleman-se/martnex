@@ -153,6 +153,9 @@ export const useAuthStore = create<AuthState>()(
           const headers = await buildStoreHeaders(token);
           const response = await fetch(`${API_URL}/store/customers/me`, {
             headers,
+            cache: 'no-store',
+            // @ts-ignore - Next.js specific
+            next: { revalidate: 0 }
           });
 
           if (response.ok) {

@@ -27,7 +27,7 @@ export default class EmailService {
         pass: process.env.SMTP_PASS,
       }
     }
-    console.log({smtpOptions});
+
     this.transporter = nodemailer.createTransport(smtpOptions)
   }
 

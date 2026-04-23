@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { buildStoreHeaders, getBackendUrl } from '@/lib/medusa-client';
@@ -11,8 +11,17 @@ import { Badge } from '@/components/ui/badge';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, isAuthenticated, logout, _hasHydrated } = useAuthStore();
+  const { user, isAuthenticated, logout, refreshUser, _hasHydrated } = useAuthStore();
   const lastCheckedSellerUserId = useRef<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleSync = async () => {
+    setIsRefreshing(true);
+    await refreshUser();
+    // Force a small delay for visual feedback
+    setTimeout(() => setIsRefreshing(false), 600);
+  };
+
 
   useEffect(() => {
     if (_hasHydrated) {
@@ -110,11 +119,23 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <dt className="text-xs font-medium text-slate-500 mb-1">Verification Status</dt>
-                  <dd>
+                  <dd className="flex items-center gap-2">
                     {user.email_verified ? (
                       <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-50">✓ Verified</Badge>
                     ) : (
-                      <Badge variant="destructive" className="bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-50">⚠ Unverified</Badge>
+                      <>
+                        <Badge variant="destructive" className="bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-50">⚠ Unverified</Badge>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={handleSync}
+                          disabled={isRefreshing}
+                          className={`h-6 w-6 text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all duration-500 ${isRefreshing ? 'rotate-180 animate-spin text-primary' : ''}`}
+                          title="Refresh status"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                        </Button>
+                      </>
                     )}
                   </dd>
                 </div>

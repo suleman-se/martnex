@@ -64,7 +64,7 @@ export default function RegisterForm() {
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 text-red-900 rounded-lg text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-300">
           <p className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-red-900 animate-pulse"></div>
+            <span className="block h-2 w-2 rounded-full bg-red-900 animate-pulse"></span>
             {error}
           </p>
         </div>
@@ -73,7 +73,7 @@ export default function RegisterForm() {
       {success && (
         <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-500">
           <p className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-emerald-900 animate-pulse"></div>
+            <span className="block h-2 w-2 rounded-full bg-emerald-900 animate-pulse"></span>
             Account created successfully. Verifying...
           </p>
         </div>

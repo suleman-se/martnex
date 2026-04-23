@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getBackendUrl } from '@/lib/medusa-client';
+import { useAuthStore } from '@/lib/store/auth-store';
 import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 
@@ -15,6 +16,7 @@ interface VerifyEmailFormProps {
 
 export default function VerifyEmailForm({ token }: VerifyEmailFormProps) {
   const router = useRouter();
+  const { refreshUser, isAuthenticated } = useAuthStore();
   const [isPending, startTransition] = useTransition();
   const [status, setStatus] = useState<'idle' | 'verifying' | 'success' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -46,10 +48,19 @@ export default function VerifyEmailForm({ token }: VerifyEmailFormProps) {
 
         setStatus('success');
 
-        // Redirect to login after a short delay
+        // Refresh the user state immediately if logged in to update metadata/verified status
+        if (isAuthenticated) {
+          await refreshUser();
+        }
+
+        // Redirect after a short delay
         setTimeout(() => {
-          router.push('/login?message=Email verified successfully! You can now log in.');
-        }, 2500);
+          if (isAuthenticated) {
+            router.push('/dashboard');
+          } else {
+            router.push('/login?message=Email verified successfully! You can now log in.');
+          }
+        }, 2000);
       } catch (err) {
         setStatus('error');
         setError(err instanceof Error ? err.message : 'Verification failed');

@@ -241,37 +241,31 @@ pnpm add medusa-file-cloudinary
 
 ---
 
-## Part 6: Email Setup (SendGrid)
+## Part 6: Email Setup (SMTP via Nodemailer)
 
-### Step 1: Install SendGrid Plugin
+### Step 1: Configure SMTP in Backend
 
-```bash
-cd backend
-pnpm add medusa-plugin-sendgrid
-```
-
-### Step 2: Configure
-
-Update `medusa-config.ts`:
-
-```typescript
-modules: {
-  sendgrid: {
-    resolve: "medusa-plugin-sendgrid",
-    options: {
-      apiKey: process.env.SENDGRID_API_KEY,
-      from: process.env.SENDGRID_FROM,
-    },
-  },
-}
-```
+The custom `EmailService` uses **Nodemailer**. You need to configure your SMTP provider in `backend/.env`.
 
 Update `.env`:
 
 ```env
-SENDGRID_API_KEY=SG.your_key_here
-SENDGRID_FROM=noreply@yourdomain.com
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_FROM=noreply@martnex.io
 ```
+
+> **Note:** If using Gmail, you must generate an **App Password**.
+
+### Step 2: Test Delivery
+
+The backend will automatically send emails for:
+- User Registration (Email Verification)
+- Forgot Password (Password Reset)
+
+Check the backend console logs for `Email sent successfully` messages.
 
 ---
 
