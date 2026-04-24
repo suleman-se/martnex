@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { getEmailVerificationToken } from './utils/db';
 
 // Generate email once per test suite (shared across tests in the suite)
 const uniqueEmail = `testuser_${Date.now()}@example.com`;
@@ -21,36 +22,44 @@ test.describe('Phase 3 Authentication E2E Journeys', () => {
 
     // Check for success message
     await expect(
-      page.locator('text=Registration successful').or(page.locator('text=check your email'))
+      page.locator('text=Account created successfully').or(page.locator('text=Verifying'))
     ).toBeVisible({ timeout: 15000 });
 
-    // 2. Wait for automatic redirect to login
-    // The RegisterForm has a 2-second timeout before redirecting to /login?message=...
-    await page.waitForURL(/\/login/, { timeout: 10000 });
-    
-    // 3. Login
-    await page.fill('input[name="email"]', uniqueEmail);
-    await page.fill('input[name="password"]', password);
+    // 2. Retrieve verification token from DB
+    // We wait a moment to ensure the token is saved in the DB
+    await page.waitForTimeout(2000);
+    const token = await getEmailVerificationToken(uniqueEmail);
+    expect(token).not.toBeNull();
 
-    await Promise.all([
-      page.waitForResponse(resp => resp.url().includes('/auth/customer/emailpass') && resp.status() >= 200 && resp.status() < 300),
-      page.click('button[type="submit"]'),
-    ]);
+    // 3. Verify Email
+    await page.goto(`/verify-email?token=${token}`);
+    
+    // Check for verification success
+    await expect(page.getByRole('heading', { name: 'Verified' })).toBeVisible({ timeout: 15000 });
+    
+    // Wait for automatic redirect to login or dashboard
+    // The verification page should redirect to login with a success message or directly to dashboard if it auto-logins
+    await page.waitForURL(url => url.pathname.includes('/login') || url.pathname.includes('/dashboard'), { timeout: 15000 });
+    
+    // 4. Login (if redirected to login)
+    if (page.url().includes('/login')) {
+      await page.fill('input[name="email"]', uniqueEmail);
+      await page.fill('input[name="password"]', password);
 
-    // 3. Verify Dashboard Access
-    // We expect either to be logged in (Logout present) or see the Unverified message
-    const logoutLocator = page.locator('button:has-text("Logout")').or(page.locator('text=Logout'));
-    const unverifiedLocator = page.locator('text=Email Not Verified');
-    
-    await expect(logoutLocator.or(unverifiedLocator)).toBeVisible({ timeout: 15000 });
-    
-    if (await logoutLocator.isVisible()) {
-      await expect(page.locator('text=Welcome, Integration')).toBeVisible();
-      
-      // Test refresh persistence
-      await page.reload();
-      await expect(page.locator('text=Welcome, Integration')).toBeVisible({ timeout: 10000 });
+      await Promise.all([
+        page.waitForResponse(resp => resp.url().includes('/auth/customer/emailpass') && resp.status() >= 200 && resp.status() < 300),
+        page.click('button[type="submit"]'),
+      ]);
     }
+
+    // 5. Verify Dashboard Access
+    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page.locator('text=Logout')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('text=Welcome back, Integration!')).toBeVisible();
+    
+    // Test refresh persistence
+    await page.reload();
+    await expect(page.locator('text=Welcome back, Integration!')).toBeVisible({ timeout: 10000 });
   });
 
   test.skip('Failed login journey: 5 failures -> Lockout Account', async ({ page }) => {
