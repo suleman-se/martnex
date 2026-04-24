@@ -1,130 +1,45 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { buildStoreHeaders, getBackendUrl } from '@/lib/medusa-client';
+import { useAdminSellers } from '@/hooks/use-admin-sellers';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Search, 
-  Bell, 
-  Store, 
-  MapPin, 
-  Gavel, 
-  FileText, 
+import { EmptyState } from '@/components/shared/empty-states/empty-state';
+import {
+  Search,
+  Store,
+  MapPin,
+  Gavel,
+  FileText,
   User,
   Check,
-  X,
-  AlertCircle
+  AlertCircle,
 } from 'lucide-react';
 
-interface Seller {
-  id: string;
-  name: string;
-  business_name: string;
-  business_description: string;
-  business_address: string; // JSON string or parsed
-  business_tax_id?: string;
-  verification_status: string;
-  created_at: string;
+function parseAddress(addr: string) {
+  try {
+    return JSON.parse(addr);
+  } catch {
+    return { address_line_1: addr, city: '', state: '', postal_code: '' };
+  }
 }
 
 export default function AdminSellersPage() {
-  const [sellers, setSellers] = useState<Seller[]>([]);
-  const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    sellers,
+    selectedSeller,
+    setSelectedSellerId,
+    isLoading,
+    error,
+    isProcessing,
+    handleVerify,
+    handleReject,
+  } = useAdminSellers();
 
-  const fetchSellers = async () => {
-    try {
-      setIsLoading(true);
-      const token = localStorage.getItem('access_token');
-      const headers = await buildStoreHeaders(token || undefined);
-      const response = await fetch(`${getBackendUrl()}/admin/sellers?status=pending`, {
-        headers,
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setSellers(data.sellers);
-        if (data.sellers.length > 0 && !selectedSeller) {
-          setSelectedSeller(data.sellers[0]);
-        }
-      }
-    } catch (err) {
-      console.error('Failed to fetch sellers:', err);
-      setError('Could not establish connection to the Registry.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSellers();
-  }, []);
-
-  const handleVerify = async (id: string) => {
-    try {
-      setIsProcessing(true);
-      const token = localStorage.getItem('access_token');
-      const headers = await buildStoreHeaders(token || undefined);
-      const response = await fetch(`${getBackendUrl()}/admin/sellers/${id}/verify`, {
-        method: 'POST',
-        headers: {
-          ...headers,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ notes: 'Verified by Admin' }),
-      });
-
-      if (response.ok) {
-        setSellers(prev => prev.filter(s => s.id !== id));
-        setSelectedSeller(null);
-        fetchSellers();
-      }
-    } catch (err) {
-      console.error('Verification failed:', err);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleReject = async (id: string) => {
+  const onReject = () => {
+    if (!selectedSeller) return;
     const reason = prompt('Please provide a reason for rejection:');
     if (!reason) return;
-
-    try {
-      setIsProcessing(true);
-      const token = localStorage.getItem('access_token');
-      const headers = await buildStoreHeaders(token || undefined);
-      const response = await fetch(`${getBackendUrl()}/admin/sellers/${id}/reject`, {
-        method: 'POST',
-        headers: {
-          ...headers,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ reason }),
-      });
-
-      if (response.ok) {
-        setSellers(prev => prev.filter(s => s.id !== id));
-        setSelectedSeller(null);
-        fetchSellers();
-      }
-    } catch (err) {
-      console.error('Rejection failed:', err);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  // Helper to parse address
-  const parseAddress = (addr: string) => {
-    try {
-      return JSON.parse(addr);
-    } catch {
-      return { address_line_1: addr, city: '', state: '', postal_code: '' };
-    }
+    handleReject(selectedSeller.id, reason);
   };
 
   return (
@@ -133,32 +48,44 @@ export default function AdminSellersPage() {
       <section className="w-[40%] bg-background border-r border-border/10 flex flex-col h-full overflow-hidden">
         <div className="p-10 border-b border-border/5">
           <h3 className="text-2xl font-black tracking-tight text-primary">Pending Registry</h3>
-          <p className="text-muted-foreground text-sm mt-1 uppercase tracking-widest font-black text-[10px]">Reviewing {sellers.length} new merchant requests</p>
+          <p className="text-muted-foreground text-sm mt-1 uppercase tracking-widest font-black text-[10px]">
+            Reviewing {sellers.length} new merchant requests
+          </p>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto">
           {/* Table Headers */}
           <div className="grid grid-cols-12 px-10 py-4 bg-secondary text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground sticky top-0 z-10">
             <div className="col-span-12">Merchant Profile</div>
           </div>
-          
+
           <div className="flex flex-col">
             {isLoading ? (
               <div className="p-10 flex justify-center">
                 <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent"></div>
               </div>
+            ) : error ? (
+              <EmptyState
+                icon={AlertCircle}
+                title="Connection Failed"
+                description={error}
+                className="p-10"
+              />
             ) : sellers.length === 0 ? (
-              <div className="p-10 text-center text-muted-foreground text-sm font-medium italic">
-                Clean state. No pending verifications.
-              </div>
+              <EmptyState
+                icon={Check}
+                title="Clean State"
+                description="No pending verifications."
+                className="p-10"
+              />
             ) : (
               sellers.map((seller) => (
-                <div 
+                <div
                   key={seller.id}
-                  onClick={() => setSelectedSeller(seller)}
+                  onClick={() => setSelectedSellerId(seller.id)}
                   className={`grid grid-cols-12 px-10 py-8 items-center transition-all cursor-pointer group relative ${
-                    selectedSeller?.id === seller.id 
-                      ? 'bg-card shadow-premium' 
+                    selectedSeller?.id === seller.id
+                      ? 'bg-card shadow-premium'
                       : 'hover:bg-secondary/40'
                   }`}
                 >
@@ -170,9 +97,7 @@ export default function AdminSellersPage() {
                       {seller.business_name[0]}
                     </div>
                     <div>
-                      <span className={`block text-base font-black tracking-tight transition-colors ${
-                        selectedSeller?.id === seller.id ? 'text-primary' : 'text-on-surface'
-                      }`}>
+                      <span className={`block text-base font-black tracking-tight transition-colors ${selectedSeller?.id === seller.id ? 'text-primary' : 'text-on-surface'}`}>
                         {seller.business_name}
                       </span>
                       <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
@@ -213,13 +138,11 @@ export default function AdminSellersPage() {
                       Merchant Registry
                     </Badge>
                     <span className="w-1 h-1 bg-border rounded-full"></span>
-                    <p className="text-muted-foreground text-sm font-bold">
-                      Pending Platform Access
-                    </p>
+                    <p className="text-muted-foreground text-sm font-bold">Pending Platform Access</p>
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-card p-8 rounded-2xl space-y-1 w-56 shadow-premium border border-white/40">
                 <p className="text-[10px] uppercase tracking-widest font-black text-muted-foreground">Registry Signal</p>
                 <div className="flex items-baseline gap-1">
@@ -235,7 +158,6 @@ export default function AdminSellersPage() {
 
             {/* Bento Info Grid */}
             <div className="grid grid-cols-2 gap-8">
-              {/* Business Information */}
               <div className="bg-card p-10 rounded-2xl space-y-8 shadow-premium border border-white/20">
                 <div className="flex items-center gap-3 text-primary">
                   <Store className="w-5 h-5" />
@@ -253,7 +175,6 @@ export default function AdminSellersPage() {
                 </div>
               </div>
 
-              {/* Tax ID & Legal */}
               <div className="bg-card p-10 rounded-2xl space-y-8 shadow-premium border border-white/20">
                 <div className="flex items-center gap-3 text-primary">
                   <Gavel className="w-5 h-5" />
@@ -273,7 +194,6 @@ export default function AdminSellersPage() {
                 </div>
               </div>
 
-              {/* Address (Full Width) */}
               <div className="col-span-2 bg-card p-10 rounded-2xl space-y-8 shadow-premium border border-white/20">
                 <div className="flex items-center gap-3 text-primary">
                   <MapPin className="w-5 h-5" />
@@ -292,45 +212,41 @@ export default function AdminSellersPage() {
                       <span>{parseAddress(selectedSeller.business_address).postal_code}</span>
                     </div>
                   </div>
-                  <div className="w-64 h-32 rounded-xl bg-secondary flex items-center justify-center border border-border/10 overflow-hidden group">
-                    <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest group-hover:scale-110 transition-transform">
-                      Nexus Visual Mock
-                    </div>
+                  <div className="w-64 h-32 rounded-xl bg-secondary flex items-center justify-center border border-border/10">
+                    <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Nexus Visual Mock</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Attached Documents */}
+            {/* Verification Artifacts */}
             <div className="space-y-6">
               <h4 className="font-black uppercase tracking-widest text-[11px] text-muted-foreground px-2">Verification Artifacts</h4>
               <div className="grid grid-cols-3 gap-4">
-                <div className="bg-card p-5 rounded-xl flex items-center gap-4 border border-border/10 cursor-pointer hover:bg-secondary/20 transition-all group">
-                  <FileText className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
-                  <span className="text-[11px] font-black uppercase tracking-widest text-primary">Legal_Statutes.pdf</span>
-                </div>
-                <div className="bg-card p-5 rounded-xl flex items-center gap-4 border border-border/10 cursor-pointer hover:bg-secondary/20 transition-all group">
-                  <FileText className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
-                  <span className="text-[11px] font-black uppercase tracking-widest text-primary">Inventory_Scan.xl</span>
-                </div>
-                <div className="bg-card p-5 rounded-xl flex items-center gap-4 border border-border/10 cursor-pointer hover:bg-secondary/20 transition-all group opacity-50">
-                   <User className="w-5 h-5 text-primary" />
-                  <span className="text-[11px] font-black uppercase tracking-widest text-primary">Identity_Photo.raw</span>
-                </div>
+                {[
+                  { icon: FileText, label: 'Legal_Statutes.pdf' },
+                  { icon: FileText, label: 'Inventory_Scan.xl' },
+                  { icon: User, label: 'Identity_Photo.raw', dim: true },
+                ].map(({ icon: Icon, label, dim }) => (
+                  <div key={label} className={`bg-card p-5 rounded-xl flex items-center gap-4 border border-border/10 cursor-pointer hover:bg-secondary/20 transition-all group ${dim ? 'opacity-50' : ''}`}>
+                    <Icon className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                    <span className="text-[11px] font-black uppercase tracking-widest text-primary">{label}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
             {/* Action Footer */}
             <div className="pt-12 flex items-center justify-end gap-8 border-t border-border/10 pb-20">
-              <button 
-                onClick={() => handleReject(selectedSeller.id)}
+              <button
+                onClick={onReject}
                 disabled={isProcessing}
                 className="text-muted-foreground font-black text-[11px] uppercase tracking-[0.2em] hover:text-destructive transition-colors cursor-pointer active:scale-95 disabled:opacity-50"
               >
                 Reject Application
               </button>
-              <Button 
-                variant="premium" 
+              <Button
+                variant="premium"
                 size="lg"
                 onClick={() => handleVerify(selectedSeller.id)}
                 disabled={isProcessing}
@@ -342,15 +258,12 @@ export default function AdminSellersPage() {
             </div>
           </div>
         ) : (
-          <div className="h-full flex flex-col items-center justify-center text-center space-y-6 opacity-40">
-            <div className="w-24 h-24 rounded-full border-2 border-dashed border-primary flex items-center justify-center">
-              <AlertCircle className="w-10 h-10 text-primary" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-xl font-black text-primary uppercase tracking-tight">System Idle</p>
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Select an identity from the registry to begin verification.</p>
-            </div>
-          </div>
+          <EmptyState
+            icon={AlertCircle}
+            title="System Idle"
+            description="Select an identity from the registry to begin verification."
+            className="h-full"
+          />
         )}
       </section>
     </div>

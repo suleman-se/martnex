@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { ProtectedRoute } from '@/components/shared/guards/protected-route';
+import { BaseDashboardLayout } from '@/components/shared/layouts/base-dashboard-layout';
 import { useSellerProfile } from '@/hooks/use-seller-profile';
 import { SellerSidebar } from '@/components/seller/layout/seller-sidebar';
 import { SellerHeader } from '@/components/seller/layout/seller-header';
@@ -10,7 +10,6 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function SellerLayout({ children }: { children: React.ReactNode }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { isLoading, isVerified, isPending, isRejected, isSuspended, hasProfile } = useSellerProfile();
   const router = useRouter();
   const pathname = usePathname();
@@ -21,7 +20,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
         router.push('/seller/onboarding');
       } else if (!isVerified) {
         const protectedRoutes = ['/seller/products', '/seller/orders'];
-        if (protectedRoutes.some(route => pathname.startsWith(route))) {
+        if (protectedRoutes.some((route) => pathname.startsWith(route))) {
           router.replace('/seller');
         }
       }
@@ -36,41 +35,30 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
     );
   }
 
-  // Prevent flashing content if they are being redirected to onboarding
-  if (!hasProfile) {
-    return null; 
-  }
+  if (!hasProfile) return null;
 
   return (
     <ProtectedRoute allowedRoles={['seller']}>
-      <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
-        <SellerSidebar 
-          isOpen={isSidebarOpen} 
-          isVerified={isVerified} 
-        />
-        
-        <div className={`transition-all duration-500 ${isSidebarOpen ? 'ml-72' : 'ml-0'}`}>
-          <SellerHeader 
-            isOpen={isSidebarOpen} 
-            onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+      <BaseDashboardLayout
+        sidebar={(isOpen) => <SellerSidebar isOpen={isOpen} isVerified={isVerified} />}
+        header={(props) => (
+          <SellerHeader
+            {...props}
             isVerified={isVerified}
             isRejected={isRejected}
             isSuspended={isSuspended}
           />
-          
-          <VerificationBanners 
+        )}
+        banners={
+          <VerificationBanners
             isPending={isPending}
             isRejected={isRejected}
             isSuspended={isSuspended}
           />
-
-          <main className="p-10 relative">
-            <div className="max-w-7xl mx-auto">
-              {children}
-            </div>
-          </main>
-        </div>
-      </div>
+        }
+      >
+        {children}
+      </BaseDashboardLayout>
     </ProtectedRoute>
   );
 }
