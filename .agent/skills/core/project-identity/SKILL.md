@@ -103,6 +103,28 @@ const { seller, isLoading, isVerified } = useSellerProfile();
 <div className="bg-white rounded-xl p-6">...</div>
 ```
 
+**5. Dashboard Layouts — ALWAYS use `<BaseDashboardLayout />`, never duplicate shell code:**
+```tsx
+// components/shared/layouts/base-dashboard-layout.tsx
+<BaseDashboardLayout
+  sidebar={(isOpen) => <SellerSidebar isOpen={isOpen} />}
+  header={(props) => <SellerHeader {...props} />}
+  banners={<VerificationBanners />}
+>
+  {children}
+</BaseDashboardLayout>
+```
+
+**6. Empty States — ALWAYS use `<EmptyState />`, never inline idle state divs:**
+```tsx
+// components/shared/empty-states/empty-state.tsx
+<EmptyState
+  icon={PackageX}
+  title="No Products Yet"
+  description="Add your first product to start selling."
+  action={<Button>Add Product</Button>}
+/>
+
 ### Completed Milestones
 - **Auth Persistence:** Medusa native `generateJwtToken` + `Modules.CACHE` (Redis) for refresh token rotation.
 - **seller/layout.tsx:** 268 → 52 lines. Uses `useSellerProfile` hook + `<ProtectedRoute>`.
@@ -112,12 +134,12 @@ const { seller, isLoading, isVerified } = useSellerProfile();
 - **seller/onboarding/page.tsx:** 461 → 163 lines. Schema in `onboarding-schema.ts`. Each step is a standalone component.
 - **`(auth)/layout.tsx`:** SSR hydration fixed with `mounted` pattern.
 - **`<ProtectedRoute />`:** Fully hydration-safe; supports role-based gating.
+- **`<BaseDashboardLayout />`:** Universal shell at `components/shared/layouts/`. Owns sidebar state, wires sidebar (render prop), header (render prop), banners, and children. Used by both seller and admin layouts.
+- **`<EmptyState />`:** Universal idle/empty component at `components/shared/empty-states/`. Replaces all ad-hoc inline empty state divs.
+- **`hooks/use-admin-sellers.ts`:** React Query hook (30s stale) for admin sellers page — verify/reject mutations with cache invalidation.
 
-### Remaining Work (Low Priority)
-- `<BaseDashboardLayout />` — shared sidebar+header shell (deferred until 3rd portal)
-- `hooks/use-admin-data.ts` — admin sellers page still fetches inline
-- `hooks/use-customer-profile.ts` — buyer dashboard reads from Zustand (no extra API calls, acceptable)
-- `components/shared/empty-states/` — not yet created
+### Architecture Refactoring — COMPLETE ✅
+All planned items from the feature-sliced refactoring are done. No remaining pending work.
 
 ## 8. Backend Architecture
 - **Medusa v2** with custom `seller` module (DML data model, workflow, API routes).
