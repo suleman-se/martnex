@@ -58,23 +58,33 @@ export async function POST(
 
     const customer = await customerService.retrieveCustomer(customerId)
 
-    // Generate tokens in the format the frontend expects
-    const userPayload = {
-      user_id: customer.id,
-      email: customer.email,
-      role: role
-    }
+    const { ContainerRegistrationKeys } = require('@medusajs/framework/utils')
+    const config = req.scope.resolve(ContainerRegistrationKeys.CONFIG_MODULE)
+    const { http } = config.projectConfig;
+    const { generateJwtToken } = require('@medusajs/framework/utils')
 
-    // If seller, include seller_id if available
-    if (role === 'seller' && authIdentity.app_metadata?.seller_id) {
-      (userPayload as any).seller_id = authIdentity.app_metadata.seller_id
-    }
-
-    const accessToken = generateAccessToken(userPayload)
+    const accessToken = generateJwtToken({
+        actor_id: customerId,
+        actor_type: 'customer',
+        auth_identity_id: authIdentity.id,
+        app_metadata: {
+            customer_id: customerId,
+        },
+        user_metadata: {},
+    }, {
+        secret: http.jwtSecret,
+        expiresIn: http.jwtExpiresIn || '1d',
+        jwtOptions: http.jwtOptions,
+    })
+    const tokenId = `token_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
     const refreshToken = generateRefreshToken({
       user_id: customer.id,
-      token_id: `token_${Date.now()}`
+      token_id: tokenId
     })
+
+    // Store refresh token in cache (expire in 7 days)
+    const cacheService = req.scope.resolve(Modules.CACHE) as any
+    await cacheService.set(`refresh_token:${tokenId}`, customer.id, 7 * 24 * 60 * 60)
 
     res.status(200).json({
       message: 'Login successful',

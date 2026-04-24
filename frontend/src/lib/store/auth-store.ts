@@ -15,6 +15,7 @@ interface AuthState {
   register: (data: RegisterData) => Promise<RegisterResponse>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  refreshSession: () => Promise<void>;
   setUser: (user: User | null) => void;
   setCredentials: (user: User, token: string) => void;
   _hasHydrated: boolean;
@@ -48,8 +49,8 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
 
         try {
-          // Medusa v2 native auth endpoint
-          const response = await fetch(`${API_URL}/auth/customer/emailpass`, {
+          // Custom Martnex login endpoint with Redis refresh tokens
+          const response = await fetch(`${API_URL}/auth/token`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password }),
@@ -57,46 +58,32 @@ export const useAuthStore = create<AuthState>()(
 
           if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.message || 'Verification failed. Password incorrect or account does not exist.');
+            throw new Error(error.message || 'Login failed. Please check your credentials.');
           }
 
           const data = await response.json();
 
-          // Store native Medusa token
-          const token = data.token;
-          if (token) {
-            localStorage.setItem('access_token', token);
+          // Store tokens
+          if (data.access_token) {
+            localStorage.setItem('access_token', data.access_token);
+          }
+          if (data.refresh_token) {
+            localStorage.setItem('refresh_token', data.refresh_token);
           }
 
-          // Fetch customer details from Medusa
-          let userData: User | null = null;
-          
-          if (token) {
-            const headers = await buildStoreHeaders(token);
+          // Set user from response data
+          const userData: User = {
+            id: data.user.user_id,
+            email: data.user.email,
+            role: data.user.role,
+            first_name: data.user.first_name,
+            last_name: data.user.last_name,
+            email_verified: data.user.email_verified || false
+          };
 
-            const meResponse = await fetch(`${API_URL}/store/customers/me`, {
-              headers,
-            });
-            
-            if (meResponse.ok) {
-              const meData = await meResponse.json();
-              if (meData.customer) {
-                userData = {
-                  id: meData.customer.id,
-                  email: meData.customer.email,
-                  role: (meData.customer.metadata?.role as any) || 'buyer',
-                  first_name: meData.customer.first_name,
-                  last_name: meData.customer.last_name,
-                  email_verified: !!meData.customer.metadata?.email_verified
-                };
-              }
-            }
-          }
-
-          // Set user
           set({
             user: userData,
-            isAuthenticated: !!userData,
+            isAuthenticated: true,
             isLoading: false,
           });
 
@@ -131,17 +118,59 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: async () => {
+        const refreshToken = localStorage.getItem('refresh_token');
+
         // 1. Clear local session state immediately
         localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
         set({ user: null, isAuthenticated: false });
 
-        // 2. Clear backend session using the official JS SDK
+        // 2. Clear custom backend session (Redis revocation)
         try {
-          // The SDK handles headers and session invalidation according to Medusa v2 standards
+          if (refreshToken) {
+            await fetch(`${API_URL}/auth/logout`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ refresh_token: refreshToken }),
+            });
+          }
+        } catch (error) {
+          console.debug('Custom session termination error:', error);
+        }
+
+        // 3. Clear native Medusa session
+        try {
           await medusa.auth.logout();
         } catch (error) {
-          // If the session is already gone or invalid, we ignore the error as local state is already wiped
-          console.debug('Background session termination:', error);
+          console.debug('Native session termination error:', error);
+        }
+      },
+
+      refreshSession: async () => {
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (!refreshToken) return;
+
+        try {
+          const response = await fetch(`${API_URL}/auth/token/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refresh_token: refreshToken }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.access_token) {
+              localStorage.setItem('access_token', data.access_token);
+            }
+            if (data.refresh_token) {
+              localStorage.setItem('refresh_token', data.refresh_token);
+            }
+          } else {
+            // If refresh fails, log out
+            get().logout();
+          }
+        } catch (error) {
+          console.error('Refresh session error:', error);
         }
       },
 

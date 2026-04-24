@@ -47,7 +47,7 @@ test.describe('Phase 3 Authentication E2E Journeys', () => {
       await page.fill('input[name="password"]', password);
 
       await Promise.all([
-        page.waitForResponse(resp => resp.url().includes('/auth/customer/emailpass') && resp.status() >= 200 && resp.status() < 300),
+        page.waitForResponse(resp => resp.url().includes('/auth/token') && resp.status() >= 200 && resp.status() < 300),
         page.click('button[type="submit"]'),
       ]);
     }

@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { buildStoreHeaders, getBackendUrl } from '@/lib/medusa-client';
 import Link from 'next/link';
+import { ProtectedRoute } from '@/components/shared/guards/protected-route';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, isAuthenticated, logout, refreshUser, _hasHydrated } = useAuthStore();
-  const lastCheckedSellerUserId = useRef<string | null>(null);
+  const { user, logout, refreshUser } = useAuthStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleSync = async () => {
@@ -22,56 +22,16 @@ export default function DashboardPage() {
     setTimeout(() => setIsRefreshing(false), 600);
   };
 
-
-  useEffect(() => {
-    if (_hasHydrated) {
-      if (!isAuthenticated) {
-        router.push('/login');
-      } else if (user?.role === 'seller') {
-        if (user.id && lastCheckedSellerUserId.current === user.id) {
-          return;
-        }
-
-        if (user.id) {
-          lastCheckedSellerUserId.current = user.id;
-        }
-
-        const checkSellerProfile = async () => {
-          try {
-            const token = localStorage.getItem('access_token');
-            const headers = await buildStoreHeaders(token || undefined);
-            const response = await fetch(`${getBackendUrl()}/store/sellers/me`, {
-              headers,
-            });
-            
-            if (!response.ok && response.status === 404) {
-              router.push('/onboarding/seller');
-            }
-          } catch (error) {
-            console.error('Error checking seller status:', error);
-          }
-        };
-        
-        checkSellerProfile();
-      }
-    }
-  }, [isAuthenticated, _hasHydrated, user, router]);
-
-  if (!_hasHydrated || !isAuthenticated || !user) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-slate-900 border-t-transparent"></div>
-      </div>
-    );
-  }
-
   const handleLogout = async () => {
     await logout();
     router.push('/login');
   };
 
+  if (!user) return null;
+
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-slate-50 font-sans">
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -209,5 +169,6 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
+    </ProtectedRoute>
   );
 }

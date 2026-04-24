@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/auth-store';
 
@@ -12,26 +12,36 @@ export default function AuthLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, _hasHydrated } = useAuthStore();
+  // Track mounted state to prevent SSR/CSR hydration mismatch
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (_hasHydrated && isAuthenticated) {
-      // If already verified, always go to dashboard
-      if (user?.email_verified || pathname !== '/verify-email') {
-        router.push('/dashboard');
-        return;
-      }
+    setMounted(true);
+  }, []);
 
-      // If NOT verified, only redirect to dashboard if we're NOT on the verify-email page
-      if (pathname !== '/verify-email') {
-        router.push('/dashboard');
-      }
-    }
-  }, [_hasHydrated, isAuthenticated, user, pathname, router]);
+  useEffect(() => {
+    if (!mounted || !_hasHydrated) return;
+    if (!isAuthenticated) return;
 
-  // Don't show loading spinner if we're on verify-email and just need to verify
+    // If NOT verified and on verify-email page, stay
+    if (!user?.email_verified && pathname === '/verify-email') return;
+
+    // Otherwise always redirect authenticated users away from auth routes
+    router.push('/dashboard');
+  }, [mounted, _hasHydrated, isAuthenticated, user, pathname, router]);
+
+  // Consistent loading state on both server and client during hydration
+  if (!mounted || !_hasHydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-8 h-8 rounded-full border-2 border-slate-900/20 border-t-slate-900 animate-spin" />
+      </div>
+    );
+  }
+
+  // Authenticated users see loading while redirect happens (except for verify-email bypass)
   const isBypassingRedirect = pathname === '/verify-email' && isAuthenticated && !user?.email_verified;
-
-  if (!_hasHydrated || (isAuthenticated && !isBypassingRedirect)) {
+  if (isAuthenticated && !isBypassingRedirect) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="w-8 h-8 rounded-full border-2 border-slate-900/20 border-t-slate-900 animate-spin" />
