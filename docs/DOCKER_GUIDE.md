@@ -236,4 +236,5 @@ martnex/
 3. ✅ Access admin panel: http://localhost:7001 (admin@martnex.io / supersecret)
 4. ✅ Start building features!
 
-For more details, see [SETUP_INSTRUCTIONS.md](docs/SETUP_INSTRUCTIONS.md)
+For more details, see [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md)
+

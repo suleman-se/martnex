@@ -90,7 +90,7 @@ test.describe('Phase 3 Authentication E2E Journeys', () => {
       page.click('button[type="submit"]'),
     ]);
 
-    await expect(page.locator('text=Check your email')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('text=Email Sent')).toBeVisible({ timeout: 15000 });
 
     // 2. Navigate to reset-password with a randomized mock token to avoid rate-limiting
     // We use a hex string to ensure the first 8 characters are unique per run

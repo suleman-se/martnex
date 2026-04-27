@@ -31,7 +31,7 @@ pnpm run dev
 ```
 ✅ Single Store Mode
 ✅ No custom modules loaded
-✅ Server started on port 9000
+✅ Server started on port 9001
 ```
 
 ```bash
@@ -48,7 +48,7 @@ pnpm run dev
 ✅ Seller module loaded
 ✅ Commission module loaded
 ✅ Payout module loaded
-✅ Server started on port 9000
+✅ Server started on port 9001
 ```
 
 ---
@@ -368,7 +368,7 @@ npx medusa exec ./src/scripts/test-integration.ts
 
 ```bash
 # 1. Test seller creation (after creating API routes)
-curl -X POST http://localhost:9000/admin/sellers \
+curl -X POST http://localhost:9001/admin/sellers \
   -H "Content-Type: application/json" \
   -d '{
     "customer_id": "cus_123",
@@ -377,15 +377,15 @@ curl -X POST http://localhost:9000/admin/sellers \
   }'
 
 # 2. Test seller list
-curl http://localhost:9000/admin/sellers
+curl http://localhost:9001/admin/sellers
 
 # 3. Test seller approval
-curl -X POST http://localhost:9000/admin/sellers/seller_123/approve \
+curl -X POST http://localhost:9001/admin/sellers/seller_123/approve \
   -H "Content-Type: application/json" \
   -d '{"notes": "Approved"}'
 
 # 4. Test commission calculation
-curl -X POST http://localhost:9000/admin/commissions/calculate \
+curl -X POST http://localhost:9001/admin/commissions/calculate \
   -H "Content-Type: application/json" \
   -d '{
     "orderId": "order_123",
@@ -396,7 +396,7 @@ curl -X POST http://localhost:9000/admin/commissions/calculate \
   }'
 
 # 5. Test payout request
-curl -X POST http://localhost:9000/seller/payouts/request \
+curl -X POST http://localhost:9001/seller/payouts/request \
   -H "Content-Type: application/json" \
   -d '{
     "commissionIds": ["comm_1", "comm_2"],

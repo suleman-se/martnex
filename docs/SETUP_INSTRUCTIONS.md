@@ -28,7 +28,7 @@ redis-cli --version
 The backend project structure has already been created with Medusa v2.
 
 ```bash
-cd /Users/macair/Documents/Project/martnex/backend
+cd backend
 ```
 
 ### Step 3: Configure PostgreSQL
@@ -105,7 +105,7 @@ Visit http://localhost:7001 and login with:
 The frontend project structure has already been created with Next.js 16.
 
 ```bash
-cd /Users/macair/Documents/Project/martnex/frontend
+cd frontend
 ```
 
 ### Step 2: Install Dependencies
@@ -396,9 +396,7 @@ Once setup is complete:
 1. ✅ Explore Medusa Admin UI
 2. ✅ Create test products
 3. ✅ Test checkout flow
-4. ✅ Review [planning/IMPLEMENTATION_PLAN.md](../planning/IMPLEMENTATION_PLAN.md)
-5. ✅ Start Week 1 tasks
-6. ✅ Read [PROJECT_CONTEXT.md](../PROJECT_CONTEXT.md) for full requirements
+4. ✅ Read [VISION.md](VISION.md) for full requirements
 
 ---
 

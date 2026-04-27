@@ -86,10 +86,11 @@ make clean
 
 ## Need Help?
 
-- **Docker Guide**: [README.docker.md](README.docker.md)
-- **Setup Details**: [SETUP_COMPLETE.md](SETUP_COMPLETE.md)
-- **Implementation Plan**: [planning/IMPLEMENTATION_PLAN.md](planning/IMPLEMENTATION_PLAN.md)
-- **Troubleshooting**: See [README.docker.md](README.docker.md#troubleshooting)
+- **Docker Guide**: [DOCKER_GUIDE.md](DOCKER_GUIDE.md)
+
+- **Setup Details**: [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md)
+- **Vision & Roles**: [VISION.md](VISION.md)
+
 
 ---
 
