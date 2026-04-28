@@ -6,7 +6,7 @@ import { Module } from "@medusajs/utils"
 import type { ModuleExports } from "@medusajs/types"
 import PayoutModuleService from "./service"
 
-export const PAYOUT_MODULE = "payoutModuleService"
+export const PAYOUT_MODULE = "payout"
 
 export default Module(PAYOUT_MODULE, {
   service: PayoutModuleService,

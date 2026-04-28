@@ -92,7 +92,7 @@ Prefix with `_` to exclude from routing.
 
 ## Middleware / Proxy
 
-### Next.js 14-15: `middleware.ts`
+### Next.js 14-15: `middleware.ts` (deprecated in v16)
 
 ```ts
 // middleware.ts (root of project)
@@ -109,31 +109,34 @@ export const config = {
 };
 ```
 
-### Next.js 16+: `proxy.ts`
+### Next.js 16+: `proxy.ts` (replaces middleware.ts)
 
-Renamed for clarity - same capabilities, different names:
+Renamed for clarity — same `NextRequest`/`NextResponse` API. Config key is still `config` (not `proxyConfig`). Use `NextProxy` type for automatic type inference:
 
 ```ts
-// proxy.ts (root of project)
+// proxy.ts (root of project, or src/proxy.ts)
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import type { NextRequest, NextProxy } from 'next/server';
 
-export function proxy(request: NextRequest) {
-  // Same logic as middleware
+export const proxy: NextProxy = (request: NextRequest) => {
+  // Same logic as before
   return NextResponse.next();
-}
+};
 
-export const proxyConfig = {
+// Config key is still `config` — NOT `proxyConfig`
+export const config = {
   matcher: ['/dashboard/:path*', '/api/:path*'],
 };
 ```
 
-| Version | File | Export | Config |
-|---------|------|--------|--------|
-| v14-15 | `middleware.ts` | `middleware()` | `config` |
-| v16+ | `proxy.ts` | `proxy()` | `proxyConfig` |
+| Version | File | Export | Config key | Runtime |
+|---------|------|--------|------------|---------|
+| v14-15 | `middleware.ts` | `middleware()` | `config` | Edge (default) |
+| v16+ | `proxy.ts` | `proxy()` | `config` | Node.js (default) |
 
-**Migration**: Run `npx @next/codemod@latest upgrade` to auto-rename.
+> `middleware.ts` still works in v16 (deprecated, Edge runtime only). Prefer `proxy.ts` for all new code.
+
+**Migration codemod**: `npx @next/codemod@canary middleware-to-proxy .`
 
 ## File Conventions Reference
 

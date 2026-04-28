@@ -1,0 +1,140 @@
+<h2>How should sellers build product variants?</h2>
+<p class="subtitle">A product can have options like Size (S, M, L) + Color (Red, Blue). How should sellers define these?</p>
+
+<div class="cards">
+
+  <!-- Option A: Medusa-style option matrix -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:14px; background:#0f1117; font-size:11px; font-family:monospace;">
+      <div style="background:#1a1d27; border-radius:6px; padding:12px;">
+        <div style="color:#9ca3af; font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">Product Options</div>
+
+        <!-- Option row: Size -->
+        <div style="background:#0f1117; border-radius:4px; padding:8px; margin-bottom:6px;">
+          <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+            <div style="background:#2a2d3a; border-radius:3px; height:18px; width:80px;"></div>
+            <div style="font-size:9px; color:#6366f1;">Option name: "Size"</div>
+          </div>
+          <div style="display:flex; gap:4px; flex-wrap:wrap;">
+            <span style="background:#2a2d3a; color:#d1d5db; border-radius:3px; padding:2px 8px; font-size:9px;">S ×</span>
+            <span style="background:#2a2d3a; color:#d1d5db; border-radius:3px; padding:2px 8px; font-size:9px;">M ×</span>
+            <span style="background:#2a2d3a; color:#d1d5db; border-radius:3px; padding:2px 8px; font-size:9px;">L ×</span>
+            <span style="background:#1e2130; color:#6366f1; border-radius:3px; padding:2px 8px; font-size:9px; border:1px dashed #6366f1;">+ Add value</span>
+          </div>
+        </div>
+
+        <!-- Option row: Color -->
+        <div style="background:#0f1117; border-radius:4px; padding:8px; margin-bottom:8px;">
+          <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+            <div style="background:#2a2d3a; border-radius:3px; height:18px; width:80px;"></div>
+            <div style="font-size:9px; color:#6366f1;">Option name: "Color"</div>
+          </div>
+          <div style="display:flex; gap:4px; flex-wrap:wrap;">
+            <span style="background:#2a2d3a; color:#d1d5db; border-radius:3px; padding:2px 8px; font-size:9px;">Red ×</span>
+            <span style="background:#2a2d3a; color:#d1d5db; border-radius:3px; padding:2px 8px; font-size:9px;">Blue ×</span>
+            <span style="background:#1e2130; color:#6366f1; border-radius:3px; padding:2px 8px; font-size:9px; border:1px dashed #6366f1;">+ Add value</span>
+          </div>
+        </div>
+
+        <div style="color:#6366f1; font-size:9px; cursor:pointer;">+ Add another option</div>
+
+        <div style="border-top:1px solid #2a2d3a; margin-top:10px; padding-top:8px;">
+          <div style="color:#9ca3af; font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Generated Variants (6)</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:3px; font-size:8px; color:#d1d5db;">
+            <span style="background:#2a2d3a; border-radius:2px; padding:2px 4px;">S / Red</span>
+            <span style="background:#2a2d3a; border-radius:2px; padding:2px 4px;">S / Blue</span>
+            <span style="background:#2a2d3a; border-radius:2px; padding:2px 4px;">M / Red</span>
+            <span style="background:#2a2d3a; border-radius:2px; padding:2px 4px;">M / Blue</span>
+            <span style="background:#2a2d3a; border-radius:2px; padding:2px 4px;">L / Red</span>
+            <span style="background:#2a2d3a; border-radius:2px; padding:2px 4px;">L / Blue</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Option Matrix (Auto-generate)</h3>
+      <p>Seller defines option <em>names</em> (e.g. Size, Color) and <em>values</em> (e.g. S, M, L). The system auto-generates all combinations as variants. Seller then sets price/stock per variant row.</p>
+      <ul style="font-size:0.82rem;color:#6b7280;margin-top:8px;padding-left:16px;">
+        <li>Matches Medusa's native data model exactly</li>
+        <li>Fast for simple option sets</li>
+        <li>Can explode with many combinations</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Option B: Manual variant rows -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:14px; background:#0f1117; font-family:monospace; font-size:11px;">
+      <div style="background:#1a1d27; border-radius:6px; padding:12px;">
+        <div style="color:#9ca3af; font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">Variants</div>
+
+        <!-- Header -->
+        <div style="display:grid; grid-template-columns:1.5fr 0.8fr 0.8fr 0.5fr; gap:4px; margin-bottom:4px; font-size:8px; color:#6b7280; text-transform:uppercase;">
+          <span>Name</span><span>Price</span><span>Stock</span><span>SKU</span>
+        </div>
+
+        <!-- Rows -->
+        <div style="display:grid; grid-template-columns:1.5fr 0.8fr 0.8fr 0.5fr; gap:4px; margin-bottom:4px; align-items:center;">
+          <div style="background:#2a2d3a; border-radius:3px; height:20px; display:flex; align-items:center; padding:0 6px; font-size:8px; color:#d1d5db;">S / Red</div>
+          <div style="background:#2a2d3a; border-radius:3px; height:20px;"></div>
+          <div style="background:#2a2d3a; border-radius:3px; height:20px;"></div>
+          <div style="background:#2a2d3a; border-radius:3px; height:20px;"></div>
+        </div>
+        <div style="display:grid; grid-template-columns:1.5fr 0.8fr 0.8fr 0.5fr; gap:4px; margin-bottom:4px; align-items:center;">
+          <div style="background:#2a2d3a; border-radius:3px; height:20px; display:flex; align-items:center; padding:0 6px; font-size:8px; color:#d1d5db;">M / Red</div>
+          <div style="background:#2a2d3a; border-radius:3px; height:20px;"></div>
+          <div style="background:#2a2d3a; border-radius:3px; height:20px;"></div>
+          <div style="background:#2a2d3a; border-radius:3px; height:20px;"></div>
+        </div>
+        <div style="display:grid; grid-template-columns:1.5fr 0.8fr 0.8fr 0.5fr; gap:4px; margin-bottom:8px; align-items:center;">
+          <div style="background:#2a2d3a; border-radius:3px; height:20px; display:flex; align-items:center; padding:0 6px; font-size:8px; color:#9ca3af;">+ Add variant</div>
+          <div></div><div></div><div></div>
+        </div>
+
+        <div style="color:#6366f1; font-size:9px; cursor:pointer;">+ Add variant manually</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Manual Variant Rows</h3>
+      <p>Seller types each variant name directly (e.g. "Small / Red") and fills in price, stock, and SKU per row. No auto-generation — full manual control.</p>
+      <ul style="font-size:0.82rem;color:#6b7280;margin-top:8px;padding-left:16px;">
+        <li>Simpler to build</li>
+        <li>Flexible — any variant naming scheme</li>
+        <li>Tedious for products with many combinations</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Option C: No variants for MVP -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:14px; background:#0f1117;">
+      <div style="background:#1a1d27; border-radius:6px; padding:16px; text-align:center;">
+        <div style="font-size:28px; margin-bottom:10px;">📦</div>
+        <div style="color:#d1d5db; font-size:12px; margin-bottom:6px;">One price. One stock level.</div>
+        <div style="background:#2a2d3a; border-radius:4px; padding:8px; text-align:left; margin-top:10px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div>
+              <div style="color:#6b7280; font-size:8px; margin-bottom:4px;">PRICE</div>
+              <div style="background:#0f1117; border-radius:3px; height:22px;"></div>
+            </div>
+            <div>
+              <div style="color:#6b7280; font-size:8px; margin-bottom:4px;">STOCK</div>
+              <div style="background:#0f1117; border-radius:3px; height:22px;"></div>
+            </div>
+          </div>
+        </div>
+        <div style="color:#6b7280; font-size:9px; margin-top:10px;">Variants can be added in a later sprint</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Skip Variants for Now</h3>
+      <p>Single price + single stock quantity. Simplest possible product model. Variants designed and built in a follow-up sprint once CRUD is stable.</p>
+      <ul style="font-size:0.82rem;color:#6b7280;margin-top:8px;padding-left:16px;">
+        <li>Fastest path to a working storefront</li>
+        <li>Requires a migration later to add variants</li>
+        <li>Limits sellers to single-SKU products</li>
+      </ul>
+    </div>
+  </div>
+
+</div>

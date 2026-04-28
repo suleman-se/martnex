@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 };
 
 import { Providers } from "@/providers/query-provider";
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -27,6 +28,7 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         <Providers>
           {children}
+          <Toaster richColors position="top-right" />
         </Providers>
       </body>
     </html>

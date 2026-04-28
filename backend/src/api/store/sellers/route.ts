@@ -92,8 +92,15 @@ export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse)
     })
   }
 
-  const parsed = registerSellerSchema.safeParse(req.body)
+  const authIdentityId = req.auth_context.auth_identity_id
+  if (!authIdentityId) {
+    return res.status(401).json({
+      error: "Unauthorized",
+      message: "Auth identity not found. Please log in again.",
+    })
+  }
 
+  const parsed = registerSellerSchema.safeParse(req.body)
   if (!parsed.success) {
     return res.status(400).json({
       error: "Invalid request body",
@@ -108,6 +115,7 @@ export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse)
     const { result: seller } = await registerSellerWorkflow(req.scope).run({
       input: {
         customer_id: customerId,
+        auth_id: authIdentityId,
         business_name,
         business_email,
         ...restData,
@@ -119,9 +127,29 @@ export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse)
       seller,
     })
   } catch (error) {
+    // Medusa workflow errors are often wrapped objects, not plain Error instances.
+    // Extract the real message regardless of the shape.
+    let message = "Failed to register seller"
+    if (error instanceof Error) {
+      message = error.message
+    } else if (typeof error === "object" && error !== null) {
+      const e = error as any
+      // Medusa workflow error shape: { errors: [{ error: Error, action: ... }] }
+      if (Array.isArray(e.errors) && e.errors.length > 0) {
+        const inner = e.errors[0]?.error
+        message = inner instanceof Error ? inner.message : String(inner ?? "Workflow step failed")
+      } else if (typeof e.message === "string") {
+        message = e.message
+      } else {
+        message = JSON.stringify(e)
+      }
+    } else if (typeof error === "string") {
+      message = error
+    }
+    console.error("[POST /store/sellers] Error:", error)
     res.status(400).json({
       error: "Failed to register seller",
-      message: error instanceof Error ? error.message : "Unknown error",
+      message,
     })
   }
 }

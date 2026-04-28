@@ -5,7 +5,7 @@ import type { ICustomerModuleService, IAuthModuleService } from '@medusajs/frame
 import { generateAccessToken, generateRefreshToken } from '../../../auth/jwt'
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().email('Invalid email address').toLowerCase(),
   password: z.string().min(1, 'Password is required')
 })
 
@@ -69,6 +69,7 @@ export async function POST(
         auth_identity_id: authIdentity.id,
         app_metadata: {
             customer_id: customerId,
+            role: role,
         },
         user_metadata: {},
     }, {

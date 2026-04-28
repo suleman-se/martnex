@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/lib/store/auth-store';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -21,18 +21,41 @@ export function ProtectedRoute({
   allowedRoles,
   redirectTo = '/login',
 }: ProtectedRouteProps) {
-  const { isAuthenticated, user, _hasHydrated } = useAuthStore();
+  const { isAuthenticated, user, _hasHydrated, refreshUser } = useAuthStore();
   const router = useRouter();
   // Use mounted state to guarantee SSR and client initial render are identical
   const [mounted, setMounted] = useState(false);
+  // isValidating: true until we've confirmed the token is live with the server
+  const [isValidating, setIsValidating] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // Once hydrated, validate the token against the server.
+  // refreshUser() calls logout() internally on 401/403/missing token,
+  // which flips isAuthenticated → false and clears the cookie.
   useEffect(() => {
     if (!mounted || !_hasHydrated) return;
+
+    if (!isAuthenticated) {
+      // Not logged in at all — skip network call
+      setIsValidating(false);
+      return;
+    }
+
+    let cancelled = false;
+    refreshUser().finally(() => {
+      if (!cancelled) setIsValidating(false);
+    });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted, _hasHydrated]);
+
+  // After validation settles, decide whether to grant access or redirect
+  useEffect(() => {
+    if (!mounted || !_hasHydrated || isValidating) return;
 
     if (!isAuthenticated) {
       router.push(redirectTo);
@@ -45,10 +68,10 @@ export function ProtectedRoute({
     }
 
     setIsAuthorized(true);
-  }, [mounted, _hasHydrated, isAuthenticated, user, allowedRoles, router, redirectTo]);
+  }, [mounted, _hasHydrated, isValidating, isAuthenticated, user, allowedRoles, router, redirectTo]);
 
   // Both SSR and initial CSR render return loading — no mismatch
-  if (!mounted || !_hasHydrated || !isAuthorized) {
+  if (!mounted || !_hasHydrated || isValidating || !isAuthorized) {
     return <LoadingScreen />;
   }
 

@@ -1,0 +1,117 @@
+<h2>How should the "Add / Edit Product" form work?</h2>
+<p class="subtitle">This affects the day-to-day UX for sellers managing their catalogue.</p>
+
+<div class="cards">
+
+  <!-- Option A: Dedicated full page -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 12px; background: #0f1117;">
+      <div style="display:flex; gap:8px; height:200px;">
+        <div style="width:180px; background:#1a1d27; border-radius:6px; padding:10px; flex-shrink:0;">
+          <div style="background:#2a2d3a; border-radius:3px; height:10px; width:80%; margin-bottom:8px;"></div>
+          <div style="background:#6366f1; border-radius:3px; height:8px; width:60%; margin-bottom:6px; opacity:0.8;"></div>
+          <div style="background:#2a2d3a; border-radius:3px; height:8px; width:50%; margin-bottom:6px;"></div>
+          <div style="background:#2a2d3a; border-radius:3px; height:8px; width:70%; margin-bottom:6px;"></div>
+          <div style="background:#2a2d3a; border-radius:3px; height:8px; width:55%; margin-bottom:6px;"></div>
+        </div>
+        <div style="flex:1; background:#1a1d27; border-radius:6px; padding:10px; overflow:hidden;">
+          <div style="background:#2a2d3a; border-radius:3px; height:14px; width:40%; margin-bottom:16px;"></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+            <div style="background:#2a2d3a; border-radius:3px; height:28px;"></div>
+            <div style="background:#2a2d3a; border-radius:3px; height:28px;"></div>
+          </div>
+          <div style="background:#2a2d3a; border-radius:3px; height:50px; margin-bottom:8px;"></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+            <div style="background:#2a2d3a; border-radius:3px; height:28px;"></div>
+            <div style="background:#2a2d3a; border-radius:3px; height:28px;"></div>
+          </div>
+          <div style="display:flex; gap:6px; margin-top:10px;">
+            <div style="background:#6366f1; border-radius:3px; height:22px; width:70px;"></div>
+            <div style="background:#2a2d3a; border-radius:3px; height:22px; width:60px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Dedicated Page</h3>
+      <p>Navigate to <code>/seller/products/new</code>. Full-page form with sections: General Info, Pricing, Variants, Images, Inventory. Breadcrumb navigation back to the list.</p>
+      <ul style="font-size:0.82rem;color:#6b7280;margin-top:8px;padding-left:16px;">
+        <li>Most screen space for complex variant builder</li>
+        <li>Sharable URL (can bookmark mid-edit)</li>
+        <li>Natural for long-form product data entry</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Option B: Slide-over drawer -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 12px; background: #0f1117;">
+      <div style="display:flex; gap:0; height:200px; position:relative;">
+        <!-- Background (products list) -->
+        <div style="flex:1; background:#1a1d27; border-radius:6px 0 0 6px; padding:10px; opacity:0.4;">
+          <div style="background:#2a2d3a; border-radius:3px; height:10px; width:60%; margin-bottom:12px;"></div>
+          <div style="background:#2a2d3a; border-radius:3px; height:8px; width:100%; margin-bottom:6px;"></div>
+          <div style="background:#2a2d3a; border-radius:3px; height:8px; width:90%; margin-bottom:6px;"></div>
+          <div style="background:#2a2d3a; border-radius:3px; height:8px; width:95%; margin-bottom:6px;"></div>
+        </div>
+        <!-- Drawer -->
+        <div style="width:200px; background:#1e2130; border-left:1px solid #2a2d3a; border-radius:0 6px 6px 0; padding:12px;">
+          <div style="background:#2a2d3a; border-radius:3px; height:12px; width:70%; margin-bottom:14px;"></div>
+          <div style="background:#2a2d3a; border-radius:3px; height:24px; margin-bottom:8px;"></div>
+          <div style="background:#2a2d3a; border-radius:3px; height:40px; margin-bottom:8px;"></div>
+          <div style="background:#2a2d3a; border-radius:3px; height:24px; margin-bottom:8px;"></div>
+          <div style="background:#6366f1; border-radius:3px; height:20px; width:60%; margin-top:14px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Slide-over Drawer</h3>
+      <p>Product list stays visible on the left. A wide panel slides in from the right to add/edit. Dismiss to return instantly.</p>
+      <ul style="font-size:0.82rem;color:#6b7280;margin-top:8px;padding-left:16px;">
+        <li>Context stays visible (product list in background)</li>
+        <li>Feels lightweight and fast</li>
+        <li>Limited space for complex variant builder</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Option C: Two-column page -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 12px; background: #0f1117;">
+      <div style="display:flex; gap:8px; height:200px;">
+        <div style="width:120px; background:#1a1d27; border-radius:6px; padding:8px; flex-shrink:0;">
+          <div style="background:#2a2d3a; border-radius:3px; height:10px; width:80%; margin-bottom:8px;"></div>
+          <div style="background:#6366f1; border-radius:3px; height:8px; width:60%; margin-bottom:6px; opacity:0.8;"></div>
+          <div style="background:#2a2d3a; border-radius:3px; height:8px; width:50%; margin-bottom:6px;"></div>
+        </div>
+        <div style="flex:1; display:grid; grid-template-columns:1.4fr 1fr; gap:8px; overflow:hidden;">
+          <!-- Left: main form -->
+          <div style="background:#1a1d27; border-radius:6px; padding:8px;">
+            <div style="background:#2a2d3a; border-radius:3px; height:10px; width:50%; margin-bottom:10px;"></div>
+            <div style="background:#2a2d3a; border-radius:3px; height:24px; margin-bottom:6px;"></div>
+            <div style="background:#2a2d3a; border-radius:3px; height:40px; margin-bottom:6px;"></div>
+            <div style="background:#2a2d3a; border-radius:3px; height:24px; margin-bottom:6px;"></div>
+            <div style="background:#2a2d3a; border-radius:3px; height:30px;"></div>
+          </div>
+          <!-- Right: sidebar (images, status, category) -->
+          <div style="background:#1a1d27; border-radius:6px; padding:8px;">
+            <div style="background:#2a2d3a; border-radius:3px; height:10px; width:60%; margin-bottom:10px;"></div>
+            <div style="background:#2a2d3a; border-radius:4px; height:60px; margin-bottom:6px;"></div>
+            <div style="background:#2a2d3a; border-radius:3px; height:20px; margin-bottom:6px;"></div>
+            <div style="background:#6366f1; border-radius:3px; height:18px; margin-top:10px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Two-Column Page</h3>
+      <p>Dedicated page like Shopify/WooCommerce admins. Left column: title, description, variants. Right column: images, category, status, publish button.</p>
+      <ul style="font-size:0.82rem;color:#6b7280;margin-top:8px;padding-left:16px;">
+        <li>Industry-standard pattern — sellers already know it</li>
+        <li>Sidebar for meta: publish, category, tags</li>
+        <li>Best for complex variant management</li>
+      </ul>
+    </div>
+  </div>
+
+</div>

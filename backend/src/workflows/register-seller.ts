@@ -4,6 +4,7 @@ import {
   StepResponse,
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk"
+import { Modules } from "@medusajs/framework/utils"
 import type SellerModuleService from "../modules/seller/service"
 
 const SELLER_MODULE = "seller"
@@ -62,7 +63,35 @@ export const createSellerStep = createStep(
 )
 
 /**
- * Step 2: Notify Admin (Placeholder)
+ * Step 2: Update Role in Auth and Customer
+ */
+export const updateSellerRoleStep = createStep(
+  "update-seller-role-step",
+  async (input: { auth_id: string; customer_id: string }, { container }) => {
+    const authService = container.resolve(Modules.AUTH)
+    const customerService = container.resolve(Modules.CUSTOMER)
+    
+    // 1. Update Auth Identity metadata
+    await authService.updateAuthIdentities({
+      id: input.auth_id,
+      app_metadata: {
+        role: "seller"
+      }
+    })
+
+    // 2. Update Customer metadata (for frontend sync)
+    await customerService.updateCustomers(input.customer_id, {
+      metadata: {
+        role: "seller"
+      }
+    })
+
+    return new StepResponse({ success: true })
+  }
+)
+
+/**
+ * Step 3: Notify Admin (Placeholder)
  */
 export const notifyAdminStep = createStep(
   "notify-admin-step",
@@ -77,8 +106,12 @@ export const notifyAdminStep = createStep(
  */
 export const registerSellerWorkflow = createWorkflow(
   "register-seller",
-  (input: RegisterSellerInput) => {
+  (input: RegisterSellerInput & { auth_id: string }) => {
     const seller = createSellerStep(input)
+    
+    // Update role in auth identity and customer metadata
+    updateSellerRoleStep({ auth_id: input.auth_id, customer_id: input.customer_id })
+    
     notifyAdminStep(seller)
     
     return new WorkflowResponse(seller)

@@ -1,0 +1,40 @@
+<h2>Seller Product Management — What's in scope?</h2>
+<p class="subtitle">Let's define the MVP boundaries before we design anything. Which of these best describes what you want to build first?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Core CRUD Only</h3>
+      <p>Create, edit, delete, and list products. Basic fields: title, description, price, images, stock. No variants, no categories. Ship fast, iterate later.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Fastest to build</li><li>Unblocks buyer storefront immediately</li><li>Easy to test end-to-end</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>No variant support (size, color)</li><li>No category organisation</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>CRUD + Variants + Categories</h3>
+      <p>Everything in A, plus Medusa's native variant system (options like Size/Color), category tagging, and a richer product form.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Production-ready product data model</li><li>Matches how Medusa natively works</li><li>Buyer storefront can filter by category</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>More complex form UI</li><li>Takes 2-3x longer to build</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>CRUD + Status Workflow</h3>
+      <p>Everything in A, plus product status (Draft → Pending Admin Approval → Published). Admin must approve before a product goes live on the storefront.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Platform control over what's listed</li><li>Connects to admin workflow</li><li>Real marketplace feel</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Requires admin product queue UI</li><li>More backend state machine</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

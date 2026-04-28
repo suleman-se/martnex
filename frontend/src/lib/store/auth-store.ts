@@ -42,6 +42,8 @@ export const useAuthStore = create<AuthState>()(
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       setCredentials: (user, token) => {
         localStorage.setItem('access_token', token);
+        // Keep a cookie so Next.js middleware can guard protected routes
+        document.cookie = 'martnex_auth=1; path=/; SameSite=Strict; max-age=86400';
         set({ user, isAuthenticated: true });
       },
 
@@ -70,6 +72,8 @@ export const useAuthStore = create<AuthState>()(
           if (data.refresh_token) {
             localStorage.setItem('refresh_token', data.refresh_token);
           }
+          // Keep a cookie so Next.js middleware can guard protected routes
+          document.cookie = 'martnex_auth=1; path=/; SameSite=Strict; max-age=86400';
 
           // Set user from response data
           const userData: User = {
@@ -123,6 +127,8 @@ export const useAuthStore = create<AuthState>()(
         // 1. Clear local session state immediately
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
+        // Clear middleware auth cookie
+        document.cookie = 'martnex_auth=; path=/; SameSite=Strict; max-age=0';
         set({ user: null, isAuthenticated: false });
 
         // 2. Clear custom backend session (Redis revocation)
@@ -177,7 +183,11 @@ export const useAuthStore = create<AuthState>()(
       refreshUser: async () => {
         try {
           const token = localStorage.getItem('access_token');
-          if (!token) return;
+          if (!token) {
+            // Persisted state says authenticated but token is gone — clear it
+            get().logout();
+            return;
+          }
 
           const headers = await buildStoreHeaders(token);
           const response = await fetch(`${API_URL}/store/customers/me`, {
@@ -200,6 +210,9 @@ export const useAuthStore = create<AuthState>()(
               };
               set({ user: userData, isAuthenticated: true });
             }
+          } else if (response.status === 401 || response.status === 403 || response.status === 404) {
+            // Token expired, user not found, or forbidden — clear session
+            get().logout();
           }
         } catch (error) {
           console.error('Refresh user error:', error);
@@ -216,6 +229,11 @@ export const useAuthStore = create<AuthState>()(
         return (state, error) => {
           if (!error) {
             state?.setHasHydrated(true);
+            // Re-stamp the middleware cookie for returning users whose
+            // session was persisted in localStorage before this change.
+            if (state?.isAuthenticated) {
+              document.cookie = 'martnex_auth=1; path=/; SameSite=Strict; max-age=86400';
+            }
           }
         };
       },
