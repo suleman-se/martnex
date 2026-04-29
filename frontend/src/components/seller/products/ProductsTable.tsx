@@ -1,14 +1,11 @@
 'use client';
 
-import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { 
   Eye, 
   Edit2, 
   Trash2, 
   Package,
-  MoreVertical
 } from 'lucide-react';
 import { Product } from '@/hooks/use-seller-products';
 import { Button } from '@/components/ui/button';
@@ -41,7 +38,7 @@ export function ProductsTable({ products, onDelete, isDeleting }: ProductsTableP
   }
 
   return (
-    <div className="bg-white rounded-[2rem] overflow-hidden shadow-sm hover:shadow-premium transition-all duration-700">
+    <div className="bg-white rounded-4xl overflow-hidden shadow-sm hover:shadow-premium transition-all duration-700">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -68,16 +65,14 @@ export function ProductsTable({ products, onDelete, isDeleting }: ProductsTableP
                 <tr key={product.id} className="hover:bg-slate-50/30 transition-colors group">
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-5">
-                      <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-50 flex-shrink-0 relative shadow-sm">
-                        <Image 
-                          src={product.thumbnail || product.images?.[0]?.url || 'https://images.unsplash.com/photo-1547949003-9792a18a2601?w=800&q=80'} 
-                          alt={product.title} 
-                          fill 
-                          sizes="64px" 
-                          className="object-cover group-hover:scale-110 transition-transform duration-1000" 
+                      <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-50 shrink-0 relative shadow-sm">
+                        <img
+                          src={product.images?.[0]?.url || product.thumbnail || 'https://images.unsplash.com/photo-1547949003-9792a18a2601?w=800&q=80'}
+                          alt={product.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                         />
                       </div>
-                      <span className="font-bold text-slate-900 truncate max-w-[280px] tracking-tight text-base font-heading">
+                      <span className="font-bold text-slate-900 truncate max-w-70 tracking-tight text-base font-heading">
                         {product.title}
                       </span>
                     </div>

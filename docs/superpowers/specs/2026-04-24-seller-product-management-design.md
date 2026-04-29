@@ -1,7 +1,7 @@
 # Seller Product Management — Design Spec
 
 **Date:** 2026-04-24  
-**Status:** Approved — Ready for implementation planning  
+**Status:** Implemented — Updated to reflect shipped behavior as of 2026-04-29  
 **Feature:** Seller-facing product CRUD with variants, categories, and image upload
 
 ---
@@ -13,7 +13,7 @@
 | Scope | CRUD + Variants + Categories | Production-ready product model; unblocks buyer storefront |
 | Form UI | Two-column page (Shopify-style) | Industry-standard; best space for variant builder |
 | Variant builder | Option Matrix → auto-generate combinations | Matches Medusa's native data model exactly |
-| Image upload | Medusa Local File Service | Works in Docker today; swap to S3 later via config only |
+| Image upload | Medusa local file provider via `/static` | Works in Docker today; swap to S3 later via config only |
 | Category management | Admin-managed global taxonomy | Uses Medusa's built-in `ProductCategory` module; zero custom code |
 
 ---
@@ -27,7 +27,7 @@
 - Seller can **delete** a product
 - Seller can define **product options** (e.g. "Size": S/M/L, "Color": Red/Blue) and the system auto-generates all variant combinations
 - Seller sets **price and stock** per variant row
-- Seller uploads **images** via Medusa's local file service
+- Seller uploads **images** via Medusa's local file service and can remove them safely after a successful save
 - Seller picks a **category** from an admin-managed dropdown (read-only from seller's perspective)
 
 ### Out of scope (future sprints)
@@ -48,11 +48,12 @@ Frontend (Next.js)                Backend (Medusa v2)           Medusa Modules
 Pages                             API Routes (store/)           ProductModule
   /seller/products          ───►    GET  /sellers/me/products ──►  products
   /seller/products/new      ───►    POST /sellers/me/products      variants, options
-  /seller/products/[id]/edit ──►    PUT  /sellers/me/products/:id  prices
+  /seller/products/[id]/edit ──►    POST /sellers/me/products/:id  prices
                                     DEL  /sellers/me/products/:id
                                                                 ProductCategoryModule
 React Query Hooks                   GET  /product-categories ──►  admin-managed tree
   use-seller-products.ts            POST /uploads (file svc)
+                                    DEL  /uploads/:id (queued cleanup)
   use-product-categories.ts                                    FileModule
                                   Auth Middleware                local file service
 Components                          JWT validation              (swap → S3 via config)
@@ -78,10 +79,11 @@ All routes require a valid seller JWT (existing auth middleware).
 | `GET` | `/store/sellers/me/products` | List authenticated seller's products. Supports `?category_id=`, `?q=` search, pagination |
 | `POST` | `/store/sellers/me/products` | Create a new product linked to the seller |
 | `GET` | `/store/sellers/me/products/:id` | Get a single product (ownership enforced) |
-| `PUT` | `/store/sellers/me/products/:id` | Update product (ownership enforced) |
+| `POST` | `/store/sellers/me/products/:id` | Update product (ownership enforced; Medusa store update pattern) |
 | `DELETE` | `/store/sellers/me/products/:id` | Delete product (ownership enforced) |
 | `GET` | `/store/product-categories` | List all admin-managed categories (for dropdown) |
-| `POST` | `/store/uploads` | Upload an image via Medusa file service |
+| `POST` | `/store/uploads` | Upload image files; returns `uploads: [{ id, url }]` |
+| `DELETE` | `/store/uploads/:id` | Delete an uploaded file by id |
 
 ### 4.2 Module Link
 
@@ -91,8 +93,8 @@ A new module link is required to associate a product with a seller:
 backend/src/links/seller-product.ts
 
 defineLink(
-  SellerModule.linkable.seller,
-  ProductModule.linkable.product
+  ProductModule.linkable.product,
+  SellerModule.linkable.seller
 )
 ```
 
@@ -105,19 +107,28 @@ This allows filtering `products` by `seller_id` using Medusa's query engine.
   title: string;                    // required
   description?: string;
   category_ids?: string[];          // admin-managed category IDs
-  images?: { url: string }[];       // uploaded via file service first
+  pending_delete_file_ids?: string[];
+  images?: {
+    id?: string;
+    url: string;
+    metadata?: { file_id?: string } | null;
+  }[];                              // uploaded via file service first
   options: {                        // e.g. [{ title: "Size", values: ["S","M","L"] }]
     title: string;
     values: string[];
   }[];
   variants: {                       // auto-generated from option matrix
+    id?: string;                    // preserved on edit to avoid duplicate variant creation
     title: string;                  // e.g. "S / Red"
-    options: { value: string }[];
+    options: { title: string; value: string }[];
     prices: { amount: number; currency_code: string }[];
     inventory_quantity: number;
+    sku?: string;
   }[];
 }
 ```
+
+**Implementation note:** On create and update, the seller routes normalize the frontend's array-based variant option shape into the object-map shape Medusa core workflows expect.
 
 ---
 
@@ -177,7 +188,7 @@ Two-column layout:
 1. **Status** — Draft / Published dropdown
 2. **Save Product** button (primary CTA)
 3. **Category** — single-select dropdown from admin categories
-4. **Images** — `<ImageUpload />` drag-drop zone, shows thumbnails
+4. **Images** — `<ImageUpload />` drag-drop zone, shows thumbnails, persists `metadata.file_id`, and queues deletions for post-save cleanup
 
 ### 5.6 Variant Builder Logic
 
@@ -203,20 +214,38 @@ Seller fills in price + stock per row. SKU is optional.
 
 ```
 1. Seller fills form + uploads images
-   └─► POST /store/uploads → returns { url: "..." }
+  └─► POST /store/uploads → returns { uploads: [{ id, url }] }
 
 2. Seller clicks "Save Product"
    └─► POST /store/sellers/me/products
-       Body: { title, description, category_ids, images, options, variants }
+     Body: { title, description, category_ids, images, options, variants, pending_delete_file_ids }
 
 3. Backend:
    a. Validate JWT → get seller_id
-   b. Call ProductModule.createProducts(payload)
-   c. Create module link: seller_id ↔ product.id
-   d. Return created product
+  b. Normalize simple products and variant option payloads for Medusa core workflows
+  c. Call createProductsWorkflow(payload)
+  d. Create module link: seller_id ↔ product.id
+  e. Return created product
 
 4. React Query invalidates useSellerProducts cache
 5. Redirect to /seller/products (list)
+```
+
+### 6.1 Data Flow — Remove Uploaded Image
+
+```
+1. Seller removes an image in the form UI
+  └─► Remove image from form state immediately
+  └─► Push `metadata.file_id` into `pending_delete_file_ids`
+
+2. Seller saves the product
+  └─► POST /store/sellers/me/products or /store/sellers/me/products/:id
+
+3. Backend:
+  a. Persist the updated product first
+  b. If save succeeds, call deleteFilesWorkflow for queued file ids
+
+4. Physical file disappears from `/static/...` only after the successful save
 ```
 
 ---
@@ -226,9 +255,10 @@ Seller fills in price + stock per row. SKU is optional.
 | Scenario | Handling |
 |---|---|
 | Unauthenticated request | 401 → redirect to `/login` (existing `<ProtectedRoute />`) |
-| Seller tries to edit another seller's product | 403 returned by ownership middleware |
+| Seller tries to edit another seller's product | 404 returned by the ownership-enforced seller route |
 | Required fields missing | Zod validation on backend; client-side `react-hook-form` validation |
 | Image upload fails | Toast error; image not added to form state |
+| Image removed before save | UI removes image immediately; file id is queued and deleted only after successful save |
 | Create/update API fails | Toast error message; form stays open (no data loss) |
 | Delete fails | Toast error; product remains in list |
 
@@ -270,6 +300,6 @@ The feature should be built in this order to allow incremental testing:
 | Question | Decision |
 |---|---|
 | Scope of variants | Option Matrix → auto-generate combinations (matches Medusa natively) |
-| Image storage | Medusa Local File Service (swap to S3 via config later) |
+| Image storage | Medusa local file provider served from `/static` (swap to S3 via config later) |
 | Category ownership | Admin-managed global taxonomy only |
 | Product status workflow | Deferred to Phase 2 (no approval flow in this sprint) |

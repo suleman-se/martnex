@@ -3,6 +3,7 @@ import {
   authenticate,
   validateAndTransformBody,
 } from "@medusajs/framework/http"
+import multer from "multer"
 import { z } from "zod/v3"
 
 // ─── Validation Schemas ──────────────────────────────────────────────────────
@@ -12,13 +13,23 @@ const CreateProductSchema = z.object({
   description: z.string().optional(),
   status: z.enum(["draft", "proposed", "published"]).default("draft"),
   category_ids: z.array(z.string()).optional(),
-  images: z.array(z.object({ url: z.string().url() })).optional(),
+  pending_delete_file_ids: z.array(z.string()).optional(),
+  images: z
+    .array(
+      z.object({
+        id: z.string().optional(),
+        url: z.string().url(),
+        metadata: z.record(z.unknown()).nullable().optional(),
+      })
+    )
+    .optional(),
   options: z
     .array(z.object({ title: z.string().min(1), values: z.array(z.string()) }))
     .optional(),
   variants: z
     .array(
       z.object({
+        id: z.string().optional(),
         title: z.string(),
         prices: z.array(
           z.object({ amount: z.number().nonnegative(), currency_code: z.string().length(3) })
@@ -34,6 +45,8 @@ const CreateProductSchema = z.object({
 })
 
 const UpdateProductSchema = CreateProductSchema.partial()
+
+const upload = multer({ storage: multer.memoryStorage() })
 
 export type CreateProductInput = z.infer<typeof CreateProductSchema>
 export type UpdateProductInput = z.infer<typeof UpdateProductSchema>
@@ -60,6 +73,19 @@ export default {
     },
     {
       matcher: "/store/sellers/me/products*",
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/uploads",
+      methods: ["POST"],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+        upload.array("files"),
+      ],
+    },
+    {
+      matcher: "/store/uploads/:id",
+      methods: ["DELETE"],
       middlewares: [authenticate("customer", ["session", "bearer"])],
     },
     {

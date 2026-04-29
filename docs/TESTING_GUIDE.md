@@ -623,26 +623,29 @@ To ensure reliable tests in local development environments (where resource conte
 ```bash
 cd frontend
 export PATH=$PATH:/usr/local/bin
-npx playwright test
+pnpm playwright test
 ```
 
 To run a specific test file:
 ```bash
-npx playwright test e2e/auth.spec.ts --reporter=list
+pnpm playwright test e2e/auth.spec.ts --reporter=list
+pnpm playwright test e2e/seller-product-images.spec.ts --retries=0
 ```
 
-### **Rate-Limit Bypass Strategy**
-The Medusa backend implements rate-limiting for auth tokens (e.g., 3 forgot-password requests per hour). To bypass this during development tests, our E2E journeys use a **randomized email/token strategy**:
+### **Rate-Limit and Collision Bypass Strategy**
+The Medusa backend implements rate-limiting for auth tokens (e.g., 3 forgot-password requests per hour), and seller product creation generates handles from product titles. To keep E2E runs isolated, our journeys use randomized emails, tokens, and product titles:
 
 ```typescript
-// Example from auth.spec.ts
+// Example strategy used by the E2E suite
 const uniqueEmail = `testuser_${Date.now()}@example.com`;
 const mockToken = `token_${Math.random().toString(36).substring(2, 10)}_${Date.now()}`;
+const productTitle = `Image Lifecycle Product ${Date.now()}`;
 ```
-Using a randomized value in the first 8 characters of the token ensuring every test run hits a unique rate-limit bucket.
+This avoids hitting the same auth rate-limit bucket and prevents repeated runs from colliding on generated product handles.
 
 ### **Verified Journeys**
 - **Complete User Journey**: Register → Automatic Redirect → Login → Dashboard.
 - **Refresh Persistence**: Verifies the session remains active after a full page reload (Hydration Guard).
 - **Guest-Only Protection**: Verifies that logged-in users are redirected away from `/login`.
 - **Password Reset Journey**: Request Reset → SQL token retrieval (via Script/DB) → Reset Password → Login.
+- **Seller Product Image Lifecycle**: Register seller → upload image → save product → reload edit form → queue image removal → save update → verify the underlying `/static` asset is deleted.

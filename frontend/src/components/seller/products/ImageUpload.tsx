@@ -1,20 +1,72 @@
 'use client';
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { getBackendUrl, buildStoreHeaders } from '@/lib/medusa-client';
 
+export type ProductImageValue = {
+  id?: string;
+  url: string;
+  metadata?: {
+    file_id?: string;
+    [key: string]: unknown;
+  } | null;
+};
+
 interface ImageUploadProps {
-  value?: string[];
-  onChange: (urls: string[]) => void;
+  value?: ProductImageValue[];
+  onChange: (images: ProductImageValue[]) => void;
+  onQueueDelete?: (fileId: string) => void;
 }
 
-export function ImageUpload({ value = [], onChange }: ImageUploadProps) {
+type UploadedFile = {
+  id?: string;
+  url: string;
+};
+
+function normalizeImageUrl(url: string): string {
+  if (!url) return url;
+
+  const backendUrl = getBackendUrl();
+
+  if (url.startsWith('/')) {
+    return new URL(url, backendUrl).toString();
+  }
+
+  try {
+    const parsedUrl = new URL(url);
+    const backendOrigin = new URL(backendUrl).origin;
+
+    if (parsedUrl.pathname.startsWith('/static/')) {
+      return new URL(`${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`, backendOrigin).toString();
+    }
+
+    return parsedUrl.toString();
+  } catch {
+    return url;
+  }
+}
+
+export function ImageUpload({ value = [], onChange, onQueueDelete }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [urls, setUrls] = useState<string[]>(value);
+  const [images, setImages] = useState<ProductImageValue[]>(() =>
+    value.map((image) => ({
+      ...image,
+      url: normalizeImageUrl(image.url),
+    }))
+  );
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setImages(
+      value.map((image) => ({
+        ...image,
+        url: normalizeImageUrl(image.url),
+      }))
+    );
+  }, [value]);
 
   const uploadFiles = useCallback(async (files: FileList | File[]) => {
     const fileArray = Array.from(files).filter((f) => f.type.startsWith('image/'));
@@ -38,16 +90,21 @@ export function ImageUpload({ value = [], onChange }: ImageUploadProps) {
 
       if (!response.ok) throw new Error('Upload failed');
 
-      const data = await response.json();
-      const newUrls = [...urls, ...data.uploads.map((u: { url: string }) => u.url)];
-      setUrls(newUrls);
-      onChange(newUrls);
+      const data = await response.json() as { uploads: UploadedFile[] };
+      const uploadedImages: ProductImageValue[] = data.uploads.map((file) => ({
+        url: normalizeImageUrl(file.url),
+        metadata: file.id ? { file_id: file.id } : undefined,
+      }));
+      const nextImages = [...images, ...uploadedImages];
+
+      setImages(nextImages);
+      onChange(nextImages);
     } catch {
       toast.error('Image upload failed. Please try again.');
     } finally {
       setIsUploading(false);
     }
-  }, [urls, onChange]);
+  }, [images, onChange]);
 
   const onFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) uploadFiles(e.target.files);
@@ -73,23 +130,36 @@ export function ImageUpload({ value = [], onChange }: ImageUploadProps) {
     if (e.dataTransfer.files) uploadFiles(e.dataTransfer.files);
   }, [uploadFiles]);
 
-  const removeImage = (url: string) => {
-    const newUrls = urls.filter((u) => u !== url);
-    setUrls(newUrls);
-    onChange(newUrls);
-  };
+  const removeImage = useCallback(async (image: ProductImageValue) => {
+    const fileId = image.metadata?.file_id;
+
+    if (fileId) {
+      onQueueDelete?.(fileId);
+    }
+
+    const nextImages = images.filter((currentImage) => {
+      if (image.id && currentImage.id) {
+        return currentImage.id !== image.id;
+      }
+
+      return currentImage.url !== image.url;
+    });
+
+    setImages(nextImages);
+    onChange(nextImages);
+  }, [images, onChange, onQueueDelete]);
 
   return (
     <div className="space-y-4">
       {/* Existing images grid */}
-      {urls.length > 0 && (
+      {images.length > 0 && (
         <div className="grid grid-cols-2 gap-4">
-          {urls.map((url) => (
-            <div key={url} className="relative group aspect-square rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
-              <img src={url} alt="Product" className="w-full h-full object-cover" />
+          {images.map((image) => (
+            <div key={image.id || image.url} className="relative group aspect-square rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+              <img src={image.url} alt="Product" className="w-full h-full object-cover" />
               <button
                 type="button"
-                onClick={() => removeImage(url)}
+                onClick={() => removeImage(image)}
                 className="absolute top-2 right-2 p-1.5 bg-white/90 text-slate-900 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:text-rose-500"
                 aria-label="Remove image"
               >
@@ -137,9 +207,9 @@ export function ImageUpload({ value = [], onChange }: ImageUploadProps) {
         </p>
         <p className="text-xs text-slate-400 mt-1">JPG, PNG, WebP — up to 5 images, 1000×1000px recommended</p>
 
-        {urls.length === 0 && !isUploading && (
+        {images.length === 0 && !isUploading && (
           <div className="flex items-center gap-2 mt-4 px-4 py-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
-            <ImageIcon className="w-4 h-4 text-slate-300 flex-shrink-0" />
+            <ImageIcon className="w-4 h-4 text-slate-300 shrink-0" />
             <p className="text-xs font-medium text-slate-400">No images added yet</p>
           </div>
         )}

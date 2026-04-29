@@ -64,9 +64,10 @@ Unsure where to start? Look for issues labeled:
 
 ### Prerequisites
 
-- Node.js 18+
-- PostgreSQL 13+
-- Redis 6+
+- Node.js 20+
+- pnpm 10+
+- PostgreSQL 15+
+- Redis 7+
 - Git
 
 ### Setup Steps
@@ -79,32 +80,29 @@ Unsure where to start? Look for issues labeled:
 
 2. **Install Dependencies**
    ```bash
-   # Backend
-   cd backend
-   npm install
-
-   # Frontend
-   cd ../frontend
-   npm install
+   pnpm install
    ```
 
 3. **Set Up Database**
    ```bash
-   createdb martnex_dev
+   # Using docker (recommended)
+   ./start.sh
+   
+   # Or manual setup
    cd backend
-   npm run migrate
-   npm run seed
+   pnpm run migrate
+   pnpm run seed
    ```
 
 4. **Start Development Servers**
    ```bash
-   # Terminal 1 - Backend
-   cd backend
-   npm run dev
-
-   # Terminal 2 - Frontend
+   # Frontend
    cd frontend
-   npm run dev
+   pnpm dev
+   
+   # Backend
+   cd backend
+   pnpm dev
    ```
 
 For detailed setup, see [Setup Instructions](docs/SETUP_INSTRUCTIONS.md).
@@ -212,12 +210,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
 }
 ```
 
-### CSS/TailwindCSS
-
-- Use TailwindCSS utility classes
-- Follow mobile-first approach
-- Keep custom CSS minimal
-- Use Shadcn/UI components when possible
+### CSS/Tailwind CSS
+- Use **Tailwind CSS v4** utility classes with native `@theme` support.
+- Follow a mobile-first, responsive approach.
+- Prioritize **Visual Excellence**: Use harmonious color palettes, modern typography, and smooth micro-animations.
+- Use **Shadcn/UI** components from `@/components/ui` as the primary primitive library.
+- Avoid raw divs for styling; prefer structured UI components (e.g., `<Card>`, `<Container>`).
 
 ### Git Commit Messages
 
@@ -253,14 +251,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
 ```bash
 # Backend tests
 cd backend
-npm test
+pnpm test
 
 # Frontend tests
 cd frontend
-npm test
+pnpm test
 
-# E2E tests
-npm run test:e2e
+# E2E tests (Playwright)
+cd frontend
+pnpm playwright test
 ```
 
 ### Writing Tests

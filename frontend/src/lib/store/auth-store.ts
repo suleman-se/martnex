@@ -5,6 +5,8 @@ import { buildStoreHeaders, getBackendUrl, medusa } from '@/lib/medusa-client';
 
 const API_URL = getBackendUrl();
 
+let refreshUserPromise: Promise<void> | null = null;
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -181,42 +183,52 @@ export const useAuthStore = create<AuthState>()(
       },
 
       refreshUser: async () => {
-        try {
-          const token = localStorage.getItem('access_token');
-          if (!token) {
-            // Persisted state says authenticated but token is gone — clear it
-            get().logout();
-            return;
-          }
-
-          const headers = await buildStoreHeaders(token);
-          const response = await fetch(`${API_URL}/store/customers/me`, {
-            headers,
-            cache: 'no-store',
-            // @ts-ignore - Next.js specific
-            next: { revalidate: 0 }
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            if (data.customer) {
-              const userData: User = {
-                id: data.customer.id,
-                email: data.customer.email,
-                role: (data.customer.metadata?.role as any) || 'buyer',
-                first_name: data.customer.first_name,
-                last_name: data.customer.last_name,
-                email_verified: !!data.customer.metadata?.email_verified
-              };
-              set({ user: userData, isAuthenticated: true });
-            }
-          } else if (response.status === 401 || response.status === 403 || response.status === 404) {
-            // Token expired, user not found, or forbidden — clear session
-            get().logout();
-          }
-        } catch (error) {
-          console.error('Refresh user error:', error);
+        if (refreshUserPromise) {
+          return refreshUserPromise;
         }
+
+        refreshUserPromise = (async () => {
+          try {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+              // Persisted state says authenticated but token is gone — clear it
+              await get().logout();
+              return;
+            }
+
+            const headers = await buildStoreHeaders(token);
+            const response = await fetch(`${API_URL}/store/customers/me`, {
+              headers,
+              cache: 'no-store',
+              // @ts-ignore - Next.js specific
+              next: { revalidate: 0 }
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              if (data.customer) {
+                const userData: User = {
+                  id: data.customer.id,
+                  email: data.customer.email,
+                  role: (data.customer.metadata?.role as any) || 'buyer',
+                  first_name: data.customer.first_name,
+                  last_name: data.customer.last_name,
+                  email_verified: !!data.customer.metadata?.email_verified
+                };
+                set({ user: userData, isAuthenticated: true });
+              }
+            } else if (response.status === 401 || response.status === 403 || response.status === 404) {
+              // Token expired, user not found, or forbidden — clear session
+              await get().logout();
+            }
+          } catch (error) {
+            console.error('Refresh user error:', error);
+          }
+        })().finally(() => {
+          refreshUserPromise = null;
+        });
+
+        return refreshUserPromise;
       },
     }),
     {

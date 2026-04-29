@@ -11,7 +11,6 @@ export default function NewProductPage() {
   const { handleCreate, isProcessing } = useSellerProducts();
 
   const onSubmit = async (data: any) => {
-    console.log('[NewProduct] submit data:', JSON.stringify(data, null, 2));
     try {
       await handleCreate(data);
       toast.success('Product created successfully');

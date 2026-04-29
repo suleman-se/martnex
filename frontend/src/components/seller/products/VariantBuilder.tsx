@@ -13,6 +13,7 @@ interface Option {
 }
 
 interface Variant {
+  id?: string;
   title: string;
   options: Record<string, string>;
   price: number;
@@ -21,13 +22,60 @@ interface Variant {
 }
 
 interface VariantBuilderProps {
-  value?: { options: Option[]; variants: Variant[] };
+  value?: { options: Option[]; variants: any[] };
   onChange: (value: { options: any[]; variants: any[] }) => void;
+}
+
+function inferRemovedTitlesFromValue(value?: { options: Option[]; variants: any[] }): Set<string> {
+  if (!value?.options?.length) {
+    return new Set();
+  }
+
+  const normalizedOptions = value.options
+    .map((option) => ({
+      title: option.title,
+      values: Array.isArray(option.values) ? option.values : [],
+    }))
+    .filter((option) => option.title && option.values.length > 0);
+
+  if (!normalizedOptions.length) {
+    return new Set();
+  }
+
+  const allTitles = new Set(
+    generateCombinations(normalizedOptions as Option[]).map((combo) =>
+      Object.values(combo).join(' / ')
+    )
+  );
+
+  const visibleTitles = new Set(
+    (value.variants || [])
+      .map((variant: any) => variant?.title)
+      .filter((title: unknown): title is string => typeof title === 'string' && title.length > 0)
+  );
+
+  return new Set(Array.from(allTitles).filter((title) => !visibleTitles.has(title)));
 }
 
 export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
   const [options, setOptions] = useState<Option[]>(value?.options || []);
-  const [variants, setVariants] = useState<Variant[]>(value?.variants || []);
+  const [removedTitles, setRemovedTitles] = useState<Set<string>>(() => inferRemovedTitlesFromValue(value));
+  const [variants, setVariants] = useState<Variant[]>(() => {
+    if (!value?.variants) return [];
+    return value.variants.map((v: any) => ({
+      id: v.id,
+      title: v.title,
+      options: v.options?.reduce((acc: any, curr: any) => {
+        const title = curr.title || curr.option?.title || '';
+        const value = typeof curr.value === 'string' ? curr.value : curr.value?.value || '';
+        if (title) acc[title] = value;
+        return acc;
+      }, {}) || {},
+      price: v.prices?.[0]?.amount ?? v.calculated_price?.calculated_amount ?? v.price ?? 0,
+      inventory_quantity: v.inventory_quantity ?? 0,
+      sku: v.sku ?? '',
+    }));
+  });
 
   const addOption = () => {
     setOptions([...options, { id: Math.random().toString(36).substr(2, 9), title: '', values: [] }]);
@@ -58,52 +106,79 @@ export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
   const notifyParent = React.useCallback((currentOptions: Option[], currentVariants: Variant[]) => {
     onChange({
       options: currentOptions.map(o => ({ title: o.title, values: o.values })),
-      variants: currentVariants.map(v => ({
-        title: v.title,
-        prices: [{ amount: v.price, currency_code: 'usd' }],
-        inventory_quantity: v.inventory_quantity,
-        sku: v.sku,
-        options: Object.entries(v.options).map(([title, value]) => ({ title, value }))
-      }))
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      variants: currentVariants.map(v => {
+        const trimmedSku = v.sku?.trim();
 
-  // Single effect: rebuild variant matrix when options change, then notify parent
+        return {
+          ...(v.id ? { id: v.id } : {}),
+          title: v.title,
+          prices: [{ amount: v.price, currency_code: 'usd' }],
+          inventory_quantity: v.inventory_quantity,
+          ...(trimmedSku ? { sku: trimmedSku } : {}),
+          options: Object.entries(v.options).map(([title, value]) => ({ title, value }))
+        };
+      })
+    });
+  }, [onChange]);
+
+  // Single effect: rebuild variant matrix when options change
   useEffect(() => {
     if (options.length === 0 || options.every(o => o.values.length === 0)) {
-      setVariants([]);
-      notifyParent(options, []);
+      if (variants.length > 0) {
+        setVariants([]);
+        notifyParent(options, []);
+      }
       return;
     }
 
     const combinations = generateCombinations(options.filter(o => o.values.length > 0));
 
-    const newVariants = combinations.map(combo => {
-      const title = Object.values(combo).join(' / ');
-      const existing = variants.find(v => v.title === title);
-      return {
-        title,
-        options: combo,
-        price: existing?.price ?? 0,
-        inventory_quantity: existing?.inventory_quantity ?? 0,
-        sku: existing?.sku ?? '',
-      };
-    });
+    const newVariants = combinations
+      .map(combo => {
+        const title = Object.values(combo).join(' / ');
+        
+        // Skip if explicitly removed by user
+        if (removedTitles.has(title)) return null;
 
-    setVariants(newVariants);
-    notifyParent(options, newVariants);
-  // variants intentionally excluded — preserving existing row data without triggering on manual edits
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options, notifyParent]);
+        const existing = variants.find(v => v.title === title);
+        return {
+          id: existing?.id,
+          title,
+          options: combo,
+          price: existing?.price ?? 0,
+          inventory_quantity: existing?.inventory_quantity ?? 0,
+          sku: existing?.sku ?? '',
+        };
+      })
+      .filter((v): v is Variant => v !== null);
 
-  const updateVariant = useCallback((idx: number, field: keyof Pick<Variant, 'price' | 'inventory_quantity' | 'sku'>, value: number | string) => {
-    setVariants(prev => {
-      const updated = prev.map((v, i) => i === idx ? { ...v, [field]: value } : v);
-      notifyParent(options, updated);
-      return updated;
-    });
-  }, [options, notifyParent]);
+    // Only update and notify if the matrix actually changed
+    const titlesChanged = newVariants.length !== variants.length || 
+                          newVariants.some((v, i) => v.title !== variants[i]?.title);
+
+    if (titlesChanged) {
+      setVariants(newVariants);
+      notifyParent(options, newVariants);
+    }
+  }, [options, notifyParent, variants, removedTitles]);
+
+  const updateVariant = (idx: number, field: keyof Pick<Variant, 'price' | 'inventory_quantity' | 'sku'>, value: number | string) => {
+    const updated = variants.map((v, i) => i === idx ? { ...v, [field]: value } : v);
+    setVariants(updated);
+    notifyParent(options, updated);
+  };
+
+  const removeVariant = (title: string) => {
+    setRemovedTitles(prev => new Set(prev).add(title));
+    const updated = variants.filter(v => v.title !== title);
+    setVariants(updated);
+    notifyParent(options, updated);
+  };
+
+  const restoreAll = () => {
+    setRemovedTitles(new Set());
+    // The useEffect will naturally re-generate the full matrix in the next render cycle
+  };
 
   return (
     <div className="space-y-8">
@@ -157,7 +232,7 @@ export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
                       </span>
                     ))}
                     <input 
-                      className="bg-transparent border-none focus:outline-none text-sm font-bold placeholder:text-slate-300 min-w-[120px]"
+                      className="bg-transparent border-none focus:outline-none text-sm font-bold placeholder:text-slate-300 min-w-30"
                       placeholder="Add value + Enter"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -176,7 +251,42 @@ export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
 
       {variants.length > 0 && (
         <div className="space-y-4">
-          <Label className="text-sm font-black uppercase tracking-widest text-slate-400">Variant Matrix</Label>
+          <div className="flex items-center justify-between">
+            <Label className="text-sm font-black uppercase tracking-widest text-slate-400">Variant Matrix</Label>
+            {removedTitles.size > 0 && (
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setRemovedTitles(new Set())}
+                className="text-xs font-bold text-slate-400 hover:text-primary hover:bg-primary/5 h-8 px-3 rounded-lg"
+              >
+                Restore All
+              </Button>
+            )}
+          </div>
+
+          {removedTitles.size > 0 && (
+            <div className="flex flex-wrap gap-2 p-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 w-full mb-1">Hidden Variants (Click to restore)</span>
+              {Array.from(removedTitles).map(title => (
+                <button
+                  key={title}
+                  type="button"
+                  onClick={() => {
+                    const newRemoved = new Set(removedTitles);
+                    newRemoved.delete(title);
+                    setRemovedTitles(newRemoved);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-400 hover:text-primary hover:border-primary/30 transition-all"
+                >
+                  <Plus className="w-3 h-3" />
+                  {title}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="overflow-hidden border border-slate-100 rounded-2xl">
             <table className="w-full text-left">
               <thead>
@@ -185,37 +295,60 @@ export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
                   <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Price (USD)</th>
                   <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Inventory</th>
                   <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">SKU</th>
+                  <th className="px-6 py-4 text-right"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {variants.map((variant, idx) => (
-                  <tr key={variant.title}>
+                  <tr key={variant.title} className="group/row">
                     <td className="px-6 py-4">
                       <span className="text-sm font-bold text-slate-900">{variant.title}</span>
                     </td>
                     <td className="px-6 py-4">
-                      <Input 
-                        type="number" 
-                        value={variant.price || ''} 
-                        onChange={(e) => updateVariant(idx, 'price', Number(e.target.value))}
-                        className="h-10 w-24 rounded-lg bg-slate-50/50"
-                      />
+                      <div className="relative w-24">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-300">$</span>
+                        <Input 
+                          type="number" 
+                          min="0"
+                          step="0.01"
+                          value={variant.price ?? ''} 
+                          onChange={(e) => {
+                            const val = Math.max(0, parseFloat(e.target.value) || 0);
+                            updateVariant(idx, 'price', val);
+                          }}
+                          className="h-10 pl-7 pr-2 rounded-lg bg-slate-50/50 border-none font-bold focus:ring-2 focus:ring-primary/20"
+                        />
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <Input 
                         type="number" 
-                        value={variant.inventory_quantity || ''} 
-                        onChange={(e) => updateVariant(idx, 'inventory_quantity', Number(e.target.value))}
-                        className="h-10 w-24 rounded-lg bg-slate-50/50"
+                        min="0"
+                        step="1"
+                        value={variant.inventory_quantity ?? ''} 
+                        onChange={(e) => {
+                          const val = Math.max(0, parseInt(e.target.value) || 0);
+                          updateVariant(idx, 'inventory_quantity', val);
+                        }}
+                        className="h-10 w-24 rounded-lg bg-slate-50/50 border-none font-bold focus:ring-2 focus:ring-primary/20"
                       />
                     </td>
                     <td className="px-6 py-4">
                       <Input 
                         value={variant.sku} 
                         onChange={(e) => updateVariant(idx, 'sku', e.target.value)}
-                        placeholder="Optional"
-                        className="h-10 rounded-lg bg-slate-50/50"
+                        placeholder="e.g. SKU-001"
+                        className="h-10 rounded-lg bg-slate-50/50 border-none font-medium focus:ring-2 focus:ring-primary/20"
                       />
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button 
+                        type="button" 
+                        onClick={() => removeVariant(variant.title)}
+                        className="p-2 text-slate-300 hover:text-rose-500 opacity-0 group-hover/row:opacity-100 transition-all"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}

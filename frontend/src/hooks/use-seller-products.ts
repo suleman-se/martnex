@@ -9,17 +9,63 @@ export interface Product {
   description: string;
   handle: string;
   thumbnail: string;
-  images: { url: string }[];
+  images: {
+    id?: string;
+    url: string;
+    metadata?: {
+      file_id?: string;
+      [key: string]: unknown;
+    } | null;
+  }[];
   options: { title: string; values: { value: string }[] }[];
   variants: {
     id: string;
     title: string;
     prices: { amount: number; currency_code: string }[];
     inventory_quantity: number;
-    options: { value: string }[];
+    sku?: string;
+    options: { title: string; value: string }[];
   }[];
   categories: { id: string; name: string }[];
   status: 'draft' | 'proposed' | 'published' | 'rejected';
+}
+
+function normalizeProductMediaUrl(url?: string | null): string {
+  if (!url) {
+    return '';
+  }
+
+  const backendUrl = getBackendUrl();
+
+  if (url.startsWith('/')) {
+    return new URL(url, backendUrl).toString();
+  }
+
+  try {
+    const parsedUrl = new URL(url);
+    const backendOrigin = new URL(backendUrl).origin;
+
+    if (parsedUrl.pathname.startsWith('/static/')) {
+      return new URL(`${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`, backendOrigin).toString();
+    }
+
+    return parsedUrl.toString();
+  } catch {
+    return url;
+  }
+}
+
+function normalizeProduct(product: Product): Product {
+  return {
+    ...product,
+    thumbnail: normalizeProductMediaUrl(product.thumbnail),
+    images: Array.isArray(product.images)
+      ? product.images.map((image) => ({
+          ...image,
+          url: normalizeProductMediaUrl(image.url),
+        }))
+      : [],
+  };
 }
 
 async function fetchSellerProducts(): Promise<Product[]> {
@@ -30,7 +76,8 @@ async function fetchSellerProducts(): Promise<Product[]> {
   if (!response.ok) throw new Error('Failed to fetch products');
   const data = await response.json();
   const p = data.products;
-  return Array.isArray(p) ? p : p ? [p] : [];
+  const products = Array.isArray(p) ? p : p ? [p] : [];
+  return products.map((product: Product) => normalizeProduct(product));
 }
 
 async function fetchSellerProduct(id: string): Promise<Product> {
@@ -40,45 +87,35 @@ async function fetchSellerProduct(id: string): Promise<Product> {
   
   if (!response.ok) throw new Error('Failed to fetch product');
   const data = await response.json();
-  return data.product;
+  return normalizeProduct(data.product as Product);
 }
 
 async function createProduct(payload: any): Promise<Product> {
   const token = localStorage.getItem('access_token');
   const headers = await buildStoreHeaders(token || undefined);
-  // Backend expects images as { url: string }[] — transform from plain string[]
-  const body = {
-    ...payload,
-    images: payload.images?.map((url: string) => ({ url })),
-  };
   const response = await fetch(`${getBackendUrl()}/store/sellers/me/products`, {
     method: 'POST',
     headers: { ...headers, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body: JSON.stringify(payload),
   });
   
   if (!response.ok) throw new Error('Failed to create product');
   const data = await response.json();
-  return data.product;
+  return normalizeProduct(data.product as Product);
 }
 
 async function updateProduct({ id, ...payload }: { id: string } & any): Promise<Product> {
   const token = localStorage.getItem('access_token');
   const headers = await buildStoreHeaders(token || undefined);
-  // Backend expects images as { url: string }[] — transform from plain string[]
-  const body = {
-    ...payload,
-    images: payload.images?.map((url: string) => ({ url })),
-  };
   const response = await fetch(`${getBackendUrl()}/store/sellers/me/products/${id}`, {
     method: 'POST',
     headers: { ...headers, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body: JSON.stringify(payload),
   });
   
   if (!response.ok) throw new Error('Failed to update product');
   const data = await response.json();
-  return data.product;
+  return normalizeProduct(data.product as Product);
 }
 
 async function deleteProduct(id: string): Promise<void> {

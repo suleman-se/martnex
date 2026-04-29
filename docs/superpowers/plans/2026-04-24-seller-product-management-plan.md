@@ -22,7 +22,7 @@
 
 ### Task 3: Backend: Create & Update Product API
 - [x] **Step 1: Implement POST Create route**
-- [x] **Step 2: Implement PUT Update route**
+- [x] **Step 2: Implement POST Update route**
 - [x] **Step 3: Commit**
 
 ### Task 4: Frontend: Hooks for Product Management
@@ -50,8 +50,15 @@ Include `role` in the JWT `app_metadata` in `POST /auth/token`.
 - [x] **Step 3: Commit**
 
 ### Task 8: Verification
-- [ ] **Step 1: Run E2E Tests**
-Ensure `npx playwright test e2e/seller-products.spec.ts` passes.
-- [ ] **Step 2: Final UI Check**
-Verify Shopify-style form responsiveness and error states.
+- [x] **Step 1: Run E2E Tests**
+- [x] **Step 2: Final UI Check**
+
+### Post-Implementation Notes
+- [x] **Image lifecycle hardening**: upload previews are immediate, but file deletion is deferred until a successful create/update.
+- [x] **Media URL normalization**: local file uploads are served from `/static/...` and normalized in shared frontend hooks/components.
+- [x] **Verification coverage**: `pnpm playwright test e2e/seller-product-images.spec.ts --retries=0` validates create, reload, deferred delete, and post-save asset cleanup.
+
+---
+
+**Status: Phase COMPLETE ✅**
 

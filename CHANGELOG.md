@@ -5,7 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Phase 3 (April 2026)
+## [Unreleased] - Phase 4: Product Excellence (Late April 2026)
+
+### Added
+- **Seller Product Management (Shopify-style)**:
+  - **Advanced Variant Builder**: Dynamic generation of product variants based on attributes (size, color, etc.).
+  - **Premium Image Upload**: Multi-file drag-and-drop uploader with progress tracking and gallery management.
+  - **Two-Column Form Layout**: Optimized Shopify-style interface for product data entry.
+  - **Ownership Enforcement**: Strict server-side validation ensuring sellers can only manage their own products via the `seller-product` module link.
+  - **Image Lifecycle E2E Coverage**: Added a Playwright journey for upload, persist-after-reload, deferred delete, and post-save cleanup.
+- **Tech Stack Upgrade**:
+  - Migrated frontend to **Next.js 16.2** and **React 19**.
+  - Fully implemented **Tailwind CSS v4** with native `@theme` integration.
+  - Standardized on **pnpm 10+** for package management.
+- **Design System Evolution**:
+  - Introduced "Visual Excellence" standards focusing on micro-animations, glassmorphism, and premium aesthetics.
+  - Standardized `<BaseDashboardLayout />` and `<EmptyState />` components.
+
+### Changed
+- **Seller product workflows** now use Medusa core create/update workflows with normalized simple-product and variant option payloads.
+- **Seller product media** is now served from `/static/...` via the Medusa local file provider to avoid broken upload URLs in local development.
+- **Image deletion behavior** is deferred until a successful product save using `pending_delete_file_ids` and `images[].metadata.file_id`.
+- **Seller product list rendering** now normalizes backend media URLs and uses plain `<img>` thumbnails for backend-served uploads.
+- **Store client request behavior** now deduplicates concurrent publishable-key and `/store/customers/me` lookups.
+
+## [0.4.0] - Phase 3: Core Infrastructure (April 2026)
 
 ### Added
 - **Verification Flow**: 

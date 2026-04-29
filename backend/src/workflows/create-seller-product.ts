@@ -5,7 +5,7 @@ import {
   WorkflowResponse,
   transform,
 } from "@medusajs/framework/workflows-sdk"
-import { createRemoteLinkStep } from "@medusajs/medusa/core-flows"
+import { createRemoteLinkStep, createProductsWorkflow, deleteFilesWorkflow } from "@medusajs/medusa/core-flows"
 import { Modules, MedusaError } from "@medusajs/framework/utils"
 import type SellerModuleService from "@modules/seller/service"
 
@@ -37,14 +37,89 @@ export const getSellerByCustomerIdStep = createStep(
 export const createProductStep = createStep(
   "create-seller-product",
   async (input: Record<string, unknown>, { container }) => {
-    const productService = container.resolve(Modules.PRODUCT)
-    const [product] = await productService.createProducts([input as any])
+    const data = { ...input } as any
+    delete data.pending_delete_file_ids
+
+    if (Array.isArray(data.category_ids)) {
+      data.categories = data.category_ids.map((categoryId: string) => ({ id: categoryId }))
+      delete data.category_ids
+    }
+
+    if (Array.isArray(data.variants)) {
+      data.variants = data.variants.map((variant: any) => {
+        const next = { ...variant }
+
+        if (Array.isArray(next.options)) {
+          next.options = next.options.reduce((acc: Record<string, string>, option: any) => {
+            const title = typeof option?.title === "string" ? option.title : undefined
+            const rawValue =
+              typeof option?.value === "string"
+                ? option.value
+                : option?.value?.value != null
+                  ? String(option.value.value)
+                  : undefined
+
+            if (title && rawValue != null) {
+              acc[title] = String(rawValue)
+            }
+
+            return acc
+          }, {})
+        }
+
+        if (typeof next.inventory_quantity === "number") {
+          next.metadata = {
+            ...(next.metadata || {}),
+            inventory_quantity: next.inventory_quantity,
+          }
+          delete next.inventory_quantity
+        }
+
+        if (typeof next.sku === "string") {
+          const trimmedSku = next.sku.trim()
+          if (trimmedSku) {
+            next.sku = trimmedSku
+          } else {
+            delete next.sku
+          }
+        }
+
+        return next
+      })
+    }
+
+    const { result } = await createProductsWorkflow(container).run({
+      input: {
+        products: [data as any],
+      },
+    })
+
+    const product = result[0]
     return new StepResponse(product, product.id)
   },
   async (productId: string, { container }) => {
     // Compensation: delete the product if linking fails
     const productService = container.resolve(Modules.PRODUCT)
     await productService.deleteProducts([productId])
+  }
+)
+
+type DeleteUploadedFilesInput = {
+  file_ids?: string[]
+}
+
+const deleteUploadedFilesStep = createStep(
+  "delete-uploaded-files-after-save",
+  async ({ file_ids }: DeleteUploadedFilesInput, { container }) => {
+    if (!file_ids?.length) {
+      return new StepResponse([])
+    }
+
+    await deleteFilesWorkflow(container).run({
+      input: { ids: file_ids },
+    })
+
+    return new StepResponse(file_ids)
   }
 )
 
@@ -55,7 +130,21 @@ type WorkflowInput = {
   product_data: Record<string, unknown>
 }
 
-export const createSellerProductWorkflow = createWorkflow(
+type CreateSellerProductWorkflowResult = {
+  product: unknown
+}
+
+type CreateSellerProductWorkflow = (
+  container?: unknown
+) => {
+  run: (args: { input: WorkflowInput }) => Promise<{ result: CreateSellerProductWorkflowResult }>
+}
+
+const createSellerProductWorkflowDefinition = createWorkflow<
+  WorkflowInput,
+  CreateSellerProductWorkflowResult,
+  []
+>(
   "create-seller-product",
   function (input: WorkflowInput) {
     const seller = getSellerByCustomerIdStep({ customer_id: input.customer_id })
@@ -73,6 +162,18 @@ export const createSellerProductWorkflow = createWorkflow(
 
     createRemoteLinkStep(linkData)
 
+    const deletedFileIds = transform(input, (workflowInput) => ({
+      file_ids:
+        Array.isArray((workflowInput.product_data as any)?.pending_delete_file_ids)
+          ? (workflowInput.product_data as any).pending_delete_file_ids
+          : [],
+    }))
+
+    deleteUploadedFilesStep(deletedFileIds)
+
     return new WorkflowResponse({ product })
   }
 )
+
+export const createSellerProductWorkflow =
+  createSellerProductWorkflowDefinition as unknown as CreateSellerProductWorkflow

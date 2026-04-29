@@ -6,6 +6,44 @@ import type { CreateProductInput } from "@/api/middlewares"
 
 const SELLER_MODULE = "seller"
 
+function remapVariantPrices<T extends { variants?: any[] }>(product: T): T {
+  if (!product?.variants?.length) {
+    return product
+  }
+
+  return {
+    ...product,
+    variants: product.variants.map((variant: any) => {
+      const normalizedPrices =
+        Array.isArray(variant?.prices) && variant.prices.length
+          ? variant.prices
+          : Array.isArray(variant?.price_set?.prices)
+            ? variant.price_set.prices
+            : []
+
+      const metadataInventoryQuantity =
+        typeof variant?.metadata?.inventory_quantity === "number"
+          ? variant.metadata.inventory_quantity
+          : typeof variant?.metadata?.inventory_quantity === "string"
+            ? Number(variant.metadata.inventory_quantity)
+            : undefined
+
+      const normalizedInventoryQuantity =
+        typeof variant?.inventory_quantity === "number"
+          ? variant.inventory_quantity
+          : Number.isFinite(metadataInventoryQuantity)
+            ? metadataInventoryQuantity
+            : 0
+
+      return {
+        ...variant,
+        prices: normalizedPrices,
+        inventory_quantity: normalizedInventoryQuantity,
+      }
+    }),
+  }
+}
+
 /**
  * GET /store/sellers/me/products
  * List authenticated seller's products using the module link.
@@ -32,6 +70,7 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
       "product.*",
       "product.variants.*",
       "product.variants.prices.*",
+      "product.variants.price_set.prices.*",
       "product.options.*",
       "product.options.values.*",
       "product.images.*",
@@ -41,7 +80,9 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
   })
 
   const rawProduct = sellers[0]?.product
-  const products = Array.isArray(rawProduct) ? rawProduct : rawProduct ? [rawProduct] : []
+  const products = (Array.isArray(rawProduct) ? rawProduct : rawProduct ? [rawProduct] : []).map(
+    (product: any) => remapVariantPrices(product)
+  )
   res.status(200).json({ products })
 }
 
