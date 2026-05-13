@@ -5,8 +5,8 @@ import {
   WorkflowResponse,
   transform,
 } from "@medusajs/framework/workflows-sdk"
-import { createRemoteLinkStep, createProductsWorkflow, deleteFilesWorkflow } from "@medusajs/medusa/core-flows"
-import { Modules, MedusaError } from "@medusajs/framework/utils"
+import { createProductsWorkflow, deleteFilesWorkflow } from "@medusajs/medusa/core-flows"
+import { MedusaError, ContainerRegistrationKeys, generateEntityId, Modules } from "@medusajs/framework/utils"
 import type SellerModuleService from "@modules/seller/service"
 
 const SELLER_MODULE = "seller"
@@ -104,6 +104,42 @@ export const createProductStep = createStep(
   }
 )
 
+// ─── Step 3: Link product to seller (raw insert, bypasses Medusa 1:1 check) ──
+//
+// Medusa's createRemoteLinkStep enforces a 1:1 constraint at the app level even
+// though the DB pivot table (product_product_seller_seller) only has a composite
+// PK on (product_id, seller_id) — which already allows many products per seller.
+// We bypass the app-level check with a direct Knex insert.
+
+type LinkInput = { product_id: string; seller_id: string }
+
+const createSellerProductLinkStep = createStep(
+  "create-seller-product-link",
+  async ({ product_id, seller_id }: LinkInput, { container }) => {
+    const knex = container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    const id = generateEntityId("link")
+
+    await knex.raw(
+      `INSERT INTO product_product_seller_seller (id, product_id, seller_id, created_at, updated_at)
+       VALUES (?, ?, ?, NOW(), NOW())
+       ON CONFLICT (product_id, seller_id) DO NOTHING`,
+      [id, product_id, seller_id]
+    )
+
+    return new StepResponse({ product_id, seller_id }, { product_id, seller_id })
+  },
+  async ({ product_id, seller_id }: LinkInput, { container }) => {
+    // Compensation: remove the link if later steps fail
+    const knex = container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    await knex.raw(
+      `DELETE FROM product_product_seller_seller WHERE product_id = ? AND seller_id = ?`,
+      [product_id, seller_id]
+    )
+  }
+)
+
+// ─── Step 4: Delete uploaded files ──────────────────────────────────────────
+
 type DeleteUploadedFilesInput = {
   file_ids?: string[]
 }
@@ -150,17 +186,13 @@ const createSellerProductWorkflowDefinition = createWorkflow<
     const seller = getSellerByCustomerIdStep({ customer_id: input.customer_id })
     const product = createProductStep(input.product_data)
 
-    // Link order MUST match defineLink in src/links/seller-product.ts
-    // defineLink(ProductModule.linkable.product, SellerModule.linkable.seller)
-    // → product FIRST, seller SECOND
-    const linkData = transform({ product, seller }, ({ product, seller }) => [
-      {
-        [Modules.PRODUCT]: { product_id: product.id },
-        [SELLER_MODULE]: { seller_id: seller.id },
-      },
-    ])
+    // Build link input for the custom step
+    const linkInput = transform({ product, seller }, ({ product, seller }) => ({
+      product_id: product.id,
+      seller_id: seller.id,
+    }))
 
-    createRemoteLinkStep(linkData)
+    createSellerProductLinkStep(linkInput)
 
     const deletedFileIds = transform(input, (workflowInput) => ({
       file_ids:
