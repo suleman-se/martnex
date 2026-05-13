@@ -135,7 +135,8 @@ export function useSellerProducts() {
   const { data: products = [], isLoading, error } = useQuery({
     queryKey: ['sellerProducts'],
     queryFn: fetchSellerProducts,
-    staleTime: 30 * 1000,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['sellerProducts'] });
@@ -162,6 +163,7 @@ export function useSellerProducts() {
     products,
     isLoading,
     error: error ? String(error) : null,
+    refetch: () => queryClient.invalidateQueries({ queryKey: ['sellerProducts'] }),
     handleCreate: createMutation.mutateAsync,
     handleUpdate: updateMutation.mutateAsync,
     handleDelete: deleteMutation.mutateAsync,
@@ -176,4 +178,19 @@ export function useSellerProduct(id: string) {
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
   });
+}
+
+export function useUpdateProduct() {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: updateProduct,
+    onSuccess: (updatedProduct) => {
+      queryClient.invalidateQueries({ queryKey: ['sellerProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['sellerProduct', updatedProduct.id] });
+    },
+  });
+  return {
+    handleUpdate: mutation.mutateAsync,
+    isProcessing: mutation.isPending,
+  };
 }

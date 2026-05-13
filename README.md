@@ -5,8 +5,9 @@
   <p>
     <a href="https://github.com/suleman-se/martnex/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
     <a href="#"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
-    <a href="#"><img src="https://img.shields.io/badge/Medusa-v2-8C4FFF" alt="Medusa v2"></a>
-    <a href="#"><img src="https://img.shields.io/badge/Next.js-16-black" alt="Next.js"></a>
+    <a href="#"><img src="https://img.shields.io/badge/Medusa-v2.13-8C4FFF" alt="Medusa v2"></a>
+    <a href="#"><img src="https://img.shields.io/badge/Next.js-16.2-black" alt="Next.js 16.2"></a>
+    <a href="#"><img src="https://img.shields.io/badge/version-0.5.0-brightgreen" alt="v0.5.0"></a>
   </p>
 
   <p>
@@ -42,6 +43,23 @@ Martnex allows you to toggle your entire platform's behavior using a single envi
 
 ---
 
+## ✅ What's Live (v0.5.0)
+
+| Feature | Status |
+| :--- | :---: |
+| Seller registration & verification workflow | ✅ |
+| Seller product management (create, edit, delete, images, variants) | ✅ |
+| Multi-product per seller (many-to-many via Knex pivot) | ✅ |
+| Seller order fulfillment dashboard (live API data) | ✅ |
+| Automatic commission creation on order.placed | ✅ |
+| Commission & payout management (admin + seller) | ✅ |
+| Email verification & password reset (Nodemailer) | ✅ |
+| Admin seller approval / reject / suspend workflows | ✅ |
+| JWT auth compatible with all Medusa store routes | ✅ |
+| Docker Compose (backend + frontend + postgres + redis) | ✅ |
+
+---
+
 ## 📚 Documentation Hub
 
 All technical details are centralized in the `docs/` directory for clarity and maintenance.
@@ -50,10 +68,9 @@ All technical details are centralized in the `docs/` directory for clarity and m
 | :--- | :--- |
 | **Strategy** | [Vision & User Roles](docs/VISION.md) • [Roadmap & Changelog](CHANGELOG.md) |
 | **Getting Started** | [Quick Start Guide](docs/QUICK_START.md) • [Setup Instructions](docs/SETUP_INSTRUCTIONS.md) • [Docker Guide](docs/DOCKER_GUIDE.md) |
-
+| **API Reference** | [API Documentation](docs/API.md) |
 | **Configuration** | [Store Mode Settings](docs/STORE_MODE.md) • [Package Manager (pnpm)](docs/PACKAGE_MANAGER.md) |
 | **Quality** | [Testing Strategy (Unit/E2E)](docs/TESTING_GUIDE.md) • [Development Standards](docs/DEVELOPMENT_STANDARDS.md) |
-| **Technology** | [Medusa v2 Guide](docs/MEDUSAJS_EXPLAINED.md) • [Next.js 16/React 19](docs/NEXTJS16_EXPLAINED.md) |
 
 ---
 

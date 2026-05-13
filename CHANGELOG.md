@@ -5,7 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Phase 4: Product Excellence (Late April 2026)
+## [Unreleased]
+
+> Next up: Buyer storefront, cart & checkout, order tracking, search & filtering.
+
+---
+
+## [0.5.0] - Phase 4: Seller Order Fulfillment & Product Stability (13 May 2026)
+
+### Added
+- **Seller Order Fulfillment API** (`GET /store/sellers/me/orders`, `GET /store/sellers/me/orders/:id`):
+  - Lists all orders that contain the authenticated seller's products.
+  - Scopes line items to the seller's own products and computes `seller_subtotal` per order.
+  - Returns 403 if a requested order contains none of the seller's products.
+  - Protected by `authenticate("customer", ["session", "bearer"])` middleware.
+- **Order-Placed Subscriber** (`order.placed` event):
+  - Automatically creates `Commission` records when any order is placed.
+  - Resolves the seller and their commission rate via `query.graph`.
+  - Defaults to 10% commission if no custom rate is set for the seller.
+  - Never throws — commission failure is non-blocking for the order placement itself.
+- **`useSellerOrders` hook** (`frontend/src/hooks/use-seller-orders.ts`):
+  - React Query hook with typed `SellerOrder` / `SellerOrderItem` interfaces.
+  - Helper formatters: `formatOrderStatus`, `formatCustomerName`, `formatCurrency`.
+- **Seller Orders Dashboard page** (`/seller/orders`):
+  - Replaced static mockup with live data from the API.
+  - Loading skeleton, client-side search, status filter, live stat counters, Refresh button, empty state.
+- **`useUpdateProduct` hook**:
+  - Standalone mutation hook for the edit page so it no longer triggers an unnecessary full list fetch.
+
+### Changed
+- `create-seller-product.ts` workflow: `createRemoteLinkStep` → `createSellerProductLinkStep` (Knex).
+- `delete-seller-product.ts` workflow: `dismissRemoteLinkStep` → `deleteSellerProductLinkStep` (Knex).
+- `seller-product.ts` link: reverted `isList: true` (kept as default 1:1; multi-product handled via raw SQL).
+- `useSellerProducts` hook: `staleTime` reduced to `0`; `refetch` exposed; error state added to products page.
+
+---
+
+## [0.4.0] - Phase 3: Core Infrastructure (April 2026)
 
 ### Added
 - **Seller Product Management (Shopify-style)**:

@@ -120,7 +120,7 @@ Content-Type: application/json
 }
 ```
 
-**Note:** Passwords are hashed using `scrypt` by Medusa's native Auth Module. The custom `/auth/token` route has been removed in favour of the native provider.
+**Note:** Passwords are hashed using `scrypt` by Medusa's native Auth Module. The custom `/auth/token` route wraps Medusa's emailpass provider and returns a JWT signed with the same `jwtSecret`, making it fully compatible with all `/store/*` auth middleware.
 
 ## API Endpoints
 
@@ -158,6 +158,17 @@ Content-Type: application/json
 #### Seller Registration & Profile
 - `POST /store/sellers` — Register as a seller (requires `Authorization` bearer token)
 - `GET /store/sellers/me` — Get authenticated seller's own profile
+
+#### Seller Products
+- `GET /store/sellers/me/products` — List the authenticated seller's products (with variants, options, images)
+- `POST /store/sellers/me/products` — Create a new product linked to the seller
+- `GET /store/sellers/me/products/:id` — Get a single product (ownership enforced)
+- `POST /store/sellers/me/products/:id` — Update a product (ownership enforced)
+- `DELETE /store/sellers/me/products/:id` — Delete a product and remove the seller–product pivot row
+
+#### Seller Orders
+- `GET /store/sellers/me/orders` — List all orders containing the seller's products; each order includes `items` scoped to the seller's products and a computed `seller_subtotal`
+- `GET /store/sellers/me/orders/:id` — Get a single order detail; returns 403 if the order contains none of the seller's products
 
 #### Seller Commissions
 - `GET /store/commissions` — Get seller's commission records

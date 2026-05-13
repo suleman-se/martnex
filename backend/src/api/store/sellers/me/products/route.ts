@@ -80,9 +80,10 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
   })
 
   const rawProduct = sellers[0]?.product
-  const products = (Array.isArray(rawProduct) ? rawProduct : rawProduct ? [rawProduct] : []).map(
-    (product: any) => remapVariantPrices(product)
-  )
+  // Filter out nulls — can occur when pivot rows reference deleted products
+  const products = (Array.isArray(rawProduct) ? rawProduct : rawProduct ? [rawProduct] : [])
+    .filter(Boolean)
+    .map((product: any) => remapVariantPrices(product))
   res.status(200).json({ products })
 }
 

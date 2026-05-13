@@ -3,7 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { useSellerProducts, useSellerProduct } from '@/hooks/use-seller-products';
+import { useSellerProduct, useUpdateProduct } from '@/hooks/use-seller-products';
 import { ProductForm } from '@/components/seller/products/ProductForm';
 
 interface EditProductPageProps {
@@ -14,7 +14,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const router = useRouter();
   const { id } = React.use(params);
   const { data: product, isLoading: isFetching } = useSellerProduct(id);
-  const { handleUpdate, isProcessing } = useSellerProducts();
+  const { handleUpdate, isProcessing } = useUpdateProduct();
 
   const onSubmit = async (data: any) => {
     try {

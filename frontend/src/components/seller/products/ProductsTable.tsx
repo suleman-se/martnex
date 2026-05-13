@@ -56,7 +56,7 @@ export function ProductsTable({ products, onDelete, isDeleting }: ProductsTableP
               // Get price and stock from first variant if available
               const firstVariant = product.variants?.[0];
               const price = firstVariant?.prices?.[0]?.amount != null
-                ? `$${(Number(firstVariant.prices[0].amount) / 100).toFixed(2)}`
+                ? `$${Number(firstVariant.prices[0].amount).toFixed(2)}`
                 : 'N/A';
               const stock = firstVariant?.inventory_quantity ?? 0;
               const category = product.categories?.[0]?.name ?? 'Uncategorized';

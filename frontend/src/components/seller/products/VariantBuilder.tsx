@@ -77,6 +77,13 @@ export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
     }));
   });
 
+  // Keep refs to latest values so effects can read them without being in deps
+  const variantsRef = React.useRef(variants);
+  React.useEffect(() => { variantsRef.current = variants; }, [variants]);
+
+  const onChangeRef = React.useRef(onChange);
+  React.useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
+
   const addOption = () => {
     setOptions([...options, { id: Math.random().toString(36).substr(2, 9), title: '', values: [] }]);
   };
@@ -103,12 +110,13 @@ export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
     setOptions(options.map(o => o.id === id ? { ...o, values: o.values.filter(v => v !== val) } : o));
   };
 
+  // Stable notify — uses ref so it never changes identity and doesn't need to
+  // be in any effect's dependency array.
   const notifyParent = React.useCallback((currentOptions: Option[], currentVariants: Variant[]) => {
-    onChange({
+    onChangeRef.current({
       options: currentOptions.map(o => ({ title: o.title, values: o.values })),
       variants: currentVariants.map(v => {
         const trimmedSku = v.sku?.trim();
-
         return {
           ...(v.id ? { id: v.id } : {}),
           title: v.title,
@@ -119,12 +127,13 @@ export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
         };
       })
     });
-  }, [onChange]);
+  }, []); // stable — reads onChange via ref
 
-  // Single effect: rebuild variant matrix when options change
+  // Rebuild variant matrix only when options structure or removed-titles change.
+  // Reads variants via ref to avoid running on every price/inventory keystroke.
   useEffect(() => {
     if (options.length === 0 || options.every(o => o.values.length === 0)) {
-      if (variants.length > 0) {
+      if (variantsRef.current.length > 0) {
         setVariants([]);
         notifyParent(options, []);
       }
@@ -136,11 +145,10 @@ export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
     const newVariants = combinations
       .map(combo => {
         const title = Object.values(combo).join(' / ');
-        
-        // Skip if explicitly removed by user
+
         if (removedTitles.has(title)) return null;
 
-        const existing = variants.find(v => v.title === title);
+        const existing = variantsRef.current.find(v => v.title === title);
         return {
           id: existing?.id,
           title,
@@ -152,15 +160,14 @@ export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
       })
       .filter((v): v is NonNullable<typeof v> => v !== null) as Variant[];
 
-    // Only update and notify if the matrix actually changed
-    const titlesChanged = newVariants.length !== variants.length || 
-                          newVariants.some((v, i) => v.title !== variants[i]?.title);
+    const titlesChanged = newVariants.length !== variantsRef.current.length ||
+                          newVariants.some((v, i) => v.title !== variantsRef.current[i]?.title);
 
     if (titlesChanged) {
       setVariants(newVariants);
       notifyParent(options, newVariants);
     }
-  }, [options, notifyParent, variants, removedTitles]);
+  }, [options, notifyParent, removedTitles]); // variants intentionally excluded — read via ref
 
   const updateVariant = (idx: number, field: keyof Pick<Variant, 'price' | 'inventory_quantity' | 'sku'>, value: number | string) => {
     const updated = variants.map((v, i) => i === idx ? { ...v, [field]: value } : v);

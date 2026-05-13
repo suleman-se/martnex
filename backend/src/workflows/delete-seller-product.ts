@@ -3,9 +3,7 @@ import {
   createStep,
   StepResponse,
   WorkflowResponse,
-  transform,
 } from "@medusajs/framework/workflows-sdk"
-import { dismissRemoteLinkStep } from "@medusajs/medusa/core-flows"
 import { MedusaError, Modules, ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import type SellerModuleService from "@modules/seller/service"
 
@@ -76,20 +74,29 @@ type WorkflowInput = {
   product_id: string
 }
 
+// ─── Step 3: Remove the seller-product pivot row directly via Knex ─────────
+
+type DeleteLinkInput = { product_id: string; seller_id: string }
+
+const deleteSellerProductLinkStep = createStep(
+  "delete-seller-product-link",
+  async ({ product_id, seller_id }: DeleteLinkInput, { container }) => {
+    const knex = container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    await knex.raw(
+      `DELETE FROM product_product_seller_seller WHERE product_id = ? AND seller_id = ?`,
+      [product_id, seller_id]
+    )
+    return new StepResponse({ product_id, seller_id })
+  }
+)
+
 export const deleteSellerProductWorkflow = createWorkflow(
   "delete-seller-product",
   function (input: WorkflowInput) {
     const { seller_id } = getSellerIdStep({ customer_id: input.customer_id })
 
-    // Dismiss the link before deleting the product
-    // Order MUST match defineLink: product FIRST, seller SECOND
-    const linkData = transform({ seller_id, input }, ({ seller_id, input }) => [
-      {
-        [Modules.PRODUCT]: { product_id: input.product_id },
-        [SELLER_MODULE]: { seller_id },
-      },
-    ])
-    dismissRemoteLinkStep(linkData)
+    // Remove pivot row first, then delete the product
+    deleteSellerProductLinkStep({ product_id: input.product_id, seller_id })
 
     const result = deleteSellerProductStep({
       seller_id,

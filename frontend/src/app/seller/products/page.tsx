@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search, Filter, RefreshCw, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSellerProducts } from '@/hooks/use-seller-products';
 import { ProductsTable } from '@/components/seller/products/ProductsTable';
@@ -22,14 +22,14 @@ import { useMounted } from '@/hooks/use-mounted';
 
 export default function SellerProductsPage() {
   const mounted = useMounted();
-  const { products, isLoading, handleDelete, isProcessing } = useSellerProducts();
+  const { products, isLoading, error, handleDelete, isProcessing, refetch } = useSellerProducts();
   const [search, setSearch] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const filtered = products.filter((p) =>
     p.title.toLowerCase().includes(search.toLowerCase())
   );
-
+console.log('Filtered products:', products);
   const confirmDelete = async () => {
     if (!deleteId) return;
     try {
@@ -93,6 +93,15 @@ export default function SellerProductsPage() {
         {isLoading ? (
           <div className="bg-white rounded-[2rem] p-32 flex items-center justify-center shadow-sm">
             <div className="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent" />
+          </div>
+        ) : error ? (
+          <div className="bg-white rounded-[2rem] p-16 flex flex-col items-center justify-center gap-4 shadow-sm">
+            <AlertTriangle className="w-10 h-10 text-red-400" />
+            <p className="text-slate-600 font-semibold text-center">Failed to load products. Please try again.</p>
+            <Button variant="secondary" onClick={() => refetch()} className="flex items-center gap-2 rounded-2xl px-6 py-4">
+              <RefreshCw className="w-4 h-4" />
+              Retry
+            </Button>
           </div>
         ) : (
           <ProductsTable
