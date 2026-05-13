@@ -76,6 +76,10 @@ export default {
       middlewares: [authenticate("customer", ["session", "bearer"])],
     },
     {
+      matcher: "/store/sellers/me/orders*",
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
       matcher: "/store/uploads",
       methods: ["POST"],
       middlewares: [

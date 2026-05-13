@@ -150,7 +150,7 @@ export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
           sku: existing?.sku ?? '',
         };
       })
-      .filter((v): v is Variant => v !== null);
+      .filter((v): v is NonNullable<typeof v> => v !== null) as Variant[];
 
     // Only update and notify if the matrix actually changed
     const titlesChanged = newVariants.length !== variants.length || 
