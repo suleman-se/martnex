@@ -112,11 +112,18 @@ const { products, isLoading } = useSellerProducts();
 - **File Storage:** Local file uploads are served from `/static` via the Medusa file module; seller uploads use `/store/uploads` and `/store/uploads/:id`.
 - **Redis:** Mandatory for production-like environments (via `Modules.CACHE`).
 
-## 9. Completed Milestones
+## 9. Architecture Notes & Known Constraints
+- **Multi-product per seller:** Medusa's `createRemoteLinkStep` enforces a 1:1 application-level constraint on module links. Use Knex raw SQL (`INSERT … ON CONFLICT DO NOTHING`) to insert into the pivot table directly. Do NOT set `isList: true` on `defineLink` — it crashes MikroORM's `expandDotPaths` in cross-module contexts (Medusa 2.13.x limitation).
+- **Prices are stored as dollars (not cents).** Never multiply or divide by 100 for display.
+- **HTTP methods:** Medusa v2 only supports GET, POST, DELETE on store routes. Use POST for updates (no PUT/PATCH).
+- **Workflows required for ALL mutations** — never call module services directly from route handlers.
+
+## 10. Completed Milestones
 - **Refactoring Phase 1:** Monolith to Feature-Sliced migration — **COMPLETE ✅**
 - **Auth Persistence:** Refresh token rotation via Redis — **COMPLETE ✅**
 - **Seller Onboarding:** Multi-step verification flow — **COMPLETE ✅**
-- **Seller Product Management:** Shopify-style CRUD with normalized variants, `/static` media URLs, and deferred image deletion — **COMPLETE ✅**
+- **Seller Product Management:** Shopify-style CRUD with normalized variants, `/static` media URLs, deferred image deletion, multi-product support via Knex pivot — **COMPLETE ✅**
 - **Role Sync:** JWT role synchronization across services — **COMPLETE ✅**
 - **Dashboard Layouts:** Standardized `<BaseDashboardLayout>` across platform — **COMPLETE ✅**
 - **Client Call Deduping:** Publishable key and customer refresh requests use single-flight caching — **COMPLETE ✅**
+- **Seller Order Fulfillment:** Live orders dashboard (`/seller/orders`), scoped order APIs, auto-commission on `order.placed` — **COMPLETE ✅** _(v0.5.0, 13 May 2026)_

@@ -217,10 +217,10 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-10">
           <Card className="rounded-[2.5rem] border-none shadow-premium overflow-hidden">
-            <CardHeader className="bg-slate-50/50 px-10 py-8 border-b border-slate-100">
+            <CardHeader className="bg-secondary px-10 py-7 border-b border-border/20">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm">
-                  <Info className="w-6 h-6 text-primary" />
+                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-border/20">
+                  <Info className="w-5 h-5 text-primary" />
                 </div>
                 <div>
                   <h2 className="text-xl font-heading font-black text-slate-900">General Information</h2>
@@ -235,7 +235,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                   id="title"
                   {...register('title')}
                   placeholder="e.g. Premium Wireless Headphones"
-                  className="bg-slate-50/50 border-none rounded-2xl h-14 px-6 text-lg font-bold placeholder:text-slate-300 focus:ring-2 focus:ring-primary/10 transition-all"
+                  className="bg-input border border-border rounded-xl h-12 px-4 font-semibold placeholder:text-muted-foreground transition-all"
                 />
                 {errors.title && <p className="text-xs font-bold text-rose-500 uppercase tracking-widest pl-2">{errors.title.message}</p>}
               </div>
@@ -245,9 +245,9 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                 <textarea 
                   id="description"
                   {...register('description')}
-                  rows={6}
+                  rows={5}
                   placeholder="Tell your customers what makes this product special..."
-                  className="w-full bg-slate-50/50 border-none rounded-3xl p-6 text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all font-medium resize-none"
+                  className="w-full bg-input border border-border rounded-xl p-4 text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:bg-card transition-all font-medium resize-none"
                 />
               </div>
             </CardContent>
@@ -263,10 +263,10 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
 
               return (
                 <Card className="rounded-[2.5rem] border-none shadow-premium overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <CardHeader className="bg-slate-50/50 px-10 py-8 border-b border-slate-100">
+                  <CardHeader className="bg-secondary px-10 py-7 border-b border-border/20">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm">
-                        <Tag className="w-6 h-6 text-primary" />
+                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-border/20">
+                        <Tag className="w-5 h-5 text-primary" />
                       </div>
                       <div>
                         <h2 className="text-xl font-heading font-black text-slate-900">Pricing & Inventory</h2>
@@ -297,7 +297,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                                   inventory_quantity: current.inventory_quantity ?? 0,
                                 }]);
                               }}
-                              className="bg-slate-50/50 border-none rounded-2xl h-14 px-6 text-lg font-bold focus:ring-2 focus:ring-primary/20"
+                              className="bg-input border border-border rounded-xl h-12 px-4 font-semibold"
                             />
                           )}
                         />
@@ -323,7 +323,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                                   inventory_quantity: val,
                                 }]);
                               }}
-                              className="bg-slate-50/50 border-none rounded-2xl h-14 px-6 text-lg font-bold focus:ring-2 focus:ring-primary/20"
+                              className="bg-input border border-border rounded-xl h-12 px-4 font-semibold"
                             />
                           )}
                         />
@@ -336,10 +336,10 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
           />
 
           <Card className="rounded-[2.5rem] border-none shadow-premium overflow-hidden">
-            <CardHeader className="bg-slate-50/50 px-10 py-8 border-b border-slate-100">
+            <CardHeader className="bg-secondary px-10 py-7 border-b border-border/20">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm">
-                  <Layers className="w-6 h-6 text-primary" />
+                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-border/20">
+                  <Layers className="w-5 h-5 text-primary" />
                 </div>
                 <div>
                   <h2 className="text-xl font-heading font-black text-slate-900">Options & Variants</h2>
@@ -384,10 +384,10 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
         <div className="space-y-10 lg:sticky lg:top-6 lg:self-start">
           {/* 1. Status + Save */}
           <Card className="rounded-[2.5rem] border-none shadow-premium overflow-hidden">
-            <CardHeader className="bg-slate-50/50 px-8 py-6 border-b border-slate-100">
+            <CardHeader className="bg-secondary px-7 py-5 border-b border-border/20">
               <div className="flex items-center gap-3">
                 <Layout className="w-5 h-5 text-primary" />
-                <h3 className="text-lg font-heading font-black text-slate-900">Status</h3>
+                <h3 className="text-base font-heading font-black text-slate-900">Status</h3>
               </div>
             </CardHeader>
             <CardContent className="p-8 space-y-6">
@@ -396,7 +396,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                 control={control}
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger className="bg-slate-50/50 border-none rounded-xl h-12 px-5 font-bold">
+                    <SelectTrigger className="bg-input border border-border rounded-xl h-12 px-4 font-semibold">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-slate-100 shadow-xl">
@@ -420,10 +420,10 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
 
           {/* 2. Category */}
           <Card className="rounded-[2.5rem] border-none shadow-premium overflow-hidden">
-            <CardHeader className="bg-slate-50/50 px-8 py-6 border-b border-slate-100">
+            <CardHeader className="bg-secondary px-7 py-5 border-b border-border/20">
               <div className="flex items-center gap-3">
                 <Layout className="w-5 h-5 text-primary" />
-                <h3 className="text-lg font-heading font-black text-slate-900">Category</h3>
+                <h3 className="text-base font-heading font-black text-slate-900">Category</h3>
               </div>
             </CardHeader>
             <CardContent className="p-8 space-y-3">
@@ -435,7 +435,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                     onValueChange={(val) => field.onChange([val])} 
                     value={field.value?.[0]}
                   >
-                    <SelectTrigger className="bg-slate-50/50 border-none rounded-xl h-12 px-5 font-bold">
+                    <SelectTrigger className="bg-input border border-border rounded-xl h-12 px-4 font-semibold">
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-slate-100 shadow-xl">
@@ -453,10 +453,10 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
 
           {/* 3. Media */}
           <Card className="rounded-[2.5rem] border-none shadow-premium overflow-hidden">
-            <CardHeader className="bg-slate-50/50 px-8 py-6 border-b border-slate-100">
+            <CardHeader className="bg-secondary px-7 py-5 border-b border-border/20">
               <div className="flex items-center gap-3">
                 <Tag className="w-5 h-5 text-primary" />
-                <h3 className="text-lg font-heading font-black text-slate-900">Media</h3>
+                <h3 className="text-base font-heading font-black text-slate-900">Media</h3>
               </div>
             </CardHeader>
             <CardContent className="p-8">

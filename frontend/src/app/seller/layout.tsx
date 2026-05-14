@@ -46,7 +46,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
         <LoadingScreen />
       ) : (
         <BaseDashboardLayout
-          sidebar={(isOpen) => <SellerSidebar isOpen={isOpen} isVerified={isVerified} />}
+          sidebar={(isOpen) => <SellerSidebar isOpen={isOpen} />}
           header={(props) => (
             <SellerHeader
               {...props}

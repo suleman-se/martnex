@@ -21,10 +21,9 @@ const navigation = [
 
 interface SellerSidebarProps {
   isOpen: boolean;
-  isVerified: boolean;
 }
 
-export function SellerSidebar({ isOpen, isVerified }: SellerSidebarProps) {
+export function SellerSidebar({ isOpen }: SellerSidebarProps) {
   const pathname = usePathname();
   const { logout } = useAuthStore();
   const router = useRouter();
@@ -53,22 +52,18 @@ export function SellerSidebar({ isOpen, isVerified }: SellerSidebarProps) {
         <nav className="flex-1 space-y-1 px-0 mt-10">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
-            const disabled = !isVerified && item.href !== '/seller' && item.href !== '/seller/settings';
-            
+
             return (
               <Link
                 key={item.name}
-                href={disabled ? '#' : item.href}
+                href={item.href}
                 className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group ${
-                  isActive 
-                    ? 'bg-slate-900 text-white font-bold shadow-md' 
-                    : disabled 
-                      ? 'text-slate-300 cursor-not-allowed grayscale'
-                      : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100 font-medium'
+                  isActive
+                    ? 'bg-slate-900 text-white font-bold shadow-md'
+                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100 font-medium'
                 }`}
-                onClick={(e) => disabled && e.preventDefault()}
               >
-                <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : disabled ? 'text-slate-200' : 'text-slate-400 group-hover:text-slate-600'}`} />
+                <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'}`} />
                 <span className="font-medium tracking-tight">{item.name}</span>
               </Link>
             );

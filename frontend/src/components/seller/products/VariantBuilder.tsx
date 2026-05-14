@@ -208,14 +208,16 @@ export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
           </div>
         )}
           {options.map((option) => (
-            <div key={option.id} className="p-6 bg-slate-50 rounded-2xl relative group">
-              <button 
+              <div key={option.id} className="p-5 bg-secondary rounded-2xl relative group">
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => removeOption(option.id)}
-                className="absolute top-4 right-4 p-2 text-slate-300 hover:text-rose-500 transition-colors"
+                className="absolute top-3 right-3 h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-lg"
               >
                 <Trash2 className="w-4 h-4" />
-              </button>
+              </Button>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
@@ -224,23 +226,23 @@ export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
                     placeholder="e.g. Size, Color" 
                     value={option.title}
                     onChange={(e) => updateOptionTitle(option.id, e.target.value)}
-                    className="bg-white border-slate-200 rounded-xl"
+                    className="bg-white border border-border rounded-xl h-11 font-semibold"
                   />
                 </div>
                 <div className="md:col-span-2 space-y-2">
                   <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Values</Label>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 min-h-11 items-center p-1 bg-white border border-border rounded-xl focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30 focus-within:bg-card transition-all">
                     {option.values.map((val) => (
-                      <span key={val} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-600">
+                      <span key={val} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-secondary border border-border/30 rounded-lg text-sm font-semibold text-foreground">
                         {val}
-                        <button type="button" onClick={() => removeValue(option.id, val)} className="text-slate-300 hover:text-slate-600">
+                        <Button type="button" variant="ghost" onClick={() => removeValue(option.id, val)} className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive hover:bg-transparent rounded-sm flex-none">
                           <X className="w-3 h-3" />
-                        </button>
+                        </Button>
                       </span>
                     ))}
                     <input 
-                      className="bg-transparent border-none focus:outline-none text-sm font-bold placeholder:text-slate-300 min-w-30"
-                      placeholder="Add value + Enter"
+                      className="bg-transparent border-none outline-none text-sm font-semibold placeholder:text-muted-foreground min-w-28 flex-1"
+                      placeholder="Type a value, press Enter"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault();
@@ -277,43 +279,45 @@ export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
             <div className="flex flex-wrap gap-2 p-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 w-full mb-1">Hidden Variants (Click to restore)</span>
               {Array.from(removedTitles).map(title => (
-                <button
+                <Button
                   key={title}
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => {
                     const newRemoved = new Set(removedTitles);
                     newRemoved.delete(title);
                     setRemovedTitles(newRemoved);
                   }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-400 hover:text-primary hover:border-primary/30 transition-all"
+                  className="gap-1.5 text-xs text-slate-400 hover:text-primary"
                 >
                   <Plus className="w-3 h-3" />
                   {title}
-                </button>
+                </Button>
               ))}
             </div>
           )}
 
-          <div className="overflow-hidden border border-slate-100 rounded-2xl">
+          <div className="overflow-hidden border border-border/30 rounded-2xl">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-slate-50">
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Variant</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Price (USD)</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Inventory</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">SKU</th>
-                  <th className="px-6 py-4 text-right"></th>
+                <tr className="bg-secondary">
+                  <th className="px-5 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Variant</th>
+                  <th className="px-5 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Price (USD)</th>
+                  <th className="px-5 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Inventory</th>
+                  <th className="px-5 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">SKU</th>
+                  <th className="px-5 py-3 text-right"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border/30">
                 {variants.map((variant, idx) => (
-                  <tr key={variant.title} className="group/row">
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-bold text-slate-900">{variant.title}</span>
+                  <tr key={variant.title} className="group/row hover:bg-secondary/40 transition-colors">
+                    <td className="px-5 py-3">
+                      <span className="text-sm font-semibold text-foreground">{variant.title}</span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="relative w-24">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-300">$</span>
+                    <td className="px-5 py-3">
+                      <div className="relative w-28">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">$</span>
                         <Input 
                           type="number" 
                           min="0"
@@ -323,11 +327,11 @@ export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
                             const val = Math.max(0, parseFloat(e.target.value) || 0);
                             updateVariant(idx, 'price', val);
                           }}
-                          className="h-10 pl-7 pr-2 rounded-lg bg-slate-50/50 border-none font-bold focus:ring-2 focus:ring-primary/20"
+                          className="h-9 pl-7 pr-2 rounded-lg bg-input border border-border font-semibold"
                         />
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-3">
                       <Input 
                         type="number" 
                         min="0"
@@ -337,25 +341,27 @@ export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
                           const val = Math.max(0, parseInt(e.target.value) || 0);
                           updateVariant(idx, 'inventory_quantity', val);
                         }}
-                        className="h-10 w-24 rounded-lg bg-slate-50/50 border-none font-bold focus:ring-2 focus:ring-primary/20"
+                        className="h-9 w-24 rounded-lg bg-input border border-border font-semibold"
                       />
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-3">
                       <Input 
                         value={variant.sku} 
                         onChange={(e) => updateVariant(idx, 'sku', e.target.value)}
                         placeholder="e.g. SKU-001"
-                        className="h-10 rounded-lg bg-slate-50/50 border-none font-medium focus:ring-2 focus:ring-primary/20"
+                        className="h-9 w-full rounded-lg bg-input border border-border font-medium"
                       />
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <button 
-                        type="button" 
+                    <td className="px-5 py-3 text-right">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
                         onClick={() => removeVariant(variant.title)}
-                        className="p-2 text-slate-300 hover:text-rose-500 opacity-0 group-hover/row:opacity-100 transition-all"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-lg"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))}
