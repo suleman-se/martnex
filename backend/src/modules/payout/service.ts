@@ -9,7 +9,7 @@ import { MedusaService } from "@medusajs/utils"
 import Payout from "./models/payout"
 
 class PayoutModuleService extends MedusaService({
-  Payout,
+  payout: Payout,
 }) {
   /**
    * Create payout request

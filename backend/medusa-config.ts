@@ -61,6 +61,23 @@ module.exports = defineConfig({
       }
     },
 
+    {
+      resolve: "@medusajs/file",
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/medusa/file-local",
+            id: "local",
+            options: {
+              backend_url:
+                process.env.FILE_BACKEND_URL ||
+                `http://localhost:${process.env.PORT || "9000"}/static`,
+            },
+          },
+        ],
+      },
+    },
+
     // Account module (always loaded - handles authentication tokens)
     {
       resolve: "./src/modules/account",

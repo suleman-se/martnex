@@ -9,7 +9,7 @@ import { MedusaService } from "@medusajs/utils"
 import Commission from "./models/commission"
 
 class CommissionModuleService extends MedusaService({
-  Commission,
+  commission: Commission,
 }) {
   /**
    * Calculate commission for an order line item

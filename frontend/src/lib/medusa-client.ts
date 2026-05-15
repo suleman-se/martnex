@@ -8,6 +8,8 @@ const BACKEND_URL =
 let cachedPublishableKey =
   process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
 
+let publishableKeyPromise: Promise<string> | null = null
+
 export function getBackendUrl(): string {
   return BACKEND_URL
 }
@@ -17,21 +19,31 @@ export async function getPublishableKey(): Promise<string> {
     return cachedPublishableKey
   }
 
-  // Traditional Martnex lookup fallback
-  try {
-    const response = await fetch(`${BACKEND_URL}/auth/publishable-key`)
-    if (response.ok) {
-      const data = (await response.json()) as { publishable_key?: string }
-      if (data.publishable_key) {
-        cachedPublishableKey = data.publishable_key
-        return cachedPublishableKey
-      }
-    }
-  } catch (e) {
-    console.warn("Could not fetch publishable key from /auth/publishable-key")
+  if (publishableKeyPromise) {
+    return publishableKeyPromise
   }
 
-  return ""
+  // Traditional Martnex lookup fallback
+  publishableKeyPromise = (async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/auth/publishable-key`)
+      if (response.ok) {
+        const data = (await response.json()) as { publishable_key?: string }
+        if (data.publishable_key) {
+          cachedPublishableKey = data.publishable_key
+          return cachedPublishableKey
+        }
+      }
+    } catch (e) {
+      console.warn("Could not fetch publishable key from /auth/publishable-key")
+    }
+
+    return ""
+  })().finally(() => {
+    publishableKeyPromise = null
+  })
+
+  return publishableKeyPromise
 }
 
 // Official Medusa JS SDK Instance

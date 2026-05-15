@@ -4,7 +4,8 @@
 
 Before starting, ensure you have the following installed:
 
-- **Node.js** v18 or higher ([Download](https://nodejs.org/))
+- **Node.js** v20 or higher ([Download](https://nodejs.org/))
+- **pnpm** v10 or higher
 - **PostgreSQL** v17 or higher ([Download](https://www.postgresql.org/download/))
 - **Redis** v7 or higher ([Download](https://redis.io/download))
 - **Git** ([Download](https://git-scm.com/downloads))
@@ -13,8 +14,8 @@ Before starting, ensure you have the following installed:
 ### Check Versions
 
 ```bash
-node --version   # Should be v18+
-pnpm --version
+node --version   # Should be v20+
+pnpm --version   # Should be v10+
 psql --version   # Should be v17+
 redis-cli --version
 ```
@@ -22,6 +23,16 @@ redis-cli --version
 ---
 
 ## Part 1: Backend Setup (Medusa.js)
+
+### Recommended Quick Start
+
+The fastest way to start the full local stack is:
+
+```bash
+./start.sh
+```
+
+This bootstraps Postgres, Redis, migrations, seed data, module links, the publishable key, and then starts the backend and frontend containers.
 
 ### Step 1: Navigate to Backend Directory
 
@@ -31,7 +42,7 @@ The backend project structure has already been created with Medusa v2.
 cd backend
 ```
 
-### Step 3: Configure PostgreSQL
+### Step 2: Configure PostgreSQL
 
 #### Create Database
 
@@ -61,15 +72,16 @@ JWT_SECRET=supersecret-change-in-production
 COOKIE_SECRET=supersecret-cookie-change-in-production
 ```
 
-### Step 2: Run Migrations
+### Step 3: Run Migrations
 
 ```bash
 cd backend
 pnpm install
 pnpm run db:migrate
+pnpm run db:sync
 ```
 
-### Step 3: Seed Initial Data
+### Step 4: Seed Initial Data
 
 ```bash
 pnpm run seed

@@ -31,7 +31,7 @@ The platform operator.
 
 ## 🏗️ Architecture Philosophy
 - **Modular First**: Use Medusa v2 modules (Seller, Commission, Payout) for clean separation of concerns.
-- **Feature-Sliced Frontend**: A Next.js 15+ frontend organized by domain (auth, seller, admin) rather than technology type.
+- **Feature-Sliced Frontend**: A Next.js 16 frontend organized by domain (auth, seller, admin) rather than technology type.
 - **Developer Autonomy**: MIT Licensed code that you own completely.
 - **Simplicity over Over-engineering**: Prioritize readable, standard patterns (Tailwind v4, Shadcn/UI, React Query).
 

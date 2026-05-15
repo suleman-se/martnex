@@ -5,7 +5,67 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Phase 3 (April 2026)
+## [Unreleased]
+
+> Next up: Buyer storefront, cart & checkout, order tracking, search & filtering.
+
+---
+
+## [0.5.0] - Phase 4: Seller Order Fulfillment & Product Stability (13 May 2026)
+
+### Added
+- **Seller Order Fulfillment API** (`GET /store/sellers/me/orders`, `GET /store/sellers/me/orders/:id`):
+  - Lists all orders that contain the authenticated seller's products.
+  - Scopes line items to the seller's own products and computes `seller_subtotal` per order.
+  - Returns 403 if a requested order contains none of the seller's products.
+  - Protected by `authenticate("customer", ["session", "bearer"])` middleware.
+- **Order-Placed Subscriber** (`order.placed` event):
+  - Automatically creates `Commission` records when any order is placed.
+  - Resolves the seller and their commission rate via `query.graph`.
+  - Defaults to 10% commission if no custom rate is set for the seller.
+  - Never throws — commission failure is non-blocking for the order placement itself.
+- **`useSellerOrders` hook** (`frontend/src/hooks/use-seller-orders.ts`):
+  - React Query hook with typed `SellerOrder` / `SellerOrderItem` interfaces.
+  - Helper formatters: `formatOrderStatus`, `formatCustomerName`, `formatCurrency`.
+- **Seller Orders Dashboard page** (`/seller/orders`):
+  - Replaced static mockup with live data from the API.
+  - Loading skeleton, client-side search, status filter, live stat counters, Refresh button, empty state.
+- **`useUpdateProduct` hook**:
+  - Standalone mutation hook for the edit page so it no longer triggers an unnecessary full list fetch.
+
+### Changed
+- `create-seller-product.ts` workflow: `createRemoteLinkStep` → `createSellerProductLinkStep` (Knex).
+- `delete-seller-product.ts` workflow: `dismissRemoteLinkStep` → `deleteSellerProductLinkStep` (Knex).
+- `seller-product.ts` link: reverted `isList: true` (kept as default 1:1; multi-product handled via raw SQL).
+- `useSellerProducts` hook: `staleTime` reduced to `0`; `refetch` exposed; error state added to products page.
+
+---
+
+## [0.4.0] - Phase 3: Core Infrastructure (April 2026)
+
+### Added
+- **Seller Product Management (Shopify-style)**:
+  - **Advanced Variant Builder**: Dynamic generation of product variants based on attributes (size, color, etc.).
+  - **Premium Image Upload**: Multi-file drag-and-drop uploader with progress tracking and gallery management.
+  - **Two-Column Form Layout**: Optimized Shopify-style interface for product data entry.
+  - **Ownership Enforcement**: Strict server-side validation ensuring sellers can only manage their own products via the `seller-product` module link.
+  - **Image Lifecycle E2E Coverage**: Added a Playwright journey for upload, persist-after-reload, deferred delete, and post-save cleanup.
+- **Tech Stack Upgrade**:
+  - Migrated frontend to **Next.js 16.2** and **React 19**.
+  - Fully implemented **Tailwind CSS v4** with native `@theme` integration.
+  - Standardized on **pnpm 10+** for package management.
+- **Design System Evolution**:
+  - Introduced "Visual Excellence" standards focusing on micro-animations, glassmorphism, and premium aesthetics.
+  - Standardized `<BaseDashboardLayout />` and `<EmptyState />` components.
+
+### Changed
+- **Seller product workflows** now use Medusa core create/update workflows with normalized simple-product and variant option payloads.
+- **Seller product media** is now served from `/static/...` via the Medusa local file provider to avoid broken upload URLs in local development.
+- **Image deletion behavior** is deferred until a successful product save using `pending_delete_file_ids` and `images[].metadata.file_id`.
+- **Seller product list rendering** now normalizes backend media URLs and uses plain `<img>` thumbnails for backend-served uploads.
+- **Store client request behavior** now deduplicates concurrent publishable-key and `/store/customers/me` lookups.
+
+## [0.4.0] - Phase 3: Core Infrastructure (April 2026)
 
 ### Added
 - **Verification Flow**: 

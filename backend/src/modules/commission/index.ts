@@ -6,7 +6,7 @@ import { Module } from "@medusajs/utils"
 import type { ModuleExports } from "@medusajs/types"
 import CommissionModuleService from "./service"
 
-export const COMMISSION_MODULE = "commissionModuleService"
+export const COMMISSION_MODULE = "commission"
 
 export default Module(COMMISSION_MODULE, {
   service: CommissionModuleService,

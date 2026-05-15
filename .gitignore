@@ -38,6 +38,7 @@ Thumbs.db
 # Medusa
 .medusa/
 uploads/
+backend/static/
 
 # Database
 *.sql

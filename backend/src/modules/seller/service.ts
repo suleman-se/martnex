@@ -23,7 +23,7 @@ import Seller from "./models/seller"
  * Extends MedusaService to get free CRUD methods.
  */
 class SellerModuleService extends MedusaService({
-  Seller, // Pass the model to get auto-generated methods
+  seller: Seller, // Pass the model to get auto-generated methods
 }) {
   /**
    * Custom Method: Get sellers by verification status

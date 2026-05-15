@@ -1,0 +1,22 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "auth-storage",
+          "value": "{\"state\":{\"user\":{\"id\":\"cus_01KQ71FA3BM535YMY39G89FGMK\",\"email\":\"e2e-seller@martnex.com\",\"role\":\"buyer\",\"first_name\":\"E2E\",\"last_name\":\"Seller\",\"email_verified\":false},\"isAuthenticated\":true},\"version\":0}"
+        },
+        {
+          "name": "refresh_token",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiY3VzXzAxS1E3MUZBM0JNNTM1WU1ZMzlHODlGR01LIiwidG9rZW5faWQiOiJ0b2tlbl8xNzc3Mjc5NjM3MzUxX3FtZnd1d3Q2ZyIsImlhdCI6MTc3NzI3OTYzNywiZXhwIjoxNzc3ODg0NDM3fQ.srt7tGjyXy7OOxAhy260QyrSWZi6UivdBMhJVl9O-lU"
+        },
+        {
+          "name": "access_token",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rvcl9pZCI6ImN1c18wMUtRNzFGQTNCTTUzNVlNWTM5Rzg5RkdNSyIsImFjdG9yX3R5cGUiOiJjdXN0b21lciIsImF1dGhfaWRlbnRpdHlfaWQiOiJhdXRoaWRfMDFLUTcxRjlYSDdIODNIUUdRRUU0OTlSMUUiLCJhcHBfbWV0YWRhdGEiOnsiY3VzdG9tZXJfaWQiOiJjdXNfMDFLUTcxRkEzQk01MzVZTVkzOUc4OUZHTUsifSwidXNlcl9tZXRhZGF0YSI6e30sImlhdCI6MTc3NzI3OTYzNywiZXhwIjoxNzc3MzY2MDM3fQ.9eG1hpYR6TREI3s-x5VfeLZ7_OyYzPyB1nrdcEoePgg"
+        }
+      ]
+    }
+  ]
+}
