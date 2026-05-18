@@ -6,6 +6,7 @@ import {
   LayoutDashboard, 
   Package, 
   ShoppingBag, 
+  Banknote,
   Settings, 
   LogOut 
 } from 'lucide-react';
@@ -13,10 +14,11 @@ import { useAuthStore } from '@/lib/store/auth-store';
 import { useRouter } from 'next/navigation';
 
 const navigation = [
-  { name: 'Overview', href: '/seller', icon: LayoutDashboard },
-  { name: 'Products', href: '/seller/products', icon: Package },
-  { name: 'Orders', href: '/seller/orders', icon: ShoppingBag },
-  { name: 'Settings', href: '/seller/settings', icon: Settings },
+  { name: 'Overview',  href: '/seller',          icon: LayoutDashboard },
+  { name: 'Products',  href: '/seller/products',  icon: Package },
+  { name: 'Orders',    href: '/seller/orders',    icon: ShoppingBag },
+  { name: 'Payouts',   href: '/seller/payouts',   icon: Banknote },
+  { name: 'Settings',  href: '/seller/settings',  icon: Settings },
 ];
 
 interface SellerSidebarProps {
@@ -51,7 +53,10 @@ export function SellerSidebar({ isOpen }: SellerSidebarProps) {
 
         <nav className="flex-1 space-y-1 px-0 mt-10">
           {navigation.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive =
+              item.href === '/seller'
+                ? pathname === '/seller'
+                : pathname.startsWith(item.href);
 
             return (
               <Link

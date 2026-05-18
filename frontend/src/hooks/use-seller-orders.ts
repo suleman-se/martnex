@@ -16,6 +16,16 @@ export interface SellerOrderItem {
   thumbnail?: string
 }
 
+export interface SellerOrderShippingAddress {
+  first_name?: string
+  last_name?: string
+  address_1?: string
+  address_2?: string
+  city?: string
+  country_code?: string
+  postal_code?: string
+}
+
 export interface SellerOrder {
   id: string
   display_id: number
@@ -30,6 +40,7 @@ export interface SellerOrder {
     last_name?: string
     email: string
   }
+  shipping_address?: SellerOrderShippingAddress
   items: SellerOrderItem[]
   seller_subtotal: number
 }
@@ -99,4 +110,27 @@ export function useSellerOrders() {
     error,
     refetch,
   }
+}
+
+async function fetchSellerOrder(id: string): Promise<SellerOrder> {
+  const token = localStorage.getItem('access_token')
+  const headers = await buildStoreHeaders(token ?? undefined)
+  const response = await fetch(`${getBackendUrl()}/store/sellers/me/orders/${id}`, {
+    headers,
+    cache: 'no-store',
+  })
+  if (!response.ok) throw new Error('Order not found')
+  const data = (await response.json()) as { order: SellerOrder }
+  return data.order
+}
+
+export function useSellerOrder(id: string) {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['seller-order', id],
+    queryFn: () => fetchSellerOrder(id),
+    staleTime: 30_000,
+    enabled: Boolean(id),
+  })
+
+  return { order: data ?? null, isLoading, error, refetch }
 }

@@ -2,6 +2,7 @@
 
 import { ShoppingBag, Search, Filter, ChevronRight, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useMounted } from '@/hooks/use-mounted'
 import {
   useSellerOrders,
@@ -46,6 +47,7 @@ function OrdersTableSkeleton() {
 
 export default function SellerOrdersPage() {
   const mounted = useMounted()
+  const router = useRouter()
   const { orders, isLoading, refetch } = useSellerOrders()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -170,7 +172,11 @@ export default function SellerOrdersPage() {
                 </tr>
               ) : (
                 filteredOrders.map((order: SellerOrder) => (
-                  <tr key={order.id} className="hover:bg-slate-50/30 transition-colors group">
+                  <tr
+                    key={order.id}
+                    onClick={() => router.push(`/seller/orders/${order.id}`)}
+                    className="hover:bg-slate-50/30 transition-colors group cursor-pointer"
+                  >
                     <td className="px-8 py-6">
                       <span className="font-heading font-black text-slate-900 tracking-tight">
                         #{order.display_id}
@@ -196,7 +202,10 @@ export default function SellerOrdersPage() {
                       />
                     </td>
                     <td className="px-8 py-6 text-right">
-                      <button className="p-3 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-primary transition-all active:scale-90 group-hover:translate-x-1">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); router.push(`/seller/orders/${order.id}`) }}
+                        className="p-3 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-primary transition-all active:scale-90 group-hover:translate-x-1"
+                      >
                         <ChevronRight className="w-5 h-5" />
                       </button>
                     </td>
