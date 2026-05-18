@@ -64,9 +64,10 @@ Reference these guidelines when:
 
 ### 4. React 19 APIs (MEDIUM)
 
-> **⚠️ React 19+ only.** Skip this section if using React 18 or earlier.
+> **⚠️ React 19+ only.** This project uses React 19 — apply these rules.
 
-- `react19-no-forwardref` - Don't use `forwardRef`; use `use()` instead of `useContext()`
+- `react19-no-forwardref` - In React 19, `ref` is a regular prop. Accept it directly in the component signature instead of wrapping with `forwardRef`. **Note:** shadcn/ui primitives still use `forwardRef` for Radix compatibility — this is expected and acceptable.
+- `react19-use-context` - Prefer `use(MyContext)` over `useContext(MyContext)` for reading context in components.
 
 ## How to Use
 

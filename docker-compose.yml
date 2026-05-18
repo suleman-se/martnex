@@ -37,18 +37,18 @@ services:
     networks:
       - martnex-network
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: martnex-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
-    ports:
-      - "8080:80"
-    depends_on:
-      - postgres
-    networks:
-      - martnex-network
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   container_name: martnex-pgadmin
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@admin.com
+  #     PGADMIN_DEFAULT_PASSWORD: admin123
+  #   ports:
+  #     - "8080:80"
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - martnex-network
 
   # Medusa Backend
   backend:

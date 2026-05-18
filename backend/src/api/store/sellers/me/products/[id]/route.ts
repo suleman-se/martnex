@@ -4,6 +4,7 @@ import type SellerModuleService from "@modules/seller/service"
 import { deleteFilesWorkflow, updateProductsWorkflow } from "@medusajs/medusa/core-flows"
 import { deleteSellerProductWorkflow } from "@/workflows/delete-seller-product"
 import type { UpdateProductInput } from "@/api/middlewares"
+import SellerProductLink from "@/links/seller-product"
 
 const SELLER_MODULE = "seller"
 
@@ -61,18 +62,18 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
     throw new MedusaError(MedusaError.Types.NOT_FOUND, "Seller profile not found")
   }
 
-  // Verify ownership through the seller-product link.
-  const { data: sellers } = await query.graph({
-    entity: "seller",
-    fields: ["id", "product.id"],
-    filters: { id: seller.id },
+  // Check ownership via the link's entryPoint — the proper Medusa way to query
+  // the pivot table directly without relying on isList:true or raw SQL.
+  const { data: pivotRows } = await query.graph({
+    entity: SellerProductLink.entryPoint,
+    fields: ["product_id"],
+    filters: {
+      product_id: id,
+      seller_id: seller.id,
+    },
   })
 
-  const rawProduct = sellers[0]?.product
-  const allProducts = Array.isArray(rawProduct) ? rawProduct : rawProduct ? [rawProduct] : []
-  const ownsProduct = allProducts.some((p: any) => p.id === id)
-
-  if (!ownsProduct) {
+  if (!pivotRows.length) {
     throw new MedusaError(MedusaError.Types.NOT_FOUND, "Product not found or access denied")
   }
 
@@ -121,18 +122,18 @@ export async function POST(req: AuthenticatedMedusaRequest<UpdateProductInput>, 
     throw new MedusaError(MedusaError.Types.NOT_FOUND, "Seller profile not found")
   }
 
-  // Verify seller owns this product before updating.
-  const { data: sellers } = await query.graph({
-    entity: "seller",
-    fields: ["product.id"],
-    filters: { id: seller.id },
+  // Check ownership via the link's entryPoint — the proper Medusa way to query
+  // the pivot table directly without relying on isList:true or raw SQL.
+  const { data: pivotRows } = await query.graph({
+    entity: SellerProductLink.entryPoint,
+    fields: ["product_id"],
+    filters: {
+      product_id: id,
+      seller_id: seller.id,
+    },
   })
 
-  const rawProduct = sellers[0]?.product
-  const ownedProducts = Array.isArray(rawProduct) ? rawProduct : rawProduct ? [rawProduct] : []
-  const owns = ownedProducts.some((p: any) => p.id === id)
-
-  if (!owns) {
+  if (!pivotRows.length) {
     throw new MedusaError(MedusaError.Types.NOT_FOUND, "Product not found or access denied")
   }
 

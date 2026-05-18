@@ -37,6 +37,7 @@ app/
 | `route.ts` | API endpoint |
 | `template.tsx` | Like layout but re-renders on navigation |
 | `default.tsx` | Fallback for parallel routes |
+| `proxy.ts` | Request proxy / auth guard (**v16+**, was `middleware.ts` in v15 and earlier) |
 
 ## Route Segments
 

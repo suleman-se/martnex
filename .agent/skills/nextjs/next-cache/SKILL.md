@@ -147,7 +147,7 @@ async function getData() {
 }
 ```
 
-Built-in profiles: `'default'`, `'minutes'`, `'hours'`, `'days'`, `'weeks'`, `'max'`
+Built-in profiles: `'default'`, `'seconds'`, `'minutes'`, `'hours'`, `'days'`, `'weeks'`, `'max'`
 
 ### Inline Configuration
 

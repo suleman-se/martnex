@@ -151,3 +151,11 @@ See [debug-tricks.md](./reference/debug-tricks.md) for:
 - MCP endpoint for AI-assisted debugging
 - Rebuild specific routes with `--debug-build-paths`
 
+## Cache Components (Next.js 16+)
+
+See the [next-cache skill](../next-cache/SKILL.md) for:
+- `cacheComponents: true` in `next.config.ts` (replaces `experimental.ppr`)
+- `'use cache'` directive for async data components
+- `cacheLife()` presets: `'seconds'`, `'minutes'`, `'hours'`, `'days'`, `'weeks'`, `'max'`
+- `cacheTag()` + `revalidateTag()` for on-demand invalidation
+- Three content types: Static, Cached (`use cache`), Dynamic (Suspense)

@@ -27,6 +27,8 @@ This skill defines the high-level philosophy, core rules, and standards for the 
 - **Database:** Medusa v2 uses **MikroORM** and DML (Data Model Language).
 - **Styling:** **Tailwind CSS v4** is the primary styling engine. Use Vanilla CSS only when necessary for complex animations.
 - **E2E Testing:** Playwright is used in the `frontend` directory (`pnpm playwright test`).
+- **React 19:** This project uses React 19. In new components, pass `ref` as a regular prop (no `forwardRef` needed). `shadcn/ui` primitives still use `forwardRef` for Radix compatibility — this is expected and acceptable.
+- **Next.js 16.2:** App Router only. `proxy.ts` (was `middleware.ts`). `cookies()`/`headers()` are async. `params`/`searchParams` are async Promises — always `await` them.
 
 ## 4. AI Assistant Standards (How to Work)
 - **Concise & Actionable:** Skip pleasantries; get to the code and solution.

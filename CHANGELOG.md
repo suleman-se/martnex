@@ -65,7 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Seller product list rendering** now normalizes backend media URLs and uses plain `<img>` thumbnails for backend-served uploads.
 - **Store client request behavior** now deduplicates concurrent publishable-key and `/store/customers/me` lookups.
 
-## [0.4.0] - Phase 3: Core Infrastructure (April 2026)
+## [0.3.0] - Phase 3: Core Infrastructure (April 2026)
 
 ### Added
 - **Verification Flow**: 

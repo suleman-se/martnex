@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/auth-store';
-import { buildStoreHeaders, getBackendUrl } from '@/lib/medusa-client';
 import Link from 'next/link';
 import { ProtectedRoute } from '@/components/shared/guards/protected-route';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 export default function DashboardPage() {
@@ -152,11 +151,11 @@ export default function DashboardPage() {
         <div className="bg-slate-900 rounded-2xl p-8 text-white relative overflow-hidden shadow-2xl">
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2">
-              <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30">Release Note</Badge>
-              <h3 className="text-2xl font-bold">Phase 4 Deployment Successful</h3>
+              <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30">v0.5.0 Released</Badge>
+              <h3 className="text-2xl font-bold">Phase 4 — Seller Order Fulfillment Live</h3>
               <p className="text-slate-400 max-w-xl">
-                The core authentication and multi-vendor onboarding flow is now live. 
-                Next milestone: Advanced Product Upload Wizard and Global Listing Synchronization.
+                Live orders dashboard, scoped fulfillment APIs, and automatic commission creation on order.placed are now shipped.
+                Next milestone: Buyer Storefront, Cart &amp; Checkout.
               </p>
             </div>
             <Button className="bg-white text-slate-900 hover:bg-slate-100 h-12 px-8 font-bold grow-0">

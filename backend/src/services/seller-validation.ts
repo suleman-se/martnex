@@ -5,7 +5,7 @@
  * Ensures data integrity and compliance with marketplace rules
  */
 
-import { SELLER_MODULE } from "../modules/seller"
+import { SellerRiskScorer, BUSINESS_RULES } from "./business-rules"
 
 /**
  * Validation rules
@@ -107,8 +107,14 @@ export function validateSellerForVerification(seller: any) {
     errors.push("Seller must have a payout method configured")
   }
 
-  // Check for suspicious patterns (fraud detection)
-  // TODO: Implement more sophisticated fraud detection in Phase 3
+  // Fraud detection — block high-risk sellers from being verified
+  const risk = SellerRiskScorer.calculateRiskScore(seller)
+  if (risk.level === "high") {
+    errors.push(
+      `Seller is flagged as high-risk (score: ${risk.score}). ` +
+      `Flags: ${risk.flags.join("; ")}. Manual review required before verification.`
+    )
+  }
 
   return {
     valid: errors.length === 0,
@@ -172,6 +178,22 @@ export function validatePayoutRequest(
   if (unapprovedCommissions.length > 0) {
     errors.push(
       `All commissions must be in "approved" status. Found ${unapprovedCommissions.length} non-approved.`
+    )
+  }
+
+  // Fraud check — block payouts for high-risk sellers
+  const risk = SellerRiskScorer.calculateRiskScore(seller)
+  if (risk.level === "high") {
+    errors.push(
+      `Payout blocked: seller is flagged as high-risk (score: ${risk.score}). ` +
+      `Flags: ${risk.flags.join("; ")}. Contact support to resolve.`
+    )
+  }
+
+  // Block payouts for sellers with too many failed payout attempts
+  if ((seller.failed_payout_count || 0) >= BUSINESS_RULES.ACCOUNT.MAX_FAILED_PAYOUTS) {
+    errors.push(
+      `Payout blocked: too many failed payout attempts (${seller.failed_payout_count}). Contact support.`
     )
   }
 

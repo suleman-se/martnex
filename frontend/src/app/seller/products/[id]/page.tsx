@@ -1,9 +1,8 @@
-'use client';
+import { redirect } from 'next/navigation'
 
-import { redirect } from 'next/navigation';
-import { useParams } from 'next/navigation';
+type Props = { params: Promise<{ id: string }> }
 
-export default function SellerProductPage() {
-  const params = useParams<{ id: string }>();
-  redirect(`/seller/products/${params.id}/edit`);
+export default async function SellerProductPage({ params }: Props) {
+  const { id } = await params
+  redirect(`/seller/products/${id}/edit`)
 }
