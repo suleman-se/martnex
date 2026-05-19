@@ -43,15 +43,18 @@ Martnex allows you to toggle your entire platform's behavior using a single envi
 
 ---
 
-## ✅ What's Live (v0.5.0)
+## ✅ What's Live (v0.6.0)
 
 | Feature | Status |
 | :--- | :---: |
 | Seller registration & verification workflow | ✅ |
 | Seller product management (create, edit, delete, images, variants) | ✅ |
 | Multi-product per seller (many-to-many via Knex pivot) | ✅ |
-| Seller order fulfillment dashboard (live API data) | ✅ |
+| Seller orders list with live API data, search & filters | ✅ |
+| Seller order detail page (items, shipping, payment status) | ✅ |
 | Automatic commission creation on order.placed | ✅ |
+| Seller dashboard with real revenue, orders & commission stats | ✅ |
+| Seller payouts page (history, status badges, stats) | ✅ |
 | Commission & payout management (admin + seller) | ✅ |
 | Email verification & password reset (Nodemailer) | ✅ |
 | Admin seller approval / reject / suspend workflows | ✅ |

@@ -78,6 +78,25 @@ module.exports = defineConfig({
       },
     },
 
+    // Payment module with Stripe provider (enabled when STRIPE_API_KEY is set)
+    ...(process.env.STRIPE_API_KEY ? [
+      {
+        resolve: "@medusajs/payment",
+        options: {
+          providers: [
+            {
+              resolve: "@medusajs/payment-stripe",
+              id: "stripe",
+              options: {
+                apiKey: process.env.STRIPE_API_KEY,
+                webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+              },
+            },
+          ],
+        },
+      },
+    ] : []),
+
     // Account module (always loaded - handles authentication tokens)
     {
       resolve: "./src/modules/account",

@@ -27,10 +27,10 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 w-full max-w-md">
             <Button size="xl" variant="premium" className="w-full sm:flex-1" asChild>
-              <Link href="/register">Initialize Account</Link>
+              <Link href="/store">Browse Marketplace</Link>
             </Button>
             <Button size="xl" variant="outline" className="w-full sm:flex-1 bg-white shadow-premium" asChild>
-              <Link href="/login">Authentication</Link>
+              <Link href="/login">Sign In</Link>
             </Button>
           </div>
         </div>

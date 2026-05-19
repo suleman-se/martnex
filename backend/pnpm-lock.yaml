@@ -32,6 +32,9 @@ importers:
       '@medusajs/medusa':
         specifier: ^2.13.6
         version: 2.13.6(@medusajs/cli@2.13.6(@types/node@22.19.1))(@medusajs/framework@2.13.6(@medusajs/cli@2.13.6(@types/node@22.19.1))(@types/node@22.19.1)(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7))(zod@4.2.0))(@medusajs/icons@2.13.6(react@18.3.1))(@medusajs/test-utils@2.13.6)(@medusajs/ui@4.1.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3))(@types/node@22.19.1)(awilix@12.0.5)(picomatch@4.0.3)(posthog-node@5.14.1)(react-dom@18.3.1(react@18.3.1))(react-router-dom@6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
+      '@medusajs/payment-stripe':
+        specifier: ^2.15.2
+        version: 2.15.2(@medusajs/framework@2.13.6(@medusajs/cli@2.13.6(@types/node@22.19.1))(@types/node@22.19.1)(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7))(zod@4.2.0))
       '@medusajs/types':
         specifier: ^2.13.6
         version: 2.13.6(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7))
@@ -1400,6 +1403,12 @@ packages:
     engines: {node: '>=20'}
     peerDependencies:
       '@medusajs/framework': 2.13.6
+
+  '@medusajs/payment-stripe@2.15.2':
+    resolution: {integrity: sha512-qIPDzN8Zgr9PEAZW1MbqA5YwsHl6M8+x8ENIDj1k+a+zkL0JAcR0weJYHEQwSNtlM3LkxC/gT+2jls1QWrATdg==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@medusajs/framework': 2.15.2
 
   '@medusajs/payment@2.13.6':
     resolution: {integrity: sha512-uBJUDIVnB2bv9+qM09czZYfIKd60RM2H7R46KBmgg85Rc0BBkPZGcEpkKEwOj1cgZNkgmM3wKe2uCPIwdUzWIQ==}
@@ -8965,6 +8974,11 @@ snapshots:
       '@medusajs/framework': 2.13.6(@medusajs/cli@2.13.6(@types/node@22.19.1))(@types/node@22.19.1)(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7))(zod@4.2.0)
 
   '@medusajs/payment-stripe@2.13.6(@medusajs/framework@2.13.6(@medusajs/cli@2.13.6(@types/node@22.19.1))(@types/node@22.19.1)(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7))(zod@4.2.0))':
+    dependencies:
+      '@medusajs/framework': 2.13.6(@medusajs/cli@2.13.6(@types/node@22.19.1))(@types/node@22.19.1)(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7))(zod@4.2.0)
+      stripe: 15.12.0
+
+  '@medusajs/payment-stripe@2.15.2(@medusajs/framework@2.13.6(@medusajs/cli@2.13.6(@types/node@22.19.1))(@types/node@22.19.1)(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7))(zod@4.2.0))':
     dependencies:
       '@medusajs/framework': 2.13.6(@medusajs/cli@2.13.6(@types/node@22.19.1))(@types/node@22.19.1)(ioredis@5.8.2)(vite@6.4.1(@types/node@22.19.1)(jiti@1.21.7))(zod@4.2.0)
       stripe: 15.12.0

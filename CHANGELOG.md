@@ -11,6 +11,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.0] - Phase 5: Seller Dashboard, Order Detail & Payouts UI (18 May 2026)
+
+### Added
+- **Order Detail Page** (`/seller/orders/[id]`):
+  - Fetches from `GET /store/sellers/me/orders/:id` via new `useSellerOrder` hook.
+  - Displays seller-scoped line items with thumbnails, per-item pricing, and seller subtotal footer.
+  - Customer info card, shipping address card, payment status card.
+  - Skeleton loading state, error state, Refresh button, and back-navigation to orders list.
+- **`useSellerOrder` hook** — single-order variant of `useSellerOrders`; shares the same type definitions.
+- **`SellerOrder` type** extended with `shipping_address?: SellerOrderShippingAddress`.
+- **Dashboard real data** (`/seller`):
+  - `useDashboardStats` hook — fetches orders + commissions in parallel, derives Total Revenue, Active Orders, Approved Earnings, and Commission Count.
+  - `StatsGrid` updated: replaced hardcoded stats with live data and a 4-card loading skeleton.
+  - `ActivityFeed` updated: replaced random order numbers with the 5 most recent real orders, each linking to its detail page; live time-ago labels.
+- **Payouts page** (`/seller/payouts`):
+  - Stats summary: Total Requested, Pending Review, Completed.
+  - Full payout history table with date, amount, commission count, and status badge.
+  - Skeleton loading and empty state.
+- **`useSellerPayouts` hook** — fetches `GET /store/payouts`; exposes `payouts`, `stats`, `isLoading`, `refetch`.
+- **`useRequestPayout` mutation** — posts to `POST /store/payouts`; on success invalidates both `seller-payouts` and `dashboard-stats` query caches.
+- **Route unit tests** — 17 tests across two new spec files:
+  - `backend/src/api/store/sellers/me/orders/__tests__/route.spec.ts` (9 tests)
+  - `backend/src/api/store/sellers/me/orders/[id]/__tests__/route.spec.ts` (8 tests)
+
+### Changed
+- **Orders table** (`/seller/orders`): entire row is now clickable via `router.push`; ChevronRight button navigates independently with `stopPropagation`.
+- **Seller sidebar**: Payouts nav item added (Banknote icon); active-state matching changed from strict equality to `startsWith` so nested routes (e.g. `/seller/orders/[id]`) highlight correctly.
+- **Dashboard header** label changed from "Last 30 Days" to "All Time" to match the all-time aggregation from the commissions API.
+
+---
+
 ## [0.5.0] - Phase 4: Seller Order Fulfillment & Product Stability (13 May 2026)
 
 ### Added
