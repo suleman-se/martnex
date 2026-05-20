@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { Trash2, ShoppingBag } from 'lucide-react'
 import type { CartLineItem } from '@/hooks/use-cart'
 import { formatPrice } from '@/hooks/use-products'
+import { QuantityStepper } from '@/components/shared/controls/quantity-stepper'
+import { Button } from '@/components/ui/button'
 
 interface CartItemRowProps {
   item: CartLineItem
@@ -26,7 +28,7 @@ export function CartItemRow({
   return (
     <div className={`flex items-start gap-5 py-5 transition-opacity ${isPending ? 'opacity-50' : ''}`}>
       {/* Thumbnail */}
-      <div className="relative h-20 w-20 flex-shrink-0 rounded-2xl overflow-hidden bg-slate-50">
+      <div className="relative h-20 w-20 shrink-0 rounded-2xl overflow-hidden bg-slate-50">
         {item.thumbnail ? (
           <Image
             src={item.thumbnail}
@@ -63,33 +65,23 @@ export function CartItemRow({
 
         {/* Quantity stepper */}
         <div className="flex items-center gap-2 mt-3">
-          <div className="inline-flex items-center gap-1 bg-slate-50 border border-slate-100 rounded-xl px-2 py-1">
-            <button
-              onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-              disabled={item.quantity <= 1 || isPending}
-              className="h-5 w-5 flex items-center justify-center text-slate-500 hover:text-slate-900 font-black text-base disabled:opacity-30"
-            >
-              −
-            </button>
-            <span className="w-5 text-center text-xs font-black text-slate-900">
-              {item.quantity}
-            </span>
-            <button
-              onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-              disabled={isPending}
-              className="h-5 w-5 flex items-center justify-center text-slate-500 hover:text-slate-900 font-black text-base disabled:opacity-30"
-            >
-              +
-            </button>
-          </div>
-          <button
+          <QuantityStepper
+            value={item.quantity}
+            onDecrease={() => onUpdateQuantity(item.id, item.quantity - 1)}
+            onIncrease={() => onUpdateQuantity(item.id, item.quantity + 1)}
+            disableDecrease={item.quantity <= 1 || isPending}
+            disableIncrease={isPending}
+          />
+          <Button
             onClick={() => onRemove(item.id)}
             disabled={isPending}
-            className="h-7 w-7 flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors disabled:opacity-30"
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 rounded-lg text-slate-300 transition-colors hover:bg-rose-50 hover:text-rose-500"
             aria-label="Remove item"
           >
             <Trash2 className="h-3.5 w-3.5" />
-          </button>
+          </Button>
         </div>
       </div>
 

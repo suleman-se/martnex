@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import type { Cart } from '@/hooks/use-cart'
 import { formatPrice } from '@/hooks/use-products'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 interface CartSummaryProps {
   cart: Cart
@@ -20,7 +22,7 @@ export function CartSummary({ cart }: CartSummaryProps) {
   ]
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-sm space-y-4 sticky top-24">
+    <Card className="sticky top-24 space-y-4 rounded-3xl border-none bg-white p-8 shadow-sm">
       <h2 className="text-lg font-black text-slate-900">Order Summary</h2>
 
       <div className="space-y-2 divide-y divide-slate-50">
@@ -44,12 +46,14 @@ export function CartSummary({ cart }: CartSummaryProps) {
         </span>
       </div>
 
-      <Link
-        href="/store/checkout"
-        className="flex items-center justify-center gap-2 w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all shadow-premium hover:shadow-2xl hover:-translate-y-0.5 duration-300"
+      <Button
+        asChild
+        className="h-14 w-full rounded-2xl bg-slate-900 text-sm font-black uppercase tracking-widest hover:bg-slate-800"
       >
-        Proceed to Checkout <ArrowRight className="h-4 w-4" />
-      </Link>
+        <Link href="/store/checkout">
+          Proceed to Checkout <ArrowRight className="h-4 w-4" />
+        </Link>
+      </Button>
 
       <Link
         href="/store"
@@ -57,6 +61,6 @@ export function CartSummary({ cart }: CartSummaryProps) {
       >
         Continue Shopping
       </Link>
-    </div>
+    </Card>
   )
 }

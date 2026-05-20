@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Shield, Users, Store, Settings, LogOut } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 
 interface AdminSidebarProps {
   isOpen: boolean;
@@ -29,8 +30,8 @@ export function AdminSidebar({ isOpen }: AdminSidebarProps) {
 
   return (
     <aside 
-      className={`fixed top-0 left-0 z-40 h-screen transition-transform bg-slate-900 text-white shadow-2xl ${
-        isOpen ? 'translate-x-0 w-72' : '-translate-x-full w-0 hidden'
+      className={`fixed left-0 top-0 z-40 h-screen w-72 bg-slate-900 text-white shadow-2xl transition-all duration-500 ${
+        isOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0 pointer-events-none'
       }`}
     >
       <div className="flex flex-col h-full p-8">
@@ -42,7 +43,7 @@ export function AdminSidebar({ isOpen }: AdminSidebarProps) {
             <span className="block text-xl font-black tracking-tighter text-white leading-none">
               Martnex
             </span>
-            <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-1 block tracking-[0.2em]">Monolith</span>
+            <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Monolith</span>
           </div>
         </div>
 
@@ -68,13 +69,14 @@ export function AdminSidebar({ isOpen }: AdminSidebarProps) {
         </nav>
 
         <div className="pt-8 border-t border-slate-800/50">
-          <button
+          <Button
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-4 py-4 rounded-lg text-slate-500 hover:text-error hover:bg-red-950/20 transition-all font-black uppercase tracking-widest text-[11px] group"
+            variant="ghost"
+            className="h-auto w-full justify-start gap-3 rounded-lg px-4 py-4 text-[11px] font-black uppercase tracking-widest text-slate-500 hover:bg-red-950/20 hover:text-error"
           >
             <LogOut className="w-5 h-5 group-hover:text-error" />
             <span>System Terminate</span>
-          </button>
+          </Button>
         </div>
       </div>
     </aside>

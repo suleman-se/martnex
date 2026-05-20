@@ -10,6 +10,10 @@ import { useCart, clearStoredCartId } from '@/hooks/use-cart'
 import { useCheckout } from '@/hooks/use-checkout'
 import { AddressForm, type AddressFormValues } from '@/components/store/checkout/address-form'
 import { PaymentStep } from '@/components/store/checkout/payment-step'
+import { EmptyState } from '@/components/shared/empty-states/empty-state'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Eyebrow } from '@/components/shared/typography/eyebrow'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -46,19 +50,17 @@ export default function CheckoutPage() {
 
   if (!cart || !cart.items?.length) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-center">
-        <div className="h-20 w-20 bg-slate-100 rounded-3xl flex items-center justify-center mb-6">
-          <ShoppingBag className="h-10 w-10 text-slate-300" />
-        </div>
-        <h2 className="text-2xl font-black text-slate-900 mb-2">Nothing to check out</h2>
-        <p className="text-slate-500 font-medium mb-6">Your cart is empty.</p>
-        <Link
-          href="/store"
-          className="text-sm font-bold text-slate-900 underline underline-offset-4"
-        >
-          Continue Shopping
-        </Link>
-      </div>
+      <EmptyState
+        icon={ShoppingBag}
+        title="Nothing To Check Out"
+        description="Your cart is empty."
+        className="py-24 opacity-100"
+        action={
+          <Button asChild variant="link" className="text-sm font-bold text-slate-900">
+            <Link href="/store">Continue Shopping</Link>
+          </Button>
+        }
+      />
     )
   }
 
@@ -113,7 +115,7 @@ export default function CheckoutPage() {
       </div>
 
       {/* Main step card */}
-      <div className="bg-white rounded-3xl shadow-sm p-8">
+      <Card className="rounded-3xl border-none bg-white p-8 shadow-sm">
         {step === 'address' && (
           <>
             <h2 className="text-2xl font-heading font-black text-slate-900 mb-6">
@@ -131,12 +133,13 @@ export default function CheckoutPage() {
           <>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-heading font-black text-slate-900">Payment</h2>
-              <button
+              <Button
                 onClick={() => setStep('address')}
-                className="text-sm font-bold text-slate-400 hover:text-slate-700 transition-colors"
+                variant="ghost"
+                className="h-auto p-0 text-sm font-bold text-slate-400 hover:bg-transparent hover:text-slate-700"
               >
                 ← Edit address
-              </button>
+              </Button>
             </div>
             <PaymentStep
               cartId={cartId}
@@ -146,13 +149,13 @@ export default function CheckoutPage() {
             />
           </>
         )}
-      </div>
+      </Card>
 
       {/* Order summary sidebar */}
-      <div className="mt-6 bg-white rounded-3xl shadow-sm p-6">
-        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">
+      <Card className="mt-6 rounded-3xl border-none bg-white p-6 shadow-sm">
+        <Eyebrow className="mb-4 text-[11px] tracking-[0.2em]">
           Order Summary ({cart.items.length} item{cart.items.length !== 1 ? 's' : ''})
-        </h3>
+        </Eyebrow>
         <div className="space-y-3">
           {cart.items.map((item) => (
             <div key={item.id} className="flex items-center gap-3">
@@ -192,7 +195,7 @@ export default function CheckoutPage() {
             <span>{fmt(cart.total)}</span>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   )
 }

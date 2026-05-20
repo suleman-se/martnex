@@ -7,8 +7,9 @@ import { z } from 'zod';
 import { getBackendUrl } from '@/lib/medusa-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Mail, CheckCircle2, History } from 'lucide-react';
+import { FieldLabel } from '@/components/shared/forms/field-label';
+import { AuthFeedbackPanel } from '@/components/shared/forms/auth-feedback-panel';
+import { Mail, CheckCircle2, History, AlertCircle } from 'lucide-react';
 
 const API_URL = getBackendUrl();
 
@@ -66,40 +67,40 @@ export default function ForgotPasswordForm() {
 
   if (successMessage) {
     return (
-      <div className="p-8 bg-emerald-50 rounded-2xl flex flex-col items-center text-center space-y-6 animate-in fade-in zoom-in duration-500">
-        <div className="w-16 h-16 rounded-[2rem] bg-emerald-100 flex items-center justify-center">
-          <CheckCircle2 className="w-8 h-8 text-emerald-600" />
-        </div>
-        <div className="space-y-2">
-          <h3 className="text-lg font-black uppercase tracking-tight text-emerald-900">Email Sent</h3>
-          <p className="text-sm font-medium text-emerald-700/80 leading-relaxed max-w-[240px]">
-            {successMessage}
-          </p>
-        </div>
-        <Button variant="outline" onClick={() => setSuccessMessage(null)} className="w-full h-12 rounded-xl text-[10px] font-black uppercase tracking-widest">
-          Try Different Email
-        </Button>
-      </div>
+      <AuthFeedbackPanel
+        variant="success"
+        title="Email Sent"
+        message={successMessage}
+        icon={<CheckCircle2 className="h-8 w-8 text-emerald-600" />}
+        action={
+          <Button
+            variant="outline"
+            onClick={() => setSuccessMessage(null)}
+            className="h-12 w-full rounded-xl text-[10px] font-black uppercase tracking-widest"
+          >
+            Try Different Email
+          </Button>
+        }
+      />
     );
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && (
-        <div className={`p-5 rounded-2xl border text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-300 ${
-          rateLimited
-            ? 'bg-amber-50 border-amber-100 text-amber-900'
-            : 'bg-red-50 border-red-100 text-red-900'
-        }`}>
-          <div className="flex items-center gap-3">
-             <div className={`h-2 w-2 rounded-full animate-pulse shrink-0 ${rateLimited ? 'bg-amber-600' : 'bg-red-600'}`}></div>
-             <p>{error}</p>
-          </div>
-        </div>
+        <AuthFeedbackPanel
+          variant={rateLimited ? 'warning' : 'error'}
+          title={rateLimited ? 'Too Many Requests' : 'Request Failed'}
+          message={error}
+          icon={
+            <AlertCircle className={`h-8 w-8 ${rateLimited ? 'text-amber-600' : 'text-red-600'}`} />
+          }
+          className="items-start space-y-3 p-5 text-left"
+        />
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Account Email</Label>
+        <FieldLabel htmlFor="email">Account Email</FieldLabel>
         <div className="relative group">
           <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-primary transition-colors" />
           <Input
@@ -109,7 +110,7 @@ export default function ForgotPasswordForm() {
             placeholder="your@email.com"
             disabled={isPending}
             autoComplete="email"
-            className="h-14 pl-14 pr-6 bg-slate-100/50 border-none focus:ring-2 focus:ring-primary/10"
+            className="h-14 pl-14 pr-6"
           />
         </div>
         {errors.email && (

@@ -3,6 +3,7 @@
 import { ProductCard } from './product-card'
 import type { StoreProduct } from '@/hooks/use-products'
 import { ShoppingBag } from 'lucide-react'
+import { EmptyState } from '@/components/shared/empty-states/empty-state'
 
 interface ProductGridProps {
   products: StoreProduct[]
@@ -40,15 +41,12 @@ export function ProductGrid({ products, isLoading = false, currencyCode = 'usd' 
 
   if (!products.length) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-center">
-        <div className="h-20 w-20 bg-slate-100 rounded-3xl flex items-center justify-center mb-6">
-          <ShoppingBag className="h-10 w-10 text-slate-300" />
-        </div>
-        <h3 className="text-xl font-black text-slate-900 mb-2">No products found</h3>
-        <p className="text-sm font-medium text-slate-400 max-w-xs">
-          Try adjusting your search or removing filters to find what you're looking for.
-        </p>
-      </div>
+      <EmptyState
+        icon={ShoppingBag}
+        title="No Products Found"
+        description="Try adjusting your search or removing filters to find what you're looking for."
+        className="py-24"
+      />
     )
   }
 

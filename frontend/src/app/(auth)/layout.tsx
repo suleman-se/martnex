@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/auth-store';
+import { FullPageSpinner } from '@/components/shared/loading/full-page-spinner';
 
 export default function AuthLayout({
   children,
@@ -32,21 +33,13 @@ export default function AuthLayout({
 
   // Consistent loading state on both server and client during hydration
   if (!mounted || !_hasHydrated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-8 h-8 rounded-full border-2 border-slate-900/20 border-t-slate-900 animate-spin" />
-      </div>
-    );
+    return <FullPageSpinner />;
   }
 
   // Authenticated users see loading while redirect happens (except for verify-email bypass)
   const isBypassingRedirect = pathname === '/verify-email' && isAuthenticated && !user?.email_verified;
   if (isAuthenticated && !isBypassingRedirect) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-8 h-8 rounded-full border-2 border-slate-900/20 border-t-slate-900 animate-spin" />
-      </div>
-    );
+    return <FullPageSpinner />;
   }
 
   return (

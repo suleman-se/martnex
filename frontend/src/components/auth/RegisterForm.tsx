@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { FieldLabel } from '@/components/shared/forms/field-label';
 import { ShoppingBag, Store } from 'lucide-react';
 
 const registerSchema = z.object({
@@ -81,7 +81,7 @@ export default function RegisterForm() {
 
       <div className="space-y-5">
         <div className="space-y-3">
-          <Label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Account Type</Label>
+          <FieldLabel className="ml-1">Account Type</FieldLabel>
           <div className="grid grid-cols-2 gap-3">
             <label 
               className={`flex flex-col items-center justify-center p-4 rounded-lg cursor-pointer transition-all active:scale-95 border-2 ${
@@ -122,7 +122,7 @@ export default function RegisterForm() {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="first_name" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">First Name</Label>
+            <FieldLabel htmlFor="first_name">First Name</FieldLabel>
             <Input
               id="first_name"
               type="text"
@@ -136,7 +136,7 @@ export default function RegisterForm() {
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="last_name" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Last Name</Label>
+            <FieldLabel htmlFor="last_name">Last Name</FieldLabel>
             <Input
               id="last_name"
               type="text"
@@ -152,7 +152,7 @@ export default function RegisterForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email address</Label>
+          <FieldLabel htmlFor="email">Email address</FieldLabel>
           <Input
             id="email"
             type="email"
@@ -167,7 +167,7 @@ export default function RegisterForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Password</Label>
+          <FieldLabel htmlFor="password">Password</FieldLabel>
           <Input
             id="password"
             type="password"

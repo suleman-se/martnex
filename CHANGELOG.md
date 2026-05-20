@@ -7,7 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-> Next up: Buyer storefront, cart & checkout, order tracking, search & filtering.
+> Next up: Buyer account area (order history), product reviews, admin order management, seller fulfillment actions.
+
+---
+
+## [0.7.0] - Phase 6: Buyer Storefront — Browse, Cart, Checkout & Confirmation (19 May 2026)
+
+### Added
+- **Buyer Storefront** (`/store`):
+  - Product listing page with live search (`?q=`) and category filter (`?category=`) via URL params.
+  - Responsive product grid with loading skeleton and empty state.
+  - `ProductCard` component with thumbnail, price display, and add-to-cart action.
+- **Product Detail Page** (`/store/products/[handle]`):
+  - `VariantSelector` component — option matrix (size, colour, etc.) maps to variant IDs.
+  - Add-to-cart with lazy cart creation (region-aware).
+- **Cart** (`/store/cart`):
+  - `useCart` hook — localStorage-persisted cart ID (`martnex_cart_id`), lazy cart creation, `addItem` / `removeItem` / `updateQuantity` / `updateCart` mutations.
+  - `CartItemRow` with quantity stepper and remove button.
+  - `CartSummary` showing subtotal, shipping, tax, total and Checkout CTA.
+- **Checkout** (`/store/checkout`) — 2-step wizard:
+  - Step 1: Shipping address form (`react-hook-form`, full validation).
+  - Step 2: Payment — `PaymentStep` supports **Stripe Elements** (card) and **Cash on Delivery**.
+  - Stripe provider is opt-in: only rendered when `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` is set.
+  - Cart is completed via `POST /store/carts/:id/complete`; on success navigates to confirmation.
+- **Order Confirmation** (`/store/orders/[id]`):
+  - Success hero, itemised receipt, shipping address, Continue Shopping CTA.
+- **Store Layout Shell**:
+  - `StoreHeader` — sticky nav with logo, search-by-URL form, category links (first 4), cart icon with item-count badge, mobile menu.
+  - Footer with brand and Medusa attribution.
+- **Backend — Stripe Payment Module**:
+  - `@medusajs/payment-stripe` registered in `medusa-config.ts`, conditional on `STRIPE_API_KEY` env var.
+- **New Hooks**:
+  - `use-products` — `useProducts(params)`, `useProduct(handle)`, `getDisplayPrice` helper.
+  - `use-regions` — `useRegions()`, exposes `defaultRegion` for cart creation.
+  - `use-cart` — full cart lifecycle; exports `clearStoredCartId`.
+  - `use-checkout` — `setAddress`, `getShippingOptions`, `setShippingMethod`, `initPayment`, `completeOrder`.
+- **Unit Tests** (16 new):
+  - `hooks/__tests__/use-products.test.ts` — 8 tests: list, search, category filter, error, handle fetch, not-found null, disabled when empty handle, `getDisplayPrice`.
+  - `hooks/__tests__/use-cart.test.ts` — 8 tests: empty state, fetch existing, 404 clear, addItem create, addItem existing, removeItem, updateQuantity, itemCount sum.
+
+### Changed
+- **Home page** (`/`): primary CTA changed from "Initialize Account" to "Browse Marketplace" linking to `/store`.
 
 ---
 

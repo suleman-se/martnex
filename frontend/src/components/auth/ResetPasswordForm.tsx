@@ -8,7 +8,8 @@ import { z } from 'zod';
 import { getBackendUrl } from '@/lib/medusa-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { FieldLabel } from '@/components/shared/forms/field-label';
+import { AuthFeedbackPanel } from '@/components/shared/forms/auth-feedback-panel';
 import { Lock, ShieldCheck, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 
 const API_URL = getBackendUrl();
@@ -79,54 +80,50 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
   if (!token) {
     return (
-      <div className="p-8 bg-red-50 rounded-2xl flex flex-col items-center text-center space-y-6 animate-in fade-in zoom-in duration-500">
-        <div className="w-16 h-16 rounded-[2rem] bg-red-100 flex items-center justify-center">
-          <AlertCircle className="w-8 h-8 text-red-600" />
-        </div>
-        <div className="space-y-2">
-          <h3 className="text-lg font-black uppercase tracking-tight text-red-900">Invalid Link</h3>
-          <p className="text-sm font-medium text-red-700/80 leading-relaxed max-w-[240px]">
-            This reset link is either invalid or has expired.
-          </p>
-        </div>
-        <Button variant="outline" onClick={() => router.push('/forgot-password')} className="w-full h-12 rounded-xl text-[10px] font-black uppercase tracking-widest border-red-200 text-red-900 hover:bg-red-100">
-          Request New Link
-        </Button>
-      </div>
+      <AuthFeedbackPanel
+        variant="error"
+        title="Invalid Link"
+        message="This reset link is either invalid or has expired."
+        icon={<AlertCircle className="h-8 w-8 text-red-600" />}
+        action={
+          <Button
+            variant="outline"
+            onClick={() => router.push('/forgot-password')}
+            className="h-12 w-full rounded-xl border-red-200 text-[10px] font-black uppercase tracking-widest text-red-900 hover:bg-red-100"
+          >
+            Request New Link
+          </Button>
+        }
+      />
     );
   }
 
   if (success) {
     return (
-      <div className="p-8 bg-emerald-50 rounded-2xl flex flex-col items-center text-center space-y-6 animate-in fade-in zoom-in duration-500">
-        <div className="w-16 h-16 rounded-[2rem] bg-emerald-100 flex items-center justify-center">
-          <CheckCircle2 className="w-8 h-8 text-emerald-600" />
-        </div>
-        <div className="space-y-2">
-          <h3 className="text-lg font-black uppercase tracking-tight text-emerald-900">Success</h3>
-          <p className="text-sm font-medium text-emerald-700/80 leading-relaxed max-w-[240px]">
-            Your password has been updated. Redirecting to the login portal...
-          </p>
-        </div>
-      </div>
+      <AuthFeedbackPanel
+        variant="success"
+        title="Success"
+        message="Your password has been updated. Redirecting to the login portal..."
+        icon={<CheckCircle2 className="h-8 w-8 text-emerald-600" />}
+      />
     );
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && (
-        <div className="p-5 bg-red-50 border border-red-100 rounded-2xl space-y-2 animate-in fade-in duration-300">
-          <div className="flex items-center gap-3">
-             <div className="h-2 w-2 rounded-full bg-red-600 animate-pulse shrink-0"></div>
-             <h3 className="text-[11px] font-black uppercase tracking-wider text-red-900">Update Failed</h3>
-          </div>
-          <p className="text-sm font-semibold text-red-700/80 leading-relaxed">{error}</p>
-        </div>
+        <AuthFeedbackPanel
+          variant="error"
+          title="Update Failed"
+          message={error}
+          icon={<AlertCircle className="h-8 w-8 text-red-600" />}
+          className="items-start space-y-3 p-5 text-left"
+        />
       )}
 
       <div className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="password" title="Use at least 8 characters" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">New Secure Password</Label>
+          <FieldLabel htmlFor="password" className="ml-1">New Secure Password</FieldLabel>
           <div className="relative group">
             <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-primary transition-colors" />
             <Input
@@ -135,7 +132,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
               {...register('password')}
               placeholder="••••••••"
               disabled={isPending}
-              className="h-14 pl-14 pr-6 bg-slate-100/50 border-none focus:ring-2 focus:ring-primary/10"
+              className="h-14 pl-14 pr-6"
             />
           </div>
           {errors.password && (
@@ -144,7 +141,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Confirm Identity</Label>
+          <FieldLabel htmlFor="confirmPassword">Confirm Identity</FieldLabel>
           <div className="relative group">
             <ShieldCheck className="absolute left-5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-primary transition-colors" />
             <Input
@@ -153,7 +150,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
               {...register('confirmPassword')}
               placeholder="••••••••"
               disabled={isPending}
-              className="h-14 pl-14 pr-6 bg-slate-100/50 border-none focus:ring-2 focus:ring-primary/10"
+              className="h-14 pl-14 pr-6"
             />
           </div>
           {errors.confirmPassword && (

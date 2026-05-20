@@ -15,9 +15,9 @@ import {
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Eyebrow } from '@/components/shared/typography/eyebrow';
 import { VariantBuilder } from './VariantBuilder';
 import { ImageUpload } from './ImageUpload';
 import { useProductCategories } from '@/hooks/use-product-categories';
@@ -230,7 +230,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
             </CardHeader>
             <CardContent className="p-10 space-y-8">
               <div className="space-y-3">
-                <Label htmlFor="title" className="text-xs font-black uppercase tracking-widest text-slate-400">Product Title</Label>
+                <Eyebrow className="mb-0">Product Title</Eyebrow>
                 <Input 
                   id="title"
                   {...register('title')}
@@ -241,7 +241,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
               </div>
 
               <div className="space-y-3">
-                <Label htmlFor="description" className="text-xs font-black uppercase tracking-widest text-slate-400">Description</Label>
+                <Eyebrow className="mb-0">Description</Eyebrow>
                 <textarea 
                   id="description"
                   {...register('description')}
@@ -277,7 +277,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                   <CardContent className="p-10">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-3">
-                        <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Price (USD)</Label>
+                        <Eyebrow className="mb-0">Price (USD)</Eyebrow>
                         <Controller
                           name="variants"
                           control={control}
@@ -303,7 +303,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                         />
                       </div>
                       <div className="space-y-3">
-                        <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Inventory Quantity</Label>
+                        <Eyebrow className="mb-0">Inventory Quantity</Eyebrow>
                         <Controller
                           name="variants"
                           control={control}

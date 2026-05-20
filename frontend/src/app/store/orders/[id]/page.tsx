@@ -6,6 +6,10 @@ import { CheckCircle, Package, ShoppingBag } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { useMounted } from '@/hooks/use-mounted'
 import { buildStoreHeaders, getBackendUrl } from '@/lib/medusa-client'
+import { EmptyState } from '@/components/shared/empty-states/empty-state'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Eyebrow } from '@/components/shared/typography/eyebrow'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -91,15 +95,17 @@ export default function OrderConfirmationPage({
 
   if (!order) {
     return (
-      <div className="max-w-2xl mx-auto text-center py-24">
-        <p className="text-slate-500 font-medium mb-4">Order not found.</p>
-        <Link
-          href="/store"
-          className="text-sm font-bold text-slate-900 underline underline-offset-4"
-        >
-          Return to Shop
-        </Link>
-      </div>
+      <EmptyState
+        icon={ShoppingBag}
+        title="Order Not Found"
+        description="We couldn't find this order."
+        className="max-w-2xl mx-auto py-24 opacity-100"
+        action={
+          <Button asChild variant="link" className="text-sm font-bold text-slate-900">
+            <Link href="/store">Return to Shop</Link>
+          </Button>
+        }
+      />
     )
   }
 
@@ -112,7 +118,7 @@ export default function OrderConfirmationPage({
   return (
     <div className="max-w-2xl mx-auto animate-in fade-in duration-700 space-y-6">
       {/* Success hero */}
-      <div className="bg-white rounded-3xl shadow-sm p-10 text-center">
+      <Card className="rounded-3xl border-none bg-white p-10 text-center shadow-sm">
         <div className="flex items-center justify-center h-20 w-20 bg-emerald-50 rounded-full mx-auto mb-6">
           <CheckCircle className="h-10 w-10 text-emerald-500" />
         </div>
@@ -127,13 +133,13 @@ export default function OrderConfirmationPage({
             <span className="font-bold text-slate-600">{order.email}</span>
           </p>
         )}
-      </div>
+      </Card>
 
       {/* Items */}
-      <div className="bg-white rounded-3xl shadow-sm p-6 space-y-4">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+      <Card className="rounded-3xl border-none bg-white p-6 shadow-sm space-y-4">
+        <Eyebrow className="text-[11px] tracking-[0.2em]">
           Items Ordered
-        </h2>
+        </Eyebrow>
         {order.items.map((item) => (
           <div key={item.id} className="flex items-center gap-4">
             {item.thumbnail ? (
@@ -167,14 +173,14 @@ export default function OrderConfirmationPage({
             <span>{fmt(order.total)}</span>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Shipping address */}
       {order.shipping_address?.address_1 && (
-        <div className="bg-white rounded-3xl shadow-sm p-6">
-          <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">
+        <Card className="rounded-3xl border-none bg-white p-6 shadow-sm">
+          <Eyebrow className="mb-3 text-[11px] tracking-[0.2em]">
             Shipping To
-          </h2>
+          </Eyebrow>
           <p className="text-sm font-bold text-slate-800">
             {[order.shipping_address.first_name, order.shipping_address.last_name]
               .filter(Boolean)
@@ -190,17 +196,19 @@ export default function OrderConfirmationPage({
               .filter(Boolean)
               .join(', ')}
           </p>
-        </div>
+        </Card>
       )}
 
       {/* CTA */}
-      <Link
-        href="/store"
-        className="flex items-center justify-center gap-2 py-4 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all shadow-premium hover:-translate-y-0.5 duration-300 w-full"
+      <Button
+        asChild
+        className="w-full rounded-2xl bg-slate-900 py-4 text-sm font-black uppercase tracking-widest hover:bg-slate-800"
       >
-        <ShoppingBag className="h-4 w-4" />
-        Continue Shopping
-      </Link>
+        <Link href="/store">
+          <ShoppingBag className="h-4 w-4" />
+          Continue Shopping
+        </Link>
+      </Button>
     </div>
   )
 }

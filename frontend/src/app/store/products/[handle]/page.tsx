@@ -10,6 +10,10 @@ import { useRegions } from '@/hooks/use-regions'
 import { useCart } from '@/hooks/use-cart'
 import { VariantSelector } from '@/components/store/products/variant-selector'
 import { toast } from 'sonner'
+import { EmptyState } from '@/components/shared/empty-states/empty-state'
+import { Button } from '@/components/ui/button'
+import { QuantityStepper } from '@/components/shared/controls/quantity-stepper'
+import { Eyebrow } from '@/components/shared/typography/eyebrow'
 
 interface ProductDetailClientProps {
   handle: string
@@ -77,13 +81,16 @@ export default function ProductDetailClient({ handle }: ProductDetailClientProps
 
   if (!product) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-center">
-        <AlertCircle className="h-12 w-12 text-slate-300 mb-4" />
-        <h2 className="text-2xl font-black text-slate-900 mb-2">Product not found</h2>
-        <Link href="/store" className="text-sm font-bold text-slate-500 underline underline-offset-4 mt-2">
-          Back to store
-        </Link>
-      </div>
+      <EmptyState
+        icon={AlertCircle}
+        title="Product Not Found"
+        className="py-24 opacity-100"
+        action={
+          <Button asChild variant="link" className="text-sm font-bold text-slate-500">
+            <Link href="/store">Back to Store</Link>
+          </Button>
+        }
+      />
     )
   }
 
@@ -123,7 +130,7 @@ export default function ProductDetailClient({ handle }: ProductDetailClientProps
                 <button
                   key={img.id}
                   onClick={() => setSelectedImage(i)}
-                  className={`relative h-16 w-16 flex-shrink-0 rounded-2xl overflow-hidden border-2 transition-all ${
+                  className={`relative h-16 w-16 shrink-0 rounded-2xl overflow-hidden border-2 transition-all ${
                     selectedImage === i ? 'border-slate-900' : 'border-transparent hover:border-slate-300'
                   }`}
                 >
@@ -164,29 +171,22 @@ export default function ProductDetailClient({ handle }: ProductDetailClientProps
 
           {/* Quantity */}
           <div className="flex items-center gap-3">
-            <span className="text-xs font-black uppercase tracking-widest text-slate-400">Qty</span>
-            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-1.5">
-              <button
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="h-6 w-6 flex items-center justify-center text-slate-500 hover:text-slate-900 font-black text-lg leading-none"
-              >
-                −
-              </button>
-              <span className="w-6 text-center text-sm font-black text-slate-900">{quantity}</span>
-              <button
-                onClick={() => setQuantity((q) => q + 1)}
-                className="h-6 w-6 flex items-center justify-center text-slate-500 hover:text-slate-900 font-black text-lg leading-none"
-              >
-                +
-              </button>
-            </div>
+            <Eyebrow>Qty</Eyebrow>
+            <QuantityStepper
+              value={quantity}
+              onDecrease={() => setQuantity((q) => Math.max(1, q - 1))}
+              onIncrease={() => setQuantity((q) => q + 1)}
+              disableDecrease={quantity <= 1}
+              className="border-slate-200 bg-white px-3 py-1.5"
+              valueClassName="w-6 text-sm"
+            />
           </div>
 
           {/* Add to cart */}
-          <button
+          <Button
             onClick={handleAddToCart}
             disabled={addItem.isPending || !activeVariant}
-            className="flex items-center justify-center gap-3 w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-premium hover:shadow-2xl hover:-translate-y-0.5 duration-300"
+            className="h-14 w-full rounded-2xl bg-slate-900 text-sm font-black uppercase tracking-widest hover:bg-slate-800"
           >
             {addItem.isPending ? (
               <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -194,7 +194,7 @@ export default function ProductDetailClient({ handle }: ProductDetailClientProps
               <ShoppingCart className="h-4 w-4" />
             )}
             {addItem.isPending ? 'Adding…' : 'Add to Cart'}
-          </button>
+          </Button>
 
           {addItem.isSuccess && (
             <div className="flex items-center gap-2 text-emerald-600 text-sm font-bold">

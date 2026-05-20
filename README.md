@@ -7,7 +7,7 @@
     <a href="#"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
     <a href="#"><img src="https://img.shields.io/badge/Medusa-v2.13-8C4FFF" alt="Medusa v2"></a>
     <a href="#"><img src="https://img.shields.io/badge/Next.js-16.2-black" alt="Next.js 16.2"></a>
-    <a href="#"><img src="https://img.shields.io/badge/version-0.5.0-brightgreen" alt="v0.5.0"></a>
+    <a href="#"><img src="https://img.shields.io/badge/version-0.7.0-brightgreen" alt="v0.7.0"></a>
   </p>
 
   <p>
@@ -43,10 +43,15 @@ Martnex allows you to toggle your entire platform's behavior using a single envi
 
 ---
 
-## ✅ What's Live (v0.6.0)
+## ✅ What's Live (v0.7.0)
 
 | Feature | Status |
 | :--- | :---: |
+| **Buyer Storefront** — product browse, search & category filter | ✅ |
+| **Product Detail** — variant selector, add-to-cart | ✅ |
+| **Cart** — persistent (localStorage), qty controls, summary | ✅ |
+| **Checkout** — shipping address → Stripe Elements / Cash on Delivery | ✅ |
+| **Order Confirmation** — receipt, shipping address, CTA | ✅ |
 | Seller registration & verification workflow | ✅ |
 | Seller product management (create, edit, delete, images, variants) | ✅ |
 | Multi-product per seller (many-to-many via Knex pivot) | ✅ |

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { StoreProduct, ProductVariant } from '@/hooks/use-products'
+import { Eyebrow } from '@/components/shared/typography/eyebrow'
 
 interface VariantSelectorProps {
   product: StoreProduct
@@ -38,9 +39,9 @@ export function VariantSelector({ product, onVariantChange }: VariantSelectorPro
     <div className="space-y-4">
       {product.options.map((option) => (
         <div key={option.id}>
-          <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">
+          <Eyebrow className="mb-2">
             {option.title}
-          </p>
+          </Eyebrow>
           <div className="flex flex-wrap gap-2">
             {option.values.map((v) => {
               const isSelected = selectedOptions[option.id] === v.value

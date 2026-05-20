@@ -11,6 +11,7 @@ import { loadStripe } from '@stripe/stripe-js'
 import { CreditCard, Truck } from 'lucide-react'
 import { toast } from 'sonner'
 import { useCheckout } from '@/hooks/use-checkout'
+import { Button } from '@/components/ui/button'
 
 // ─── Stripe singleton ─────────────────────────────────────────────────────────
 
@@ -109,7 +110,7 @@ function PaymentStepInner({
       {/* Provider selection */}
       <div className="space-y-2">
         {providers.map((p) => (
-          <button
+          <Button
             key={p.id}
             type="button"
             onClick={() => setSelectedProvider(p.id)}
@@ -121,7 +122,7 @@ function PaymentStepInner({
           >
             {p.icon}
             {p.label}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -150,13 +151,13 @@ function PaymentStepInner({
         </p>
       )}
 
-      <button
+      <Button
         onClick={handlePlaceOrder}
         disabled={isProcessing}
-        className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-premium hover:shadow-2xl hover:-translate-y-0.5 duration-300"
+        className="w-full h-14 rounded-2xl bg-slate-900 text-sm font-black uppercase tracking-widest hover:bg-slate-800"
       >
         {isProcessing ? 'Processing…' : `Place Order · ${formattedTotal}`}
-      </button>
+      </Button>
     </div>
   )
 }

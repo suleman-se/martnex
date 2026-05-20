@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { FieldLabel } from '@/components/shared/forms/field-label';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -73,7 +73,7 @@ export default function LoginForm() {
 
       <div className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email</Label>
+          <FieldLabel htmlFor="email">Email</FieldLabel>
           <Input
             id="email"
             type="email"
@@ -90,7 +90,7 @@ export default function LoginForm() {
 
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label htmlFor="password" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Password</Label>
+            <FieldLabel htmlFor="password">Password</FieldLabel>
           </div>
           <Input
             id="password"

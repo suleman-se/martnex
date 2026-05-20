@@ -6,6 +6,8 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/hooks/use-cart'
 import { useProductCategories } from '@/hooks/use-product-categories'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 export function StoreHeader() {
   const router = useRouter()
@@ -36,11 +38,11 @@ export function StoreHeader() {
         {/* Search bar */}
         <form onSubmit={handleSearchSubmit} className="flex-1 max-w-xl relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-          <input
+          <Input
             ref={inputRef}
             type="search"
             placeholder="Search products…"
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition-all"
+            className="h-10 rounded-xl border-slate-200 bg-slate-50 pl-10 pr-4 text-sm text-slate-700 placeholder:text-slate-400 focus-visible:ring-slate-900/10"
           />
         </form>
 
@@ -78,13 +80,15 @@ export function StoreHeader() {
         </Link>
 
         {/* Mobile menu toggle */}
-        <button
+        <Button
           className="md:hidden h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-700"
           onClick={() => setMobileMenuOpen((o) => !o)}
           aria-label="Toggle menu"
+          variant="ghost"
+          size="icon"
         >
           {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        </Button>
       </div>
 
       {/* Mobile category nav */}

@@ -11,6 +11,12 @@ The Next.js frontend follows a strict **Feature-Sliced Architecture**.
 - **`hooks/`**: Data fetching logic using React Query.
 - **`ui/`**: Pure UI primitives (Shadcn/UI).
 
+### Common Components First (Required)
+- Reuse existing common components before creating new ones.
+- Search these locations first: `src/components/shared`, `src/components/ui`, and existing domain folders.
+- If a pattern repeats in 2+ places, refactor into a shared component instead of duplicating markup.
+- Domain components (`admin/`, `seller/`, `store/`) should compose shared/common building blocks whenever possible.
+
 ### Modular Backend
 The Medusa v2 backend is built using custom modules and workflows.
 - **Custom Modules**: Seller, Commission, Payout, etc.
@@ -41,6 +47,11 @@ Every feature must feel premium and high-end.
 - **Realism**: No placeholders; use realistic mock data or generated images for demos.
 
 ## 4. Coding Patterns
+
+### Component Reuse Rule
+- Prefer composition over duplication.
+- Do not introduce a new component when an equivalent shared component already exists.
+- When in doubt, extend an existing shared component API rather than cloning the component.
 
 ### Hydration Safety
 Always use the `mounted` pattern to avoid SSR/CSR mismatches:

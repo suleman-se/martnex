@@ -8,12 +8,7 @@ import { SellerHeader } from '@/components/seller/layout/seller-header';
 import { VerificationBanners } from '@/components/seller/layout/verification-banners';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
-
-const LoadingScreen = () => (
-  <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-    <div className="animate-spin rounded-full h-10 w-10 border-2 border-slate-900 border-t-transparent"></div>
-  </div>
-);
+import { FullPageSpinner } from '@/components/shared/loading/full-page-spinner';
 
 export default function SellerLayout({ children }: { children: React.ReactNode }) {
   const { isLoading, isVerified, isPending, isRejected, isSuspended, hasProfile } = useSellerProfile();
@@ -43,7 +38,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
         // It has its own ProtectedRoute inside which is fine.
         children
       ) : isLoading || !hasProfile ? (
-        <LoadingScreen />
+        <FullPageSpinner spinnerClassName="h-10 w-10 border-slate-900 border-t-transparent" />
       ) : (
         <BaseDashboardLayout
           sidebar={(isOpen) => <SellerSidebar isOpen={isOpen} />}

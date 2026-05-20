@@ -2,6 +2,9 @@
 
 import { useForm } from 'react-hook-form'
 import type { CartAddress } from '@/hooks/use-cart'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export interface AddressFormValues {
   email: string
@@ -32,17 +35,14 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-black uppercase tracking-widest text-slate-400">
+      <Label className="text-xs font-black uppercase tracking-widest text-slate-400">
         {label}
-      </label>
+      </Label>
       {children}
       {error && <p className="text-xs font-medium text-rose-500">{error}</p>}
     </div>
   )
 }
-
-const inputClass =
-  'w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition-all'
 
 export function AddressForm({ defaultValues, onSubmit, isLoading = false }: AddressFormProps) {
   const {
@@ -54,63 +54,67 @@ export function AddressForm({ defaultValues, onSubmit, isLoading = false }: Addr
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <Field label="Email" error={errors.email?.message}>
-        <input
+        <Input
           {...register('email', { required: 'Email is required' })}
           type="email"
           placeholder="you@example.com"
-          className={inputClass}
+          className="h-11 rounded-xl border-slate-200 bg-white text-slate-800 placeholder:text-slate-300 focus-visible:ring-slate-900/10"
         />
       </Field>
 
       <div className="grid grid-cols-2 gap-4">
         <Field label="First Name" error={errors.first_name?.message}>
-          <input
+          <Input
             {...register('first_name', { required: 'Required' })}
             placeholder="Jane"
-            className={inputClass}
+            className="h-11 rounded-xl border-slate-200 bg-white text-slate-800 placeholder:text-slate-300 focus-visible:ring-slate-900/10"
           />
         </Field>
         <Field label="Last Name" error={errors.last_name?.message}>
-          <input
+          <Input
             {...register('last_name', { required: 'Required' })}
             placeholder="Smith"
-            className={inputClass}
+            className="h-11 rounded-xl border-slate-200 bg-white text-slate-800 placeholder:text-slate-300 focus-visible:ring-slate-900/10"
           />
         </Field>
       </div>
 
       <Field label="Address" error={errors.address_1?.message}>
-        <input
+        <Input
           {...register('address_1', { required: 'Address is required' })}
           placeholder="123 Main St"
-          className={inputClass}
+          className="h-11 rounded-xl border-slate-200 bg-white text-slate-800 placeholder:text-slate-300 focus-visible:ring-slate-900/10"
         />
       </Field>
 
       <Field label="Apartment, suite, etc. (optional)">
-        <input {...register('address_2')} placeholder="Apt 4B" className={inputClass} />
+        <Input
+          {...register('address_2')}
+          placeholder="Apt 4B"
+          className="h-11 rounded-xl border-slate-200 bg-white text-slate-800 placeholder:text-slate-300 focus-visible:ring-slate-900/10"
+        />
       </Field>
 
       <div className="grid grid-cols-2 gap-4">
         <Field label="City" error={errors.city?.message}>
-          <input
+          <Input
             {...register('city', { required: 'City is required' })}
             placeholder="New York"
-            className={inputClass}
+            className="h-11 rounded-xl border-slate-200 bg-white text-slate-800 placeholder:text-slate-300 focus-visible:ring-slate-900/10"
           />
         </Field>
         <Field label="Postal Code" error={errors.postal_code?.message}>
-          <input
+          <Input
             {...register('postal_code', { required: 'Postal code is required' })}
             placeholder="10001"
-            className={inputClass}
+            className="h-11 rounded-xl border-slate-200 bg-white text-slate-800 placeholder:text-slate-300 focus-visible:ring-slate-900/10"
           />
         </Field>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <Field label="Country Code" error={errors.country_code?.message}>
-          <input
+          <Input
             {...register('country_code', {
               required: 'Required',
               minLength: { value: 2, message: 'Use ISO code (e.g. US)' },
@@ -118,21 +122,25 @@ export function AddressForm({ defaultValues, onSubmit, isLoading = false }: Addr
             })}
             placeholder="US"
             maxLength={2}
-            className={`${inputClass} uppercase`}
+            className="h-11 rounded-xl border-slate-200 bg-white uppercase text-slate-800 placeholder:text-slate-300 focus-visible:ring-slate-900/10"
           />
         </Field>
         <Field label="Phone (optional)">
-          <input {...register('phone')} placeholder="+1 555 000 0000" className={inputClass} />
+          <Input
+            {...register('phone')}
+            placeholder="+1 555 000 0000"
+            className="h-11 rounded-xl border-slate-200 bg-white text-slate-800 placeholder:text-slate-300 focus-visible:ring-slate-900/10"
+          />
         </Field>
       </div>
 
-      <button
+      <Button
         type="submit"
         disabled={isLoading}
-        className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-premium hover:shadow-2xl hover:-translate-y-0.5 duration-300"
+        className="w-full h-14 rounded-2xl bg-slate-900 text-sm font-black uppercase tracking-widest hover:bg-slate-800"
       >
         {isLoading ? 'Saving…' : 'Continue to Payment'}
-      </button>
+      </Button>
     </form>
   )
 }

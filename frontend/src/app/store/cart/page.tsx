@@ -7,6 +7,8 @@ import { useCart } from '@/hooks/use-cart'
 import { CartItemRow } from '@/components/store/cart/cart-item'
 import { CartSummary } from '@/components/store/cart/cart-summary'
 import { toast } from 'sonner'
+import { EmptyState } from '@/components/shared/empty-states/empty-state'
+import { Button } from '@/components/ui/button'
 
 export default function CartPage() {
   const mounted = useMounted()
@@ -73,21 +75,17 @@ export default function CartPage() {
       </div>
 
       {isEmpty ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="h-24 w-24 bg-slate-100 rounded-3xl flex items-center justify-center mb-6">
-            <ShoppingBag className="h-12 w-12 text-slate-300" />
-          </div>
-          <h2 className="text-2xl font-black text-slate-900 mb-2">Your cart is empty</h2>
-          <p className="text-sm font-medium text-slate-400 mb-8 max-w-xs">
-            Looks like you haven't added any products yet.
-          </p>
-          <Link
-            href="/store"
-            className="px-8 py-3 bg-slate-900 text-white rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-premium"
-          >
-            Browse Products
-          </Link>
-        </div>
+        <EmptyState
+          icon={ShoppingBag}
+          title="Your Cart Is Empty"
+          description="Looks like you haven't added any products yet."
+          className="py-24 opacity-100"
+          action={
+            <Button asChild className="rounded-2xl bg-slate-900 px-8 py-3 text-sm font-black uppercase tracking-widest hover:bg-slate-800">
+              <Link href="/store">Browse Products</Link>
+            </Button>
+          }
+        />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* Line items */}
