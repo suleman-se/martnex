@@ -90,8 +90,23 @@ pnpm run seed
 This creates:
 - Admin user: `admin@martnex.io` / `supersecret`
 - Sample products and categories
+- Stock location, sales channel, inventory levels
 
-### Step 4: Start Backend
+### Step 5: Set Up Fulfillment / Shipping
+
+```bash
+pnpm run setup-shipping
+```
+
+This creates the full shipping infrastructure required for checkout:
+- Default fulfillment set linked to the stock location
+- Worldwide service zone
+- Standard Shipping ($0) and Express Shipping ($9.99) options
+- Idempotent — safe to run multiple times
+
+> **Important:** Without this step, customers will see "No shipping options available" at checkout.
+
+### Step 6: Start Backend
 
 ```bash
 pnpm run dev

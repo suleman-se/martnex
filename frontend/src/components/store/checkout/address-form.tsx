@@ -1,13 +1,13 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
-import type { CartAddress } from '@/hooks/use-cart'
+import { Controller, useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 export interface AddressFormValues {
-  email: string
+  email?: string
   first_name: string
   last_name: string
   address_1: string
@@ -15,13 +15,14 @@ export interface AddressFormValues {
   city: string
   country_code: string
   postal_code: string
-  phone?: string
+  phone: string
 }
 
 interface AddressFormProps {
   defaultValues?: Partial<AddressFormValues>
   onSubmit: (values: AddressFormValues) => void
   isLoading?: boolean
+  allowedCountryCodes?: string[]
 }
 
 function Field({
@@ -44,18 +45,37 @@ function Field({
   )
 }
 
-export function AddressForm({ defaultValues, onSubmit, isLoading = false }: AddressFormProps) {
+export function AddressForm({
+  defaultValues,
+  onSubmit,
+  isLoading = false,
+  allowedCountryCodes = [],
+}: AddressFormProps) {
+  const countryOptions = (allowedCountryCodes.length
+    ? allowedCountryCodes
+    : defaultValues?.country_code
+      ? [defaultValues.country_code]
+      : []
+  ).map((code) => code.toLowerCase())
+
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<AddressFormValues>({ defaultValues })
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-      <Field label="Email" error={errors.email?.message}>
+      <Field label="Email (optional)" error={errors.email?.message}>
         <Input
-          {...register('email', { required: 'Email is required' })}
+          {...register('email', {
+            validate: (value) => {
+              if (!value) return true
+              const valid = /^\S+@\S+\.\S+$/.test(value)
+              return valid || 'Enter a valid email address'
+            },
+          })}
           type="email"
           placeholder="you@example.com"
           className="h-11 rounded-xl border-slate-200 bg-white text-slate-800 placeholder:text-slate-300 focus-visible:ring-slate-900/10"
@@ -114,20 +134,35 @@ export function AddressForm({ defaultValues, onSubmit, isLoading = false }: Addr
 
       <div className="grid grid-cols-2 gap-4">
         <Field label="Country Code" error={errors.country_code?.message}>
-          <Input
-            {...register('country_code', {
-              required: 'Required',
-              minLength: { value: 2, message: 'Use ISO code (e.g. US)' },
-              maxLength: { value: 2, message: 'Use ISO code (e.g. US)' },
-            })}
-            placeholder="US"
-            maxLength={2}
-            className="h-11 rounded-xl border-slate-200 bg-white uppercase text-slate-800 placeholder:text-slate-300 focus-visible:ring-slate-900/10"
+          <Controller
+            control={control}
+            name="country_code"
+            rules={{ required: 'Please select a country' }}
+            render={({ field }) => (
+              <Select
+                value={field.value?.toLowerCase() || ''}
+                onValueChange={field.onChange}
+                disabled={!countryOptions.length}
+              >
+                <SelectTrigger className="h-11 rounded-xl border-slate-200 bg-white text-slate-800 focus:ring-slate-900/10">
+                  <SelectValue
+                    placeholder={countryOptions.length ? 'Select country' : 'No countries available'}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {countryOptions.map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {code.toUpperCase()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           />
         </Field>
-        <Field label="Phone (optional)">
+        <Field label="Phone" error={errors.phone?.message}>
           <Input
-            {...register('phone')}
+            {...register('phone', { required: 'Phone number is required' })}
             placeholder="+1 555 000 0000"
             className="h-11 rounded-xl border-slate-200 bg-white text-slate-800 placeholder:text-slate-300 focus-visible:ring-slate-900/10"
           />

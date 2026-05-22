@@ -17,6 +17,7 @@
     "start:worker": "medusa start --worker",
     "test": "vitest",
     "seed": "medusa exec ./src/scripts/seed.ts",
+    "setup-shipping": "medusa exec ./src/scripts/setup-shipping.ts",
     "db:migrate": "medusa db:migrate",
     "db:generate": "medusa db:generate",
     "db:sync": "medusa db:sync-links"

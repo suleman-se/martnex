@@ -24,6 +24,9 @@ export function CartItemRow({
   isPending = false,
 }: CartItemRowProps) {
   const productHandle = item.product?.handle
+  const lineTotal = Number.isFinite(item.total)
+    ? item.total
+    : Number(item.unit_price) * Number(item.quantity)
 
   return (
     <div className={`flex items-start gap-5 py-5 transition-opacity ${isPending ? 'opacity-50' : ''}`}>
@@ -88,7 +91,7 @@ export function CartItemRow({
       {/* Line total */}
       <div className="text-right shrink-0">
         <p className="font-black text-slate-900 text-sm">
-          {formatPrice(item.total, currencyCode)}
+          {formatPrice(Number.isFinite(lineTotal) ? lineTotal : 0, currencyCode)}
         </p>
       </div>
     </div>

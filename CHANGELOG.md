@@ -7,7 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-> Next up: Buyer account area (order history), product reviews, admin order management, seller fulfillment actions.
+> **Next phase — Phase 7: Admin Panel** (`docs/superpowers/plans/2026-05-20-admin-panel.md`)
+> Builds the full in-app admin dashboard so no manual scripts are needed after a fresh install.
+> Covers: admin dashboard stats, commissions UI, payouts UI, orders view, users view, shipping settings (replaces `pnpm run setup-shipping`), store settings / API key management (replaces `pnpm run create-publishable-key`).
+> Most pages are frontend-only — Medusa's native `/admin/*` API is used directly with an admin Bearer token.
+> After this phase: `pnpm run seed` → login to `/admin` → click "Set Up Shipping" → done. Zero manual scripts.
+
+> Future (post-Phase 7): Buyer account area (order history), product reviews, seller fulfillment actions.
+
+---
+
+## [0.7.1] - Checkout Stability & Infrastructure Fixes (20 May 2026)
+
+### Fixed
+- **Payment Step — 3 checkout bugs**:
+  - COD-only mode rendered a duplicate "Place Order" button; removed duplicate.
+  - Clicking the COD method card immediately triggered order placement; click now only selects the provider.
+  - Stripe flow: `ensureShipping()` was called after card confirmation instead of before; moved to top of `handlePlaceOrder` so shipping is resolved before any payment session is created.
+- **Checkout — "No shipping options available"**: The Medusa fulfillment stack (fulfillment set, service zone, shipping options, `manual_manual` provider link to stock location) was never provisioned on fresh installs. Added `backend/src/scripts/setup-shipping.ts` with idempotent end-to-end setup and wired it as `pnpm run setup-shipping`.
+- **Checkout — "Cart items require shipping profiles"**: Existing products had no rows in `product_shipping_profile`. Seed script (new Step 8) now repairs missing links on every run. `create-seller-product.ts` workflow now links each new product at creation time via `linkProductToShippingProfileStep`.
+- **Cart — Add-to-cart blocked on all products**: Variants had `manage_inventory=true` but no `product_variant_inventory_item` rows, so inventory lookups always returned empty and the cart refused items. Seed script now repairs missing variant→inventory links and creates default inventory levels (100 units). Seller product workflow enforces correct links for all new products.
+
+### Changed
+- `payment-step.tsx`: Refactored into two named sub-components — `CodOnlyPaymentStep` (used when Stripe key is absent) and `PaymentStepWithStripe` (used inside `<Elements>`) — sharing `MethodCard` and `PlaceOrderButton` primitives. Processing step labels now shown inline: *"Setting up shipping…" → "Preparing payment…" → "Placing order…"*.
+- `SETUP_INSTRUCTIONS.md`: Added required **Step 5** (`pnpm run setup-shipping`) between seed and server start, with an explicit callout that skipping it causes "No shipping options available" at checkout.
+- `package.json` (backend): Added `"setup-shipping": "medusa exec ./src/scripts/setup-shipping.ts"` script.
 
 ---
 

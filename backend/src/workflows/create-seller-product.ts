@@ -138,7 +138,155 @@ const createSellerProductLinkStep = createStep(
   }
 )
 
-// ─── Step 4: Delete uploaded files ──────────────────────────────────────────
+// ─── Step 4: Link product to default sales channel ──────────────────────────
+
+const linkProductToSalesChannelStep = createStep(
+  "link-product-to-sales-channel",
+  async ({ product_id }: { product_id: string }, { container }) => {
+    const remoteLink = container.resolve(ContainerRegistrationKeys.LINK)
+    const salesChannelService = container.resolve(Modules.SALES_CHANNEL)
+
+    const salesChannels = await salesChannelService.listSalesChannels({})
+    const salesChannel = salesChannels[0]
+    if (!salesChannel) return new StepResponse(null)
+
+    try {
+      await remoteLink.create([{
+        [Modules.PRODUCT]: { product_id },
+        [Modules.SALES_CHANNEL]: { sales_channel_id: salesChannel.id },
+      }])
+    } catch {
+      // already linked — ignore duplicate errors
+    }
+
+    return new StepResponse({ product_id, sales_channel_id: salesChannel.id }, { product_id, sales_channel_id: salesChannel.id })
+  },
+  async (prev: { product_id: string; sales_channel_id: string } | null, { container }) => {
+    if (!prev) return
+    const remoteLink = container.resolve(ContainerRegistrationKeys.LINK)
+    try {
+      await remoteLink.dismiss([{
+        [Modules.PRODUCT]: { product_id: prev.product_id },
+        [Modules.SALES_CHANNEL]: { sales_channel_id: prev.sales_channel_id },
+      }])
+    } catch {
+      // best-effort compensation
+    }
+  }
+)
+
+// ─── Step 5: Ensure variant inventory links and stock levels ───────────────
+
+const ensureVariantInventoryLinksStep = createStep(
+  "ensure-variant-inventory-links",
+  async ({ product_id }: { product_id: string }, { container }) => {
+    const remoteQuery = container.resolve(ContainerRegistrationKeys.QUERY)
+    const remoteLink = container.resolve(ContainerRegistrationKeys.LINK)
+    const inventoryService = container.resolve(Modules.INVENTORY)
+
+    const { data: stockLocations } = await remoteQuery.graph({
+      entity: "stock_location",
+      fields: ["id"],
+    })
+    const defaultStockLocationId = stockLocations?.[0]?.id
+
+    const { data: variants } = await remoteQuery.graph({
+      entity: "variant",
+      fields: ["id", "sku", "manage_inventory", "inventory_items.inventory_item_id"],
+      filters: { product_id },
+    })
+
+    if (!Array.isArray(variants) || !variants.length) {
+      return new StepResponse({ product_id, repaired_links: 0, created_items: 0 })
+    }
+
+    let repairedLinks = 0
+    let createdItems = 0
+
+    for (const variant of variants) {
+      if (!variant?.manage_inventory) {
+        continue
+      }
+
+      const hasInventoryLink =
+        Array.isArray(variant.inventory_items) && variant.inventory_items.length > 0
+      if (hasInventoryLink) {
+        continue
+      }
+
+      const inventoryItem = await inventoryService.createInventoryItems({
+        sku: variant.sku || undefined,
+      })
+
+      await remoteLink.create([{
+        [Modules.PRODUCT]: { variant_id: variant.id },
+        [Modules.INVENTORY]: { inventory_item_id: inventoryItem.id },
+      }])
+
+      repairedLinks++
+      createdItems++
+
+      if (defaultStockLocationId) {
+        try {
+          await inventoryService.createInventoryLevels({
+            inventory_item_id: inventoryItem.id,
+            location_id: defaultStockLocationId,
+            stocked_quantity: 100,
+          })
+        } catch {
+          // best effort; level may already exist
+        }
+      }
+    }
+
+    return new StepResponse({
+      product_id,
+      repaired_links: repairedLinks,
+      created_items: createdItems,
+    })
+  }
+)
+
+// ─── Step 6: Link product to default shipping profile ────────────────────────
+
+const linkProductToShippingProfileStep = createStep(
+  "link-product-to-shipping-profile",
+  async ({ product_id }: { product_id: string }, { container }) => {
+    const knex = container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+
+    // Find the default shipping profile
+    const profiles = await knex.raw(
+      `SELECT id FROM shipping_profile ORDER BY created_at ASC LIMIT 1`
+    )
+    const profileId: string | undefined = profiles.rows?.[0]?.id
+    if (!profileId) return new StepResponse(null)
+
+    // Insert link if not already there
+    const existing = await knex.raw(
+      `SELECT id FROM product_shipping_profile WHERE product_id = ? AND shipping_profile_id = ?`,
+      [product_id, profileId]
+    )
+    if (existing.rows?.length) return new StepResponse({ product_id, profileId })
+
+    await knex.raw(
+      `INSERT INTO product_shipping_profile (id, product_id, shipping_profile_id, created_at, updated_at)
+       VALUES (?, ?, ?, now(), now())`,
+      [generateEntityId(undefined, "prodsp"), product_id, profileId]
+    )
+
+    return new StepResponse({ product_id, profileId }, { product_id, profileId })
+  },
+  async (prev: { product_id: string; profileId: string } | null, { container }) => {
+    if (!prev) return
+    const knex = container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    await knex.raw(
+      `DELETE FROM product_shipping_profile WHERE product_id = ? AND shipping_profile_id = ?`,
+      [prev.product_id, prev.profileId]
+    ).catch(() => {})
+  }
+)
+
+// ─── Step 7: Delete uploaded files ──────────────────────────────────────────
 
 type DeleteUploadedFilesInput = {
   file_ids?: string[]
@@ -193,6 +341,22 @@ const createSellerProductWorkflowDefinition = createWorkflow<
     }))
 
     createSellerProductLinkStep(linkInput)
+
+    // Link new product to the default sales channel so it can be purchased
+    linkProductToSalesChannelStep(transform({ product }, ({ product }) => ({
+      product_id: product.id,
+    })))
+
+    ensureVariantInventoryLinksStep(
+      transform({ product }, ({ product }) => ({
+        product_id: product.id,
+      }))
+    )
+
+    // Link new product to the default shipping profile so cart complete works
+    linkProductToShippingProfileStep(transform({ product }, ({ product }) => ({
+      product_id: product.id,
+    })))
 
     const deletedFileIds = transform(input, (workflowInput) => ({
       file_ids:

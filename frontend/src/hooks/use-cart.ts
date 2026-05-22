@@ -57,6 +57,37 @@ export interface Cart {
     payment_sessions?: PaymentSession[]
   }
   shipping_methods?: { id: string; name?: string; amount: number }[]
+  region?: {
+    id: string
+    countries?: { iso_2: string }[]
+  }
+}
+
+function toNumber(value: unknown, fallback = 0): number {
+  const n = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(n) ? n : fallback
+}
+
+function normalizeCart(cart: Cart): Cart {
+  return {
+    ...cart,
+    subtotal: toNumber(cart.subtotal),
+    total: toNumber(cart.total),
+    discount_total: toNumber(cart.discount_total),
+    shipping_total: toNumber(cart.shipping_total),
+    tax_total: toNumber(cart.tax_total),
+    items: (cart.items ?? []).map((item) => {
+      const unitPrice = toNumber(item.unit_price)
+      const quantity = toNumber(item.quantity)
+      const computedTotal = unitPrice * quantity
+      return {
+        ...item,
+        quantity,
+        unit_price: unitPrice,
+        total: toNumber(item.total, computedTotal),
+      }
+    }),
+  }
 }
 
 // ─── localStorage helpers ─────────────────────────────────────────────────────
@@ -85,7 +116,7 @@ async function fetchCart(cartId: string): Promise<Cart> {
   }
   if (!res.ok) throw new Error('Failed to fetch cart')
   const data = (await res.json()) as { cart: Cart }
-  return data.cart
+  return normalizeCart(data.cart)
 }
 
 async function createCart(regionId: string): Promise<Cart> {
@@ -97,7 +128,17 @@ async function createCart(regionId: string): Promise<Cart> {
   })
   if (!res.ok) throw new Error('Failed to create cart')
   const data = (await res.json()) as { cart: Cart }
-  return data.cart
+  return normalizeCart(data.cart)
+}
+
+async function resolveDefaultRegionId(): Promise<string> {
+  const headers = await buildStoreHeaders()
+  const res = await fetch(`${getBackendUrl()}/store/regions`, { headers })
+  if (!res.ok) throw new Error('Unable to resolve store region')
+  const data = (await res.json()) as { regions?: { id: string }[] }
+  const regionId = data.regions?.[0]?.id
+  if (!regionId) throw new Error('No store region is configured')
+  return regionId
 }
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
@@ -123,11 +164,12 @@ export function useCart() {
     }: {
       variantId: string
       quantity: number
-      regionId: string
+      regionId?: string
     }) => {
       let id = getStoredCartId()
       if (!id) {
-        const newCart = await createCart(regionId)
+        const resolvedRegionId = regionId ?? (await resolveDefaultRegionId())
+        const newCart = await createCart(resolvedRegionId)
         setStoredCartId(newCart.id)
         id = newCart.id
       }
@@ -139,7 +181,7 @@ export function useCart() {
       })
       if (!res.ok) throw new Error('Failed to add item to cart')
       const data = (await res.json()) as { cart: Cart }
-      return data.cart
+      return normalizeCart(data.cart)
     },
     onSuccess: (updatedCart) => {
       setStoredCartId(updatedCart.id)
@@ -159,11 +201,14 @@ export function useCart() {
         { method: 'DELETE', headers }
       )
       if (!res.ok) throw new Error('Failed to remove item')
-      const data = (await res.json()) as { cart: Cart }
-      return data.cart
+      const data = (await res.json()) as { cart?: Cart; parent?: Cart }
+      const updatedCart = data.cart ?? data.parent
+      if (!updatedCart) throw new Error('Invalid cart response')
+      return normalizeCart(updatedCart)
     },
     onSuccess: (updatedCart) => {
       queryClient.setQueryData(['cart', updatedCart.id], updatedCart)
+      queryClient.invalidateQueries({ queryKey: ['cart'] })
     },
   })
 
@@ -189,7 +234,7 @@ export function useCart() {
       )
       if (!res.ok) throw new Error('Failed to update quantity')
       const data = (await res.json()) as { cart: Cart }
-      return data.cart
+      return normalizeCart(data.cart)
     },
     onSuccess: (updatedCart) => {
       queryClient.setQueryData(['cart', updatedCart.id], updatedCart)
@@ -209,7 +254,7 @@ export function useCart() {
       })
       if (!res.ok) throw new Error('Failed to update cart')
       const data = (await res.json()) as { cart: Cart }
-      return data.cart
+      return normalizeCart(data.cart)
     },
     onSuccess: (updatedCart) => {
       queryClient.setQueryData(['cart', updatedCart.id], updatedCart)

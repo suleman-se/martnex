@@ -120,18 +120,23 @@ const { products, isLoading } = useSellerProducts();
 ## 8. Backend Architecture
 - **Medusa v2** with custom modules and workflows.
 - **Module Links:** Extensive use of link modules (e.g., `seller-product`) to extend core Medusa entities.
-- **Auth:** Custom token endpoints in `/store/auth` using `generateJwtToken`.
+- **Auth:** Custom token endpoints in `/store/auth` using `generateJwtToken`. `refreshUser()` in `auth-store.ts` silently calls `refreshSession()` on 401 before logging out (access token = 1-day TTL, refresh token = 7-day TTL in Redis).
 - **Roles:** User roles are synchronized between `auth_identity` and the business logic layer.
 - **Seller Product API:** Seller product create/update routes normalize frontend-friendly payloads into Medusa core workflow inputs.
 - **File Storage:** Local file uploads are served from `/static` via the Medusa file module; seller uploads use `/store/uploads` and `/store/uploads/:id`.
 - **Redis:** Mandatory for production-like environments (via `Modules.CACHE`).
+- **Fulfillment Infrastructure:** Must be provisioned once via `pnpm run setup-shipping` (script: `backend/src/scripts/setup-shipping.ts`). Creates: Default Fulfillment Set → Worldwide service zone → Standard ($0) + Express ($9.99) shipping options + `manual_manual` provider linked to stock location. Idempotent — safe to re-run. Without this, checkout shows "No shipping options available".
+- **Shipping Profile Requirement:** Every product MUST have a row in `product_shipping_profile` or checkout fails with "shipping profiles not satisfied". Seed Step 8 repairs missing links on every run; `create-seller-product.ts` workflow enforces this for new products via `linkProductToShippingProfileStep`.
+- **Inventory Requirement:** Every variant MUST have a `product_variant_inventory_item` link AND an `inventory_level` with `stocked_quantity > 0`. Seed repairs missing links and levels; seller product workflow enforces this for new products.
 
 ## 9. Storefront Patterns (Buyer — v0.7.0+)
 
 - **Cart persistence:** Cart ID stored as `martnex_cart_id` in `localStorage`. `getStoredCartId()` / `setStoredCartId()` / `clearStoredCartId()` are all exported from `use-cart.ts`. Always call `clearStoredCartId()` after a successful order completion.
 - **Lazy cart creation:** `addItem` creates the cart on first use if no cart ID exists. Requires a `regionId` — obtain via `useRegions().defaultRegion?.id`.
-- **Stripe payment flow:** `PaymentStep` wraps in `<Elements stripe={stripePromise}>`. Provider ID = `pp_stripe_stripe`. Client secret lives in `cart.payment_collection.payment_sessions[n].data.client_secret`. Only rendered when `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` is set.
+- **PaymentStep architecture (v0.7.1):** `PaymentStep` is the exported entry point. Renders `CodOnlyPaymentStep` when `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` is absent, or `<Elements><PaymentStepWithStripe></Elements>` when key is present. Both share `MethodCard` (radio-style provider card) and `PlaceOrderButton` (spinner + step label). Method card click ONLY selects provider — never triggers submission. `handlePlaceOrder` ALWAYS calls `ensureShipping()` first before any payment operation.
+- **Stripe payment flow:** Provider ID = `pp_stripe_stripe`. Client secret lives in `cart.payment_collection.payment_sessions[n].data.client_secret`. Only rendered when `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` is set.
 - **COD payment flow:** Provider ID = `pp_system_default`. No card entry — call `initPayment` then `completeOrder` directly.
+- **Checkout prerequisite chain:** For shipping options to appear at checkout, ALL of these must be true: (1) product linked to sales channel, (2) variant has `product_variant_inventory_item` link, (3) inventory level has `stocked_quantity > 0`, (4) stock location linked to sales channel, (5) `manual_manual` provider linked to stock location, (6) fulfillment set + service zone + shipping options exist (`pnpm run setup-shipping`), (7) product has a row in `product_shipping_profile`.
 - **Store routes:** All `/store/*` pages share the `app/store/layout.tsx` shell (StoreHeader + footer). Search and category filter are URL-param driven (`?q=`, `?category=`) for SSR-friendliness and linkability.
 - **Prices NOT in cents** (project-wide rule — `$29.99` stored and displayed as `29.99`).
 
@@ -152,3 +157,29 @@ const { products, isLoading } = useSellerProducts();
 - **Seller Order Fulfillment:** Live orders dashboard (`/seller/orders`), scoped order APIs, auto-commission on `order.placed` — **COMPLETE ✅** _(v0.5.0, 13 May 2026)_
 - **Seller Dashboard & Payouts:** Order detail page, real-data dashboard stats, payouts history page, 17 route unit tests — **COMPLETE ✅** _(v0.6.0, 18 May 2026)_
 - **Buyer Storefront:** Product browse/search, product detail + variant selector, persistent cart, 2-step checkout (Stripe Elements + COD), order confirmation — **COMPLETE ✅** _(v0.7.0, 19 May 2026)_
+- **Checkout Stability & Infrastructure Hardening:** 3 payment-step bugs fixed; fulfillment stack automated via `setup-shipping` script; inventory/shipping-profile links enforced in seed + seller product workflow; auth silent token refresh on expiry — **COMPLETE ✅** _(v0.7.1, 20 May 2026)_
+
+## 11. Next Phase — Admin Panel (Phase 7) ⬅️ START HERE
+
+> **Plan file:** `docs/superpowers/plans/2026-05-20-admin-panel.md`
+
+The admin panel is the **immediate next task**. Do not start buyer account area, reviews, or other features until this is shipped.
+
+**Goal:** After this phase a fresh install needs only `pnpm run seed` + logging into `/admin` — zero manual scripts.
+
+**Key architecture fact:** Medusa's native `/admin/*` API is fully live and accepts a Bearer token from `POST /auth/user/emailpass`. Most admin pages are **frontend-only** — no new backend routes needed.
+
+| Task | Page | What it replaces / adds |
+|---|---|---|
+| 1 | `/admin` dashboard | Blank shell → real stats |
+| 2 | `/admin/commissions` | API exists, UI missing |
+| 3 | `/admin/payouts` | API exists, UI missing |
+| 4 | `/admin/orders` | Uses `GET /admin/orders` (Medusa native) |
+| 5 | `/admin/users` | Uses `GET /admin/customers` (Medusa native) |
+| 6 | `/admin/settings/shipping` | Replaces `pnpm run setup-shipping` |
+| 7 | `/admin/settings/store` | Replaces `pnpm run create-publishable-key` |
+| 8 | `/admin/settings` hub | 404 → real page |
+
+**Admin auth:** `POST /auth/user/emailpass` → Bearer token. Works on all `/admin/*` routes including custom Martnex ones (`authenticate("user", ["session", "bearer"])`).
+
+**What already exists:** `/admin` layout + shell, `AdminSidebar`, `AdminHeader`, `/admin/sellers` page, backend routes for sellers/commissions/payouts.

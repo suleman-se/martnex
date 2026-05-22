@@ -4,6 +4,35 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { buildStoreHeaders, getBackendUrl } from '@/lib/medusa-client'
 import type { Cart, CartAddress } from './use-cart'
 
+function toNumber(value: unknown, fallback = 0): number {
+  const n = typeof value === 'number' ? value : Number(value)
+  if (Number.isFinite(n)) return n
+  return Number.isFinite(fallback) ? fallback : 0
+}
+
+function normalizeCart(cart: Cart): Cart {
+  return {
+    ...cart,
+    subtotal: toNumber(cart.subtotal),
+    total: toNumber(cart.total),
+    discount_total: toNumber(cart.discount_total),
+    shipping_total: toNumber(cart.shipping_total),
+    tax_total: toNumber(cart.tax_total),
+    items: (cart.items ?? []).map((item) => {
+      const unitPrice = toNumber(item.unit_price)
+      const quantity = toNumber(item.quantity)
+      const computedTotal = unitPrice * quantity
+
+      return {
+        ...item,
+        unit_price: unitPrice,
+        quantity,
+        total: toNumber(item.total, computedTotal),
+      }
+    }),
+  }
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface ShippingOption {
@@ -14,7 +43,7 @@ export interface ShippingOption {
 }
 
 export interface CheckoutAddressPayload {
-  email: string
+  email?: string
   shipping_address: CartAddress
 }
 
@@ -25,17 +54,27 @@ async function updateCartAddress(
   payload: CheckoutAddressPayload
 ): Promise<Cart> {
   const headers = await buildStoreHeaders()
+  const body: { email?: string; shipping_address: CartAddress } = {
+    shipping_address: payload.shipping_address,
+  }
+  const trimmedEmail = payload.email?.trim()
+  if (trimmedEmail) {
+    body.email = trimmedEmail
+  }
+
   const res = await fetch(`${getBackendUrl()}/store/carts/${cartId}`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({
-      email: payload.email,
-      shipping_address: payload.shipping_address,
-    }),
+    body: JSON.stringify(body),
   })
-  if (!res.ok) throw new Error('Failed to update shipping address')
+  if (!res.ok) {
+    const errorData = (await res.json().catch(() => null)) as
+      | { message?: string }
+      | null
+    throw new Error(errorData?.message || 'Failed to update shipping address')
+  }
   const data = (await res.json()) as { cart: Cart }
-  return data.cart
+  return normalizeCart(data.cart)
 }
 
 async function fetchShippingOptions(cartId: string): Promise<ShippingOption[]> {
@@ -56,9 +95,12 @@ async function addShippingMethod(cartId: string, optionId: string): Promise<Cart
     headers,
     body: JSON.stringify({ option_id: optionId }),
   })
-  if (!res.ok) throw new Error('Failed to set shipping method')
+  if (!res.ok) {
+    const errorData = (await res.json().catch(() => null)) as { message?: string } | null
+    throw new Error(errorData?.message || 'Failed to set shipping method')
+  }
   const data = (await res.json()) as { cart: Cart }
-  return data.cart
+  return normalizeCart(data.cart)
 }
 
 async function initPaymentSession(cartId: string, providerId: string): Promise<Cart> {
@@ -69,7 +111,10 @@ async function initPaymentSession(cartId: string, providerId: string): Promise<C
     headers,
     body: JSON.stringify({ cart_id: cartId }),
   })
-  if (!collRes.ok) throw new Error('Failed to create payment collection')
+  if (!collRes.ok) {
+    const errorData = (await collRes.json().catch(() => null)) as { message?: string } | null
+    throw new Error(errorData?.message || 'Failed to create payment collection')
+  }
   const collData = (await collRes.json()) as { payment_collection: { id: string } }
   const collectionId = collData.payment_collection.id
 
@@ -82,14 +127,17 @@ async function initPaymentSession(cartId: string, providerId: string): Promise<C
       body: JSON.stringify({ provider_id: providerId }),
     }
   )
-  if (!sessRes.ok) throw new Error('Failed to create payment session')
+  if (!sessRes.ok) {
+    const errorData = (await sessRes.json().catch(() => null)) as { message?: string } | null
+    throw new Error(errorData?.message || 'Failed to create payment session')
+  }
 
   // Re-fetch cart to get updated payment_collection
   const cartRes = await fetch(`${getBackendUrl()}/store/carts/${cartId}`, {
     headers: await buildStoreHeaders(),
   })
   const cartData = (await cartRes.json()) as { cart: Cart }
-  return cartData.cart
+  return normalizeCart(cartData.cart)
 }
 
 async function completeCart(cartId: string): Promise<{ order_id: string }> {
@@ -98,7 +146,10 @@ async function completeCart(cartId: string): Promise<{ order_id: string }> {
     method: 'POST',
     headers,
   })
-  if (!res.ok) throw new Error('Failed to complete order')
+  if (!res.ok) {
+    const errorData = (await res.json().catch(() => null)) as { message?: string } | null
+    throw new Error(errorData?.message || 'Failed to complete order')
+  }
   const data = (await res.json()) as { type: string; order?: { id: string }; cart?: Cart }
   if (data.type === 'order' && data.order?.id) {
     return { order_id: data.order.id }

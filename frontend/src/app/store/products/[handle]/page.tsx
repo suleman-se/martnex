@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import { ShoppingCart, ArrowLeft, Check, AlertCircle } from 'lucide-react'
 import { useMounted } from '@/hooks/use-mounted'
 import { useProduct, formatPrice, getDisplayPrice, type ProductVariant } from '@/hooks/use-products'
@@ -15,11 +16,9 @@ import { Button } from '@/components/ui/button'
 import { QuantityStepper } from '@/components/shared/controls/quantity-stepper'
 import { Eyebrow } from '@/components/shared/typography/eyebrow'
 
-interface ProductDetailClientProps {
-  handle: string
-}
-
-export default function ProductDetailClient({ handle }: ProductDetailClientProps) {
+export default function ProductDetailClient() {
+  const params = useParams<{ handle: string | string[] }>()
+  const handle = Array.isArray(params.handle) ? params.handle[0] : params.handle
   const mounted = useMounted()
   const { data: product, isLoading } = useProduct(handle)
   const { defaultRegion } = useRegions()
@@ -47,7 +46,7 @@ export default function ProductDetailClient({ handle }: ProductDetailClientProps
         : '—'
 
   async function handleAddToCart() {
-    if (!activeVariant || !defaultRegion) {
+    if (!activeVariant) {
       toast.error('Unable to add to cart — please refresh the page.')
       return
     }
@@ -55,7 +54,7 @@ export default function ProductDetailClient({ handle }: ProductDetailClientProps
       await addItem.mutateAsync({
         variantId: activeVariant.id,
         quantity,
-        regionId: defaultRegion.id,
+        regionId: defaultRegion?.id,
       })
       toast.success(`${product?.title ?? 'Item'} added to cart!`, {
         action: { label: 'View Cart', onClick: () => (window.location.href = '/store/cart') },

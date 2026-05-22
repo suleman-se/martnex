@@ -70,7 +70,7 @@ export default function CheckoutPage() {
       await setAddress.mutateAsync({
         cartId,
         payload: {
-          email: values.email,
+          email: values.email?.trim() || undefined,
           shipping_address: {
             first_name: values.first_name,
             last_name: values.last_name,
@@ -85,8 +85,8 @@ export default function CheckoutPage() {
       })
       setSavedAddress(values)
       setStep('payment')
-    } catch {
-      toast.error('Failed to save address. Please try again.')
+    } catch (err) {
+      toast.error((err as Error).message || 'Failed to save address. Please try again.')
     }
   }
 
@@ -125,6 +125,9 @@ export default function CheckoutPage() {
               defaultValues={savedAddress ?? undefined}
               onSubmit={handleAddressSubmit}
               isLoading={setAddress.isPending}
+              allowedCountryCodes={(cart.region?.countries ?? [])
+                .map((country) => country.iso_2?.toLowerCase())
+                .filter(Boolean)}
             />
           </>
         )}
@@ -172,7 +175,9 @@ export default function CheckoutPage() {
                 <p className="text-sm font-bold text-slate-800 truncate">{item.title}</p>
                 <p className="text-xs text-slate-400">Qty {item.quantity}</p>
               </div>
-              <p className="text-sm font-black text-slate-900 shrink-0">{fmt(item.total)}</p>
+              <p className="text-sm font-black text-slate-900 shrink-0">
+                {fmt(Number.isFinite(item.total) ? item.total : item.unit_price * item.quantity)}
+              </p>
             </div>
           ))}
         </div>
