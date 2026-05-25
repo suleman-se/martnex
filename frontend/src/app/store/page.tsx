@@ -1,158 +1,80 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { SlidersHorizontal, X } from 'lucide-react'
-import { useMounted } from '@/hooks/use-mounted'
-import { useProducts } from '@/hooks/use-products'
-import { useProductCategories } from '@/hooks/use-product-categories'
+import { fetchProducts, fetchProductCategories } from '@/lib/api'
 import { ProductGrid } from '@/components/store/products/product-grid'
-import { Input } from '@/components/ui/input'
+import { StoreFilters } from '@/components/store/store-filters'
+import { StorePagination } from '@/components/store/store-pagination'
+import { AlertCircle } from 'lucide-react'
+import { EmptyState } from '@/components/shared/empty-states/empty-state'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 const PAGE_SIZE = 16
 
-export default function StorePage() {
-  const mounted = useMounted()
-  const searchParams = useSearchParams()
-  const initialQ = searchParams.get('q') ?? ''
-  const initialCategory = searchParams.get('category') ?? ''
+interface StorePageProps {
+  searchParams: Promise<{
+    q?: string
+    category?: string
+    offset?: string
+  }>
+}
 
-  const [search, setSearch] = useState(initialQ)
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory)
-  const [offset, setOffset] = useState(0)
+export default async function StorePage({ searchParams }: StorePageProps) {
+  const resolvedParams = await searchParams
+  const q = resolvedParams.q ?? ''
+  const category = resolvedParams.category ?? ''
+  const offsetStr = resolvedParams.offset ?? '0'
+  const offset = parseInt(offsetStr, 10) || 0
 
-  // Reset pagination when filters change
-  useEffect(() => {
-    setOffset(0)
-  }, [search, selectedCategory])
+  let categories: any[] = []
+  let products: any[] = []
+  let count = 0
 
-  const { data: categories } = useProductCategories()
+  try {
+    categories = await fetchProductCategories()
+    const activeCategory = categories.find((c) => c.handle === category)
+    const categoryId = activeCategory?.id
 
-  const categoryId = categories?.find((c) => c.handle === selectedCategory)?.id
-
-  const { data, isLoading } = useProducts({
-    q: search || undefined,
-    category_id: categoryId ? [categoryId] : undefined,
-    limit: PAGE_SIZE,
-    offset,
-  })
-
-  const products = data?.products ?? []
-  const totalCount = data?.count ?? 0
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE)
-  const currentPage = Math.floor(offset / PAGE_SIZE) + 1
-
-  if (!mounted) return null
+    const data = await fetchProducts({
+      q: q || undefined,
+      category_id: categoryId ? [categoryId] : undefined,
+      limit: PAGE_SIZE,
+      offset,
+    })
+    products = data.products
+    count = data.count
+  } catch (err) {
+    console.error('StorePage fetch failed:', err)
+    return (
+      <div className="space-y-8 animate-in fade-in duration-700 max-w-2xl mx-auto py-12">
+        <EmptyState
+          icon={AlertCircle}
+          title="Store Temporarily Offline"
+          description="We are unable to connect to the store backend at this moment. Please verify that the database and Medusa backend services are active."
+          className="py-24 opacity-100 bg-white border border-slate-100 rounded-3xl p-12 shadow-sm"
+          action={
+            <Button asChild className="rounded-2xl bg-slate-900 px-8 py-3 text-sm font-black uppercase tracking-widest hover:bg-slate-800">
+              <Link href="/store">Retry Connection</Link>
+            </Button>
+          }
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
-      {/* Page header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-4xl font-heading font-black tracking-tight text-slate-900">
-            {selectedCategory
-              ? (categories?.find((c) => c.handle === selectedCategory)?.name ?? 'Products')
-              : 'All Products'}
-          </h1>
-          {!isLoading && (
-            <p className="text-slate-400 text-sm font-medium mt-1">
-              {totalCount} product{totalCount !== 1 ? 's' : ''} available
-            </p>
-          )}
-        </div>
+      {/* Filter and search controls (Client component for interactive states) */}
+      <StoreFilters categories={categories} />
 
-        {/* Search */}
-        <div className="relative w-full sm:w-72">
-          <Input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search products…"
-            className="h-11 rounded-2xl border-slate-200 bg-white pl-4 pr-8 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm focus-visible:ring-slate-900/10"
-          />
-          {search && (
-            <Button
-              onClick={() => setSearch('')}
-              variant="ghost"
-              size="icon"
-              className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 text-slate-400 hover:bg-transparent hover:text-slate-600"
-            >
-              <X className="h-3.5 w-3.5" />
-            </Button>
-          )}
-        </div>
-      </div>
+      {/* Product count label */}
+      <p className="text-slate-400 text-sm font-medium -mt-4">
+        {count} product{count !== 1 ? 's' : ''} available
+      </p>
 
-      {/* Category filter chips */}
-      {categories && categories.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          <Button
-            onClick={() => setSelectedCategory('')}
-            variant="outline"
-            className={`h-auto rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-widest transition-all ${
-              !selectedCategory
-                ? 'bg-slate-900 text-white'
-                : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
-            }`}
-          >
-            All
-          </Button>
-          {categories.map((cat) => (
-            <Button
-              key={cat.id}
-              onClick={() =>
-                setSelectedCategory(selectedCategory === cat.handle ? '' : cat.handle)
-              }
-              variant="outline"
-              className={`h-auto rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-widest transition-all ${
-                selectedCategory === cat.handle
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
-              }`}
-            >
-              {cat.name}
-            </Button>
-          ))}
-          {selectedCategory && (
-            <Button
-              onClick={() => setSelectedCategory('')}
-              variant="secondary"
-              className="h-auto rounded-full bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-500 hover:bg-rose-100"
-            >
-              <X className="h-3 w-3" /> Clear filter
-            </Button>
-          )}
-        </div>
-      )}
+      {/* Product grid server-passed products list */}
+      <ProductGrid products={products} />
 
-      {/* Product grid */}
-      <ProductGrid products={products} isLoading={isLoading} />
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-4">
-          <Button
-            onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
-            disabled={currentPage === 1}
-            variant="outline"
-            className="rounded-xl border-slate-200 bg-white text-sm font-bold text-slate-600 hover:bg-slate-50"
-          >
-            Previous
-          </Button>
-          <span className="text-sm font-medium text-slate-500 px-2">
-            Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            onClick={() => setOffset(offset + PAGE_SIZE)}
-            disabled={currentPage >= totalPages}
-            variant="outline"
-            className="rounded-xl border-slate-200 bg-white text-sm font-bold text-slate-600 hover:bg-slate-50"
-          >
-            Next
-          </Button>
-        </div>
-      )}
+      {/* Pagination controls */}
+      <StorePagination totalCount={count} pageSize={PAGE_SIZE} offset={offset} />
     </div>
   )
 }

@@ -1,207 +1,54 @@
-'use client'
-
-import { useState } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { useParams } from 'next/navigation'
-import { ShoppingCart, ArrowLeft, Check, AlertCircle } from 'lucide-react'
-import { useMounted } from '@/hooks/use-mounted'
-import { useProduct, formatPrice, getDisplayPrice, type ProductVariant } from '@/hooks/use-products'
-import { useRegions } from '@/hooks/use-regions'
-import { useCart } from '@/hooks/use-cart'
-import { VariantSelector } from '@/components/store/products/variant-selector'
-import { toast } from 'sonner'
+import { fetchProductByHandle } from '@/lib/api'
+import ProductDetailClient from './product-detail-client'
+import { AlertCircle } from 'lucide-react'
 import { EmptyState } from '@/components/shared/empty-states/empty-state'
 import { Button } from '@/components/ui/button'
-import { QuantityStepper } from '@/components/shared/controls/quantity-stepper'
-import { Eyebrow } from '@/components/shared/typography/eyebrow'
+import Link from 'next/link'
 
-export default function ProductDetailClient() {
-  const params = useParams<{ handle: string | string[] }>()
-  const handle = Array.isArray(params.handle) ? params.handle[0] : params.handle
-  const mounted = useMounted()
-  const { data: product, isLoading } = useProduct(handle)
-  const { defaultRegion } = useRegions()
-  const { addItem } = useCart()
+interface ProductPageProps {
+  params: Promise<{
+    handle: string
+  }>
+}
 
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null)
-  const [selectedImage, setSelectedImage] = useState(0)
-  const [quantity, setQuantity] = useState(1)
+export default async function ProductDetailPage({ params }: ProductPageProps) {
+  const resolvedParams = await params
+  
+  try {
+    const product = await fetchProductByHandle(resolvedParams.handle)
 
-  const activeVariant = selectedVariant ?? product?.variants[0] ?? null
-  const currencyCode = defaultRegion?.currency_code ?? 'usd'
-
-  const variantPrice =
-    activeVariant?.prices.find(
-      (p) => p.currency_code.toLowerCase() === currencyCode.toLowerCase()
-    )?.amount ?? null
-
-  const displayPrice =
-    variantPrice != null
-      ? formatPrice(variantPrice, currencyCode)
-      : product
-        ? getDisplayPrice(product, currencyCode) != null
-          ? formatPrice(getDisplayPrice(product, currencyCode)!, currencyCode)
-          : '—'
-        : '—'
-
-  async function handleAddToCart() {
-    if (!activeVariant) {
-      toast.error('Unable to add to cart — please refresh the page.')
-      return
+    if (!product) {
+      return (
+        <EmptyState
+          icon={AlertCircle}
+          title="Product Not Found"
+          className="py-24 opacity-100 bg-white border border-slate-100 rounded-3xl p-12 shadow-sm"
+          action={
+            <Button asChild className="rounded-2xl bg-slate-900 px-8 py-3 text-sm font-black uppercase tracking-widest hover:bg-slate-800">
+              <Link href="/store">Back to Store</Link>
+            </Button>
+          }
+        />
+      )
     }
-    try {
-      await addItem.mutateAsync({
-        variantId: activeVariant.id,
-        quantity,
-        regionId: defaultRegion?.id,
-      })
-      toast.success(`${product?.title ?? 'Item'} added to cart!`, {
-        action: { label: 'View Cart', onClick: () => (window.location.href = '/store/cart') },
-      })
-    } catch {
-      toast.error('Failed to add item to cart. Please try again.')
-    }
-  }
 
-  if (!mounted || isLoading) {
+    return <ProductDetailClient product={product} />
+  } catch (err) {
+    console.error('ProductDetailPage fetch failed:', err)
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 animate-pulse">
-        <div className="aspect-square bg-white rounded-3xl" />
-        <div className="space-y-6 py-4">
-          <div className="h-8 bg-slate-100 rounded w-3/4" />
-          <div className="h-4 bg-slate-100 rounded w-full" />
-          <div className="h-4 bg-slate-100 rounded w-2/3" />
-          <div className="h-12 bg-slate-100 rounded-2xl w-full mt-8" />
-        </div>
+      <div className="space-y-8 animate-in fade-in duration-700 max-w-2xl mx-auto py-12">
+        <EmptyState
+          icon={AlertCircle}
+          title="Product Temporarily Offline"
+          description="We are unable to connect to the store backend to fetch this product. Please check that the database and backend services are active."
+          className="py-24 opacity-100 bg-white border border-slate-100 rounded-3xl p-12 shadow-sm"
+          action={
+            <Button asChild className="rounded-2xl bg-slate-900 px-8 py-3 text-sm font-black uppercase tracking-widest hover:bg-slate-800">
+              <Link href="/store">Back to Store</Link>
+            </Button>
+          }
+        />
       </div>
     )
   }
-
-  if (!product) {
-    return (
-      <EmptyState
-        icon={AlertCircle}
-        title="Product Not Found"
-        className="py-24 opacity-100"
-        action={
-          <Button asChild variant="link" className="text-sm font-bold text-slate-500">
-            <Link href="/store">Back to Store</Link>
-          </Button>
-        }
-      />
-    )
-  }
-
-  const images = product.images.length ? product.images : product.thumbnail ? [{ id: 'thumb', url: product.thumbnail }] : []
-
-  return (
-    <div className="animate-in fade-in duration-700">
-      <Link
-        href="/store"
-        className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-400 hover:text-slate-700 mb-8 transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" /> Back to products
-      </Link>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Images */}
-        <div className="space-y-4">
-          <div className="relative aspect-square bg-white rounded-3xl overflow-hidden shadow-sm">
-            {images[selectedImage] ? (
-              <Image
-                src={images[selectedImage].url}
-                alt={product.title}
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-                priority
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <ShoppingCart className="h-16 w-16 text-slate-200" />
-              </div>
-            )}
-          </div>
-          {images.length > 1 && (
-            <div className="flex gap-3 overflow-x-auto pb-1">
-              {images.map((img, i) => (
-                <button
-                  key={img.id}
-                  onClick={() => setSelectedImage(i)}
-                  className={`relative h-16 w-16 shrink-0 rounded-2xl overflow-hidden border-2 transition-all ${
-                    selectedImage === i ? 'border-slate-900' : 'border-transparent hover:border-slate-300'
-                  }`}
-                >
-                  <Image src={img.url} alt={`${product.title} ${i + 1}`} fill className="object-cover" sizes="64px" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Product info */}
-        <div className="flex flex-col gap-6 py-2">
-          {product.categories?.[0] && (
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-              {product.categories[0].name}
-            </span>
-          )}
-          <h1 className="text-4xl font-heading font-black tracking-tight text-slate-900 leading-tight">
-            {product.title}
-          </h1>
-
-          <p className="text-3xl font-black text-slate-900">{displayPrice}</p>
-
-          {product.description && (
-            <p className="text-sm font-medium text-slate-500 leading-relaxed">
-              {product.description}
-            </p>
-          )}
-
-          {/* Variant selector */}
-          <VariantSelector
-            product={product}
-            onVariantChange={(v) => {
-              setSelectedVariant(v)
-              setQuantity(1)
-            }}
-          />
-
-          {/* Quantity */}
-          <div className="flex items-center gap-3">
-            <Eyebrow>Qty</Eyebrow>
-            <QuantityStepper
-              value={quantity}
-              onDecrease={() => setQuantity((q) => Math.max(1, q - 1))}
-              onIncrease={() => setQuantity((q) => q + 1)}
-              disableDecrease={quantity <= 1}
-              className="border-slate-200 bg-white px-3 py-1.5"
-              valueClassName="w-6 text-sm"
-            />
-          </div>
-
-          {/* Add to cart */}
-          <Button
-            onClick={handleAddToCart}
-            disabled={addItem.isPending || !activeVariant}
-            className="h-14 w-full rounded-2xl bg-slate-900 text-sm font-black uppercase tracking-widest hover:bg-slate-800"
-          >
-            {addItem.isPending ? (
-              <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <ShoppingCart className="h-4 w-4" />
-            )}
-            {addItem.isPending ? 'Adding…' : 'Add to Cart'}
-          </Button>
-
-          {addItem.isSuccess && (
-            <div className="flex items-center gap-2 text-emerald-600 text-sm font-bold">
-              <Check className="h-4 w-4" /> Added to cart
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
 }

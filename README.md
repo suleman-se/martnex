@@ -7,7 +7,7 @@
     <a href="#"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
     <a href="#"><img src="https://img.shields.io/badge/Medusa-v2.13-8C4FFF" alt="Medusa v2"></a>
     <a href="#"><img src="https://img.shields.io/badge/Next.js-16.2-black" alt="Next.js 16.2"></a>
-    <a href="#"><img src="https://img.shields.io/badge/version-0.7.1-brightgreen" alt="v0.7.1"></a>
+    <a href="#"><img src="https://img.shields.io/badge/version-0.8.5-brightgreen" alt="v0.8.5"></a>
   </p>
 
   <p>
@@ -43,15 +43,18 @@ Martnex allows you to toggle your entire platform's behavior using a single envi
 
 ---
 
-## ✅ What's Live (v0.7.1)
+## ✅ What's Live (v0.8.5)
 
 | Feature | Status |
 | :--- | :---: |
+| **Immersive Spotlight Search (⌘K)** — global keyboard trigger, client-cached history, dynamic query highlighter | ✅ |
+| **Category Mega-Menus** — hover-triggered glassmorphic dropdowns with featured product cards | ✅ |
 | **Buyer Storefront** — product browse, search & category filter | ✅ |
 | **Product Detail** — variant selector, add-to-cart | ✅ |
-| **Cart** — persistent (localStorage), qty controls, summary | ✅ |
+| **Cart** — persistent (localStorage), qty controls, spring-bounce count badge animations | ✅ |
 | **Checkout** — shipping address → Stripe Elements / Cash on Delivery | ✅ |
-| **Order Confirmation** — receipt, shipping address, CTA | ✅ |
+| **Order Confirmation** — receipt, shipping address, CTA, receipt particle confetti | ✅ |
+| **Catalog Seeding** — rich products, stock images (multiple URLs per product), variant price fixtures, inventory level mapping | ✅ |
 | Seller registration & verification workflow | ✅ |
 | Seller product management (create, edit, delete, images, variants) | ✅ |
 | Multi-product per seller (many-to-many via Knex pivot) | ✅ |

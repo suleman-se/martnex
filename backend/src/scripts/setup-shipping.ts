@@ -83,11 +83,12 @@ export default async function setupShipping({ container }: { container: any }) {
 
   let serviceZone = fullFulfillmentSet?.service_zones?.[0]
   if (!serviceZone) {
-    serviceZone = await fulfillmentService.createServiceZones({
+    const createdZones = await fulfillmentService.createServiceZones([{
       name: "Worldwide",
       fulfillment_set_id: fulfillmentSet.id,
-      geo_zones: [{ type: "global" }],
-    })
+      geo_zones: [{ type: "country", country_code: "us" }],
+    }])
+    serviceZone = createdZones[0]
     console.log(`✅ Created service zone: ${serviceZone.id}`)
   } else {
     console.log(`ℹ️  Service zone already exists: ${serviceZone.id}`)
@@ -96,7 +97,7 @@ export default async function setupShipping({ container }: { container: any }) {
   // ── 4. Shipping options ────────────────────────────────────────────────────
 
   const existingOptions = await fulfillmentService.listShippingOptions({
-    service_zone_id: serviceZone.id,
+    service_zone: { id: serviceZone.id },
   })
 
   if (existingOptions.length) {
@@ -107,7 +108,7 @@ export default async function setupShipping({ container }: { container: any }) {
     return
   }
 
-  const standardOption = await fulfillmentService.createShippingOptions({
+  const [standardOption] = await fulfillmentService.createShippingOptions([{
     name: "Standard Shipping",
     service_zone_id: serviceZone.id,
     shipping_profile_id: shippingProfile.id,
@@ -122,10 +123,10 @@ export default async function setupShipping({ container }: { container: any }) {
     prices: [
       { currency_code: "usd", amount: 0 },
     ],
-  })
+  }] as any)
   console.log(`✅ Created shipping option: ${standardOption.name} (${standardOption.id}) — Free`)
 
-  const expressOption = await fulfillmentService.createShippingOptions({
+  const [expressOption] = await fulfillmentService.createShippingOptions([{
     name: "Express Shipping",
     service_zone_id: serviceZone.id,
     shipping_profile_id: shippingProfile.id,
@@ -140,7 +141,7 @@ export default async function setupShipping({ container }: { container: any }) {
     prices: [
       { currency_code: "usd", amount: 999 },
     ],
-  })
+  }] as any)
   console.log(`✅ Created shipping option: ${expressOption.name} (${expressOption.id}) — $9.99`)
 
   console.log("🎉 Shipping setup complete!")

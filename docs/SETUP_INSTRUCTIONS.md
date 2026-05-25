@@ -147,6 +147,9 @@ pnpm install
 Create `frontend/.env.local`:
 
 ```env
+# Internal Docker networking for Server Components
+MEDUSA_BACKEND_URL=http://backend:9001
+# Public browser networking for Client Components
 NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9001
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```

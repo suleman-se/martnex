@@ -8,12 +8,21 @@ import type { StoreProduct } from '../use-products'
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
+const mockProductList = vi.fn()
+
 vi.mock('@/lib/medusa-client', () => ({
   getBackendUrl: () => 'http://localhost:9001',
   buildStoreHeaders: vi.fn().mockResolvedValue({
     'Content-Type': 'application/json',
     'x-publishable-api-key': 'test-key',
   }),
+  medusa: {
+    store: {
+      product: {
+        list: (...args: any[]) => mockProductList(...args),
+      },
+    },
+  },
 }))
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -59,10 +68,7 @@ describe('useProducts', () => {
   })
 
   it('returns products from the API', async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ products: [MOCK_PRODUCT], count: 1 }),
-    })
+    mockProductList.mockResolvedValue({ products: [MOCK_PRODUCT], count: 1 })
 
     const { result } = renderHook(() => useProducts(), { wrapper: createWrapper() })
 
@@ -73,14 +79,7 @@ describe('useProducts', () => {
   })
 
   it('passes search query in the request URL', async () => {
-    let capturedUrl = ''
-    global.fetch = vi.fn().mockImplementation((url: string) => {
-      capturedUrl = url
-      return Promise.resolve({
-        ok: true,
-        json: async () => ({ products: [], count: 0 }),
-      })
-    })
+    mockProductList.mockResolvedValue({ products: [], count: 0 })
 
     const { result } = renderHook(() => useProducts({ q: 'shirt' }), {
       wrapper: createWrapper(),
@@ -88,29 +87,28 @@ describe('useProducts', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false))
 
-    expect(capturedUrl).toContain('q=shirt')
+    expect(mockProductList).toHaveBeenCalledWith(
+      expect.objectContaining({ q: 'shirt' }),
+      expect.any(Object)
+    )
   })
 
   it('passes category_id filter in the request URL', async () => {
-    let capturedUrl = ''
-    global.fetch = vi.fn().mockImplementation((url: string) => {
-      capturedUrl = url
-      return Promise.resolve({
-        ok: true,
-        json: async () => ({ products: [], count: 0 }),
-      })
-    })
+    mockProductList.mockResolvedValue({ products: [], count: 0 })
 
     renderHook(() => useProducts({ category_id: ['cat_1'] }), {
       wrapper: createWrapper(),
     })
 
-    await waitFor(() => expect(capturedUrl).toContain('category_id'))
-    expect(capturedUrl).toContain('cat_1')
+    await waitFor(() => expect(mockProductList).toHaveBeenCalled())
+    expect(mockProductList).toHaveBeenCalledWith(
+      expect.objectContaining({ category_id: ['cat_1'] }),
+      expect.any(Object)
+    )
   })
 
-  it('returns empty array on failed fetch', async () => {
-    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 })
+  it('returns error state on failed fetch', async () => {
+    mockProductList.mockRejectedValue(new Error('Fetch failed'))
 
     const { result } = renderHook(() => useProducts(), { wrapper: createWrapper() })
 
@@ -123,10 +121,7 @@ describe('useProduct', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('fetches a product by handle', async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ products: [MOCK_PRODUCT] }),
-    })
+    mockProductList.mockResolvedValue({ products: [MOCK_PRODUCT] })
 
     const { result } = renderHook(() => useProduct('test-t-shirt'), {
       wrapper: createWrapper(),
@@ -138,10 +133,7 @@ describe('useProduct', () => {
   })
 
   it('returns null when product is not found', async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ products: [] }),
-    })
+    mockProductList.mockResolvedValue({ products: [] })
 
     const { result } = renderHook(() => useProduct('missing-handle'), {
       wrapper: createWrapper(),
@@ -152,11 +144,11 @@ describe('useProduct', () => {
   })
 
   it('does not fetch when handle is empty', () => {
-    global.fetch = vi.fn()
+    mockProductList.mockClear()
 
     renderHook(() => useProduct(''), { wrapper: createWrapper() })
 
-    expect(fetch).not.toHaveBeenCalled()
+    expect(mockProductList).not.toHaveBeenCalled()
   })
 })
 

@@ -8,9 +8,30 @@ import type { Cart } from '../use-cart'
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
+const mockCartRetrieve = vi.fn()
+const mockRegionList = vi.fn()
+const mockCartCreate = vi.fn()
+const mockCartCreateLineItem = vi.fn()
+const mockCartDeleteLineItem = vi.fn()
+const mockCartUpdateLineItem = vi.fn()
+
 vi.mock('@/lib/medusa-client', () => ({
   getBackendUrl: () => 'http://localhost:9001',
   buildStoreHeaders: vi.fn().mockResolvedValue({ 'Content-Type': 'application/json' }),
+  medusa: {
+    store: {
+      cart: {
+        retrieve: (...args: any[]) => mockCartRetrieve(...args),
+        create: (...args: any[]) => mockCartCreate(...args),
+        createLineItem: (...args: any[]) => mockCartCreateLineItem(...args),
+        deleteLineItem: (...args: any[]) => mockCartDeleteLineItem(...args),
+        updateLineItem: (...args: any[]) => mockCartUpdateLineItem(...args),
+      },
+      region: {
+        list: (...args: any[]) => mockRegionList(...args),
+      },
+    },
+  },
 }))
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -69,10 +90,7 @@ describe('useCart', () => {
 
   it('fetches existing cart by stored ID', async () => {
     localStorage.setItem('martnex_cart_id', 'cart_1')
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ cart: MOCK_CART }),
-    })
+    mockCartRetrieve.mockResolvedValue({ cart: MOCK_CART })
 
     const { result } = renderHook(() => useCart(), { wrapper: createWrapper() })
 
@@ -84,7 +102,7 @@ describe('useCart', () => {
 
   it('clears stored cart ID on 404 response', async () => {
     localStorage.setItem('martnex_cart_id', 'cart_expired')
-    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 404 })
+    mockCartRetrieve.mockRejectedValue({ status: 404 })
 
     const { result } = renderHook(() => useCart(), { wrapper: createWrapper() })
 
@@ -96,12 +114,9 @@ describe('useCart', () => {
   it('addItem creates a new cart when none exists', async () => {
     const newCart: Cart = { ...MOCK_CART, id: 'cart_new' }
 
-    global.fetch = vi
-      .fn()
-      // POST /store/carts → create cart
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ cart: newCart }) })
-      // POST /store/carts/:id/line-items → add item
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ cart: newCart }) })
+    mockRegionList.mockResolvedValue({ regions: [{ id: 'reg_1' }] })
+    mockCartCreate.mockResolvedValue({ cart: newCart })
+    mockCartCreateLineItem.mockResolvedValue({ cart: newCart })
 
     const { result } = renderHook(() => useCart(), { wrapper: createWrapper() })
 
@@ -114,7 +129,9 @@ describe('useCart', () => {
     })
 
     expect(localStorage.getItem('martnex_cart_id')).toBe('cart_new')
-    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(mockRegionList).not.toHaveBeenCalled() // Region ID was passed directly
+    expect(mockCartCreate).toHaveBeenCalledWith({ region_id: 'reg_1' }, {}, expect.any(Object))
+    expect(mockCartCreateLineItem).toHaveBeenCalledWith('cart_new', { variant_id: 'var_1', quantity: 1 }, {}, expect.any(Object))
   })
 
   it('addItem adds to existing cart without creating a new one', async () => {
@@ -124,12 +141,8 @@ describe('useCart', () => {
       items: [...MOCK_CART.items, { ...MOCK_CART.items[0], id: 'li_2', quantity: 1 }],
     }
 
-    global.fetch = vi
-      .fn()
-      // GET cart (initial load)
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ cart: MOCK_CART }) })
-      // POST line-items
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ cart: updatedCart }) })
+    mockCartRetrieve.mockResolvedValue({ cart: MOCK_CART })
+    mockCartCreateLineItem.mockResolvedValue({ cart: updatedCart })
 
     const { result } = renderHook(() => useCart(), { wrapper: createWrapper() })
     await waitFor(() => expect(result.current.cart).toBeDefined())
@@ -142,19 +155,17 @@ describe('useCart', () => {
       })
     })
 
-    // Should NOT have called create cart — only the line-items endpoint
-    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls.map((c) => c[0] as string)
-    expect(calls.some((url) => url.includes('/line-items'))).toBe(true)
-    expect(calls.filter((url) => url === 'http://localhost:9001/store/carts')).toHaveLength(0)
+    expect(mockCartCreate).not.toHaveBeenCalled()
+    expect(mockCartCreateLineItem).toHaveBeenCalledWith('cart_1', { variant_id: 'var_2', quantity: 1 }, {}, expect.any(Object))
   })
 
   it('removeItem removes a line item and updates cart state', async () => {
     localStorage.setItem('martnex_cart_id', 'cart_1')
 
-    global.fetch = vi
-      .fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ cart: MOCK_CART }) })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ cart: MOCK_CART_AFTER_REMOVE }) })
+    mockCartRetrieve
+      .mockResolvedValueOnce({ cart: MOCK_CART })
+      .mockResolvedValue({ cart: MOCK_CART_AFTER_REMOVE })
+    mockCartDeleteLineItem.mockResolvedValue({ cart: MOCK_CART_AFTER_REMOVE })
 
     const { result } = renderHook(() => useCart(), { wrapper: createWrapper() })
     await waitFor(() => expect(result.current.cart?.items).toHaveLength(1))
@@ -163,26 +174,19 @@ describe('useCart', () => {
       await result.current.removeItem.mutateAsync('li_1')
     })
 
-    expect(result.current.cart?.items).toHaveLength(0)
-    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls.map((c) => c[0] as string)
-    expect(calls.some((url) => url.includes('li_1'))).toBe(true)
-    const removeFetchOpts = (fetch as ReturnType<typeof vi.fn>).mock.calls.find((c) =>
-      (c[0] as string).includes('li_1')
-    )?.[1] as RequestInit
-    expect(removeFetchOpts?.method).toBe('DELETE')
+    await waitFor(() => expect(result.current.cart?.items).toHaveLength(0))
+    expect(mockCartDeleteLineItem).toHaveBeenCalledWith('cart_1', 'li_1', {}, expect.any(Object))
   })
 
-  it('updateQuantity sends POST with new quantity', async () => {
+  it('updateQuantity sends PUT with new quantity', async () => {
     localStorage.setItem('martnex_cart_id', 'cart_1')
     const updatedCart: Cart = {
       ...MOCK_CART,
       items: [{ ...MOCK_CART.items[0], quantity: 5, total: 125 }],
     }
 
-    global.fetch = vi
-      .fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ cart: MOCK_CART }) })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ cart: updatedCart }) })
+    mockCartRetrieve.mockResolvedValue({ cart: MOCK_CART })
+    mockCartUpdateLineItem.mockResolvedValue({ cart: updatedCart })
 
     const { result } = renderHook(() => useCart(), { wrapper: createWrapper() })
     await waitFor(() => expect(result.current.cart).toBeDefined())
@@ -191,7 +195,8 @@ describe('useCart', () => {
       await result.current.updateQuantity.mutateAsync({ lineItemId: 'li_1', quantity: 5 })
     })
 
-    expect(result.current.cart?.items[0].quantity).toBe(5)
+    await waitFor(() => expect(result.current.cart?.items[0].quantity).toBe(5))
+    expect(mockCartUpdateLineItem).toHaveBeenCalledWith('cart_1', 'li_1', { quantity: 5 }, {}, expect.any(Object))
   })
 
   it('itemCount sums quantities across all line items', async () => {
@@ -204,10 +209,7 @@ describe('useCart', () => {
       ],
     }
 
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ cart: multiItemCart }),
-    })
+    mockCartRetrieve.mockResolvedValue({ cart: multiItemCart })
 
     const { result } = renderHook(() => useCart(), { wrapper: createWrapper() })
 

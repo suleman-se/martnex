@@ -48,26 +48,25 @@ export function CartItemRow({
       </div>
 
       {/* Info */}
-      <div className="flex-1 min-w-0">
-        {productHandle ? (
-          <Link
-            href={`/store/products/${productHandle}`}
-            className="font-bold text-slate-900 text-sm leading-snug hover:text-slate-600 line-clamp-2 transition-colors"
-          >
-            {item.title}
-          </Link>
-        ) : (
-          <p className="font-bold text-slate-900 text-sm leading-snug">{item.title}</p>
-        )}
-        {item.variant?.title && item.variant.title !== 'Default Variant' && (
-          <p className="text-xs text-slate-400 font-medium mt-0.5">{item.variant.title}</p>
-        )}
-        <p className="text-xs font-medium text-slate-400 mt-1">
-          {formatPrice(item.unit_price, currencyCode)} each
-        </p>
+      <div className="flex-1 min-w-0 flex flex-col justify-between h-20">
+        <div>
+          {productHandle ? (
+            <Link
+              href={`/store/products/${productHandle}`}
+              className="font-bold text-slate-900 text-sm leading-snug hover:text-slate-600 line-clamp-2 transition-colors"
+            >
+              {item.title}
+            </Link>
+          ) : (
+            <p className="font-bold text-slate-900 text-sm leading-snug">{item.title}</p>
+          )}
+          {item.variant?.title && item.variant.title !== 'Default Variant' && (
+            <p className="text-xs text-slate-400 font-medium mt-0.5">{item.variant.title}</p>
+          )}
+        </div>
 
         {/* Quantity stepper */}
-        <div className="flex items-center gap-2 mt-3">
+        <div className="flex items-center gap-2 mt-auto">
           <QuantityStepper
             value={item.quantity}
             onDecrease={() => onUpdateQuantity(item.id, item.quantity - 1)}
@@ -75,24 +74,24 @@ export function CartItemRow({
             disableDecrease={item.quantity <= 1 || isPending}
             disableIncrease={isPending}
           />
-          <Button
-            onClick={() => onRemove(item.id)}
-            disabled={isPending}
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 rounded-lg text-slate-300 transition-colors hover:bg-rose-50 hover:text-rose-500"
-            aria-label="Remove item"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
         </div>
       </div>
 
-      {/* Line total */}
-      <div className="text-right shrink-0">
+      {/* Line total & Trash */}
+      <div className="flex flex-col items-end justify-between h-20 text-right shrink-0">
         <p className="font-black text-slate-900 text-sm">
           {formatPrice(Number.isFinite(lineTotal) ? lineTotal : 0, currencyCode)}
         </p>
+        <Button
+          onClick={() => onRemove(item.id)}
+          disabled={isPending}
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 rounded-lg text-slate-300 transition-colors hover:bg-rose-50 hover:text-rose-500 mt-auto cursor-pointer"
+          aria-label="Remove item"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
       </div>
     </div>
   )

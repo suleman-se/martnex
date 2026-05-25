@@ -8,7 +8,7 @@ import SellerProductLink from "@/links/seller-product"
 
 const SELLER_MODULE = "seller"
 
-function remapVariantPrices<T extends { variants?: any[] }>(product: T): T {
+function remapVariantPrices<T extends { variants?: any[] }>(product: T, realQuantities?: Record<string, number>): T {
   if (!product?.variants?.length) {
     return product
   }
@@ -30,12 +30,16 @@ function remapVariantPrices<T extends { variants?: any[] }>(product: T): T {
             ? Number(variant.metadata.inventory_quantity)
             : undefined
 
+      const liveQuantity = realQuantities?.[variant.id]
+
       const normalizedInventoryQuantity =
-        typeof variant?.inventory_quantity === "number"
-          ? variant.inventory_quantity
-          : Number.isFinite(metadataInventoryQuantity)
-            ? metadataInventoryQuantity
-            : 0
+        typeof liveQuantity === "number"
+          ? liveQuantity
+          : typeof variant?.inventory_quantity === "number"
+            ? variant.inventory_quantity
+            : Number.isFinite(metadataInventoryQuantity)
+              ? metadataInventoryQuantity
+              : 0
 
       return {
         ...variant,
@@ -43,6 +47,51 @@ function remapVariantPrices<T extends { variants?: any[] }>(product: T): T {
         inventory_quantity: normalizedInventoryQuantity,
       }
     }),
+  }
+}
+
+async function getRealInventoryForVariants(variants: any[], scope: any): Promise<Record<string, number>> {
+  if (!variants || !variants.length) return {}
+
+  const inventoryItemIds: string[] = []
+  const variantToItemMap = new Map<string, string>()
+
+  for (const variant of variants) {
+    const linkedItems = Array.isArray(variant.inventory_items) ? variant.inventory_items : []
+    const itemId = linkedItems[0]?.inventory_item_id
+    if (itemId) {
+      inventoryItemIds.push(itemId)
+      variantToItemMap.set(variant.id, itemId)
+    }
+  }
+
+  if (!inventoryItemIds.length) return {}
+
+  try {
+    const inventoryService = scope.resolve(Modules.INVENTORY)
+    const levels = await inventoryService.listInventoryLevels({
+      inventory_item_id: inventoryItemIds,
+    })
+
+    const itemQuantityMap = new Map<string, number>()
+    for (const level of levels) {
+      const available = (level.stocked_quantity || 0) - (level.reserved_quantity || 0)
+      const current = itemQuantityMap.get(level.inventory_item_id) || 0
+      itemQuantityMap.set(level.inventory_item_id, current + Math.max(0, available))
+    }
+
+    const variantQuantityMap: Record<string, number> = {}
+    for (const variant of variants) {
+      const itemId = variantToItemMap.get(variant.id)
+      if (itemId && itemQuantityMap.has(itemId)) {
+        variantQuantityMap[variant.id] = itemQuantityMap.get(itemId)!
+      }
+    }
+
+    return variantQuantityMap
+  } catch (e) {
+    console.error("⚠️ Failed to query real-time inventory from Inventory service:", e)
+    return {}
   }
 }
 
@@ -85,6 +134,7 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
       "variants.*",
       "variants.prices.*",
       "variants.price_set.prices.*",
+      "variants.inventory_items.inventory_item_id",
       "variants.options.*",
       "variants.options.option.*",
       "options.*",
@@ -101,7 +151,10 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
     throw new MedusaError(MedusaError.Types.NOT_FOUND, "Product not found or access denied")
   }
 
-  res.status(200).json({ product: remapVariantPrices(product) })
+  const allVariants = product.variants || []
+  const realQuantities = await getRealInventoryForVariants(allVariants, req.scope)
+
+  res.status(200).json({ product: remapVariantPrices(product, realQuantities) })
 }
 
 /**

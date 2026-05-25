@@ -49,6 +49,12 @@ async function UsersPage() {
 - Secrets stay on server
 - Direct database access
 
+> [!WARNING]
+> **Container Networking (Docker)**:
+> When running Next.js inside a Docker container, Server Components execute *inside* the container, not the user's browser. Fetching `http://localhost:9001` will hit the Next.js container itself instead of the backend container.
+> 
+> **Solution**: Use internal Docker hostnames for Server Component API calls (e.g., `MEDUSA_BACKEND_URL: http://backend:9001`) and fall back to `localhost` for client-side API calls.
+
 ## Pattern 2: Server Actions (Preferred for Mutations)
 
 Server Actions are the recommended way to handle mutations.

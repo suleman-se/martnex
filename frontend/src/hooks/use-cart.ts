@@ -1,7 +1,9 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { buildStoreHeaders, getBackendUrl } from '@/lib/medusa-client'
+import { buildStoreHeaders, medusa } from '@/lib/medusa-client'
+
+import { useUIStore } from '@/hooks/use-ui-store'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -109,33 +111,26 @@ export function clearStoredCartId(): void {
 
 async function fetchCart(cartId: string): Promise<Cart> {
   const headers = await buildStoreHeaders()
-  const res = await fetch(`${getBackendUrl()}/store/carts/${cartId}`, { headers })
-  if (res.status === 404) {
-    clearStoredCartId()
-    throw new Error('Cart not found')
+  try {
+    const data = await medusa.store.cart.retrieve(cartId, {}, headers)
+    return normalizeCart(data.cart as unknown as Cart)
+  } catch (err: any) {
+    if (err.status === 404 || err.statusCode === 404 || String(err).includes('404')) {
+      clearStoredCartId()
+    }
+    throw err
   }
-  if (!res.ok) throw new Error('Failed to fetch cart')
-  const data = (await res.json()) as { cart: Cart }
-  return normalizeCart(data.cart)
 }
 
 async function createCart(regionId: string): Promise<Cart> {
   const headers = await buildStoreHeaders()
-  const res = await fetch(`${getBackendUrl()}/store/carts`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ region_id: regionId }),
-  })
-  if (!res.ok) throw new Error('Failed to create cart')
-  const data = (await res.json()) as { cart: Cart }
-  return normalizeCart(data.cart)
+  const data = await medusa.store.cart.create({ region_id: regionId }, {}, headers)
+  return normalizeCart(data.cart as unknown as Cart)
 }
 
 async function resolveDefaultRegionId(): Promise<string> {
   const headers = await buildStoreHeaders()
-  const res = await fetch(`${getBackendUrl()}/store/regions`, { headers })
-  if (!res.ok) throw new Error('Unable to resolve store region')
-  const data = (await res.json()) as { regions?: { id: string }[] }
+  const data = await medusa.store.region.list({}, headers)
   const regionId = data.regions?.[0]?.id
   if (!regionId) throw new Error('No store region is configured')
   return regionId
@@ -174,19 +169,19 @@ export function useCart() {
         id = newCart.id
       }
       const headers = await buildStoreHeaders()
-      const res = await fetch(`${getBackendUrl()}/store/carts/${id}/line-items`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ variant_id: variantId, quantity }),
-      })
-      if (!res.ok) throw new Error('Failed to add item to cart')
-      const data = (await res.json()) as { cart: Cart }
-      return normalizeCart(data.cart)
+      const data = await medusa.store.cart.createLineItem(
+        id,
+        { variant_id: variantId, quantity },
+        {},
+        headers
+      )
+      return normalizeCart(data.cart as unknown as Cart)
     },
     onSuccess: (updatedCart) => {
       setStoredCartId(updatedCart.id)
       queryClient.setQueryData(['cart', updatedCart.id], updatedCart)
       queryClient.invalidateQueries({ queryKey: ['cart'] })
+      useUIStore.getState().openCart()
     },
   })
 
@@ -196,15 +191,10 @@ export function useCart() {
       const id = getStoredCartId()
       if (!id) throw new Error('No active cart')
       const headers = await buildStoreHeaders()
-      const res = await fetch(
-        `${getBackendUrl()}/store/carts/${id}/line-items/${lineItemId}`,
-        { method: 'DELETE', headers }
-      )
-      if (!res.ok) throw new Error('Failed to remove item')
-      const data = (await res.json()) as { cart?: Cart; parent?: Cart }
+      const data = await medusa.store.cart.deleteLineItem(id, lineItemId, {}, headers)
       const updatedCart = data.cart ?? data.parent
       if (!updatedCart) throw new Error('Invalid cart response')
-      return normalizeCart(updatedCart)
+      return normalizeCart(updatedCart as unknown as Cart)
     },
     onSuccess: (updatedCart) => {
       queryClient.setQueryData(['cart', updatedCart.id], updatedCart)
@@ -224,17 +214,14 @@ export function useCart() {
       const id = getStoredCartId()
       if (!id) throw new Error('No active cart')
       const headers = await buildStoreHeaders()
-      const res = await fetch(
-        `${getBackendUrl()}/store/carts/${id}/line-items/${lineItemId}`,
-        {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ quantity }),
-        }
+      const data = await medusa.store.cart.updateLineItem(
+        id,
+        lineItemId,
+        { quantity },
+        {},
+        headers
       )
-      if (!res.ok) throw new Error('Failed to update quantity')
-      const data = (await res.json()) as { cart: Cart }
-      return normalizeCart(data.cart)
+      return normalizeCart(data.cart as unknown as Cart)
     },
     onSuccess: (updatedCart) => {
       queryClient.setQueryData(['cart', updatedCart.id], updatedCart)
@@ -247,14 +234,8 @@ export function useCart() {
       const id = getStoredCartId()
       if (!id) throw new Error('No active cart')
       const headers = await buildStoreHeaders()
-      const res = await fetch(`${getBackendUrl()}/store/carts/${id}`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload),
-      })
-      if (!res.ok) throw new Error('Failed to update cart')
-      const data = (await res.json()) as { cart: Cart }
-      return normalizeCart(data.cart)
+      const data = await medusa.store.cart.update(id, payload as any, {}, headers)
+      return normalizeCart(data.cart as unknown as Cart)
     },
     onSuccess: (updatedCart) => {
       queryClient.setQueryData(['cart', updatedCart.id], updatedCart)

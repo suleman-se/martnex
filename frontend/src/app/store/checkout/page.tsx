@@ -9,6 +9,7 @@ import { useMounted } from '@/hooks/use-mounted'
 import { useCart, clearStoredCartId } from '@/hooks/use-cart'
 import { useCheckout } from '@/hooks/use-checkout'
 import { AddressForm, type AddressFormValues } from '@/components/store/checkout/address-form'
+import { ShippingSelector } from '@/components/store/checkout/shipping-selector'
 import { PaymentStep } from '@/components/store/checkout/payment-step'
 import { EmptyState } from '@/components/shared/empty-states/empty-state'
 import { Button } from '@/components/ui/button'
@@ -17,7 +18,7 @@ import { Eyebrow } from '@/components/shared/typography/eyebrow'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Step = 'address' | 'payment'
+type Step = 'address' | 'shipping' | 'payment'
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -84,7 +85,7 @@ export default function CheckoutPage() {
         },
       })
       setSavedAddress(values)
-      setStep('payment')
+      setStep('shipping')
     } catch (err) {
       toast.error((err as Error).message || 'Failed to save address. Please try again.')
     }
@@ -109,7 +110,9 @@ export default function CheckoutPage() {
           Cart
         </Link>
         <ChevronRight className="h-4 w-4" />
-        <span className={step === 'address' ? 'text-slate-900 font-bold' : ''}>Shipping</span>
+        <span className={step === 'address' ? 'text-slate-900 font-bold' : ''}>Address</span>
+        <ChevronRight className="h-4 w-4" />
+        <span className={step === 'shipping' ? 'text-slate-900 font-bold' : ''}>Delivery</span>
         <ChevronRight className="h-4 w-4" />
         <span className={step === 'payment' ? 'text-slate-900 font-bold' : ''}>Payment</span>
       </div>
@@ -132,16 +135,29 @@ export default function CheckoutPage() {
           </>
         )}
 
+        {step === 'shipping' && cartId && (
+          <>
+            <h2 className="text-2xl font-heading font-black text-slate-900 mb-6">
+              Delivery Method
+            </h2>
+            <ShippingSelector
+              cartId={cartId}
+              onComplete={() => setStep('payment')}
+              onBack={() => setStep('address')}
+            />
+          </>
+        )}
+
         {step === 'payment' && cartId && (
           <>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-heading font-black text-slate-900">Payment</h2>
               <Button
-                onClick={() => setStep('address')}
+                onClick={() => setStep('shipping')}
                 variant="ghost"
                 className="h-auto p-0 text-sm font-bold text-slate-400 hover:bg-transparent hover:text-slate-700"
               >
-                ← Edit address
+                ← Back to delivery
               </Button>
             </div>
             <PaymentStep

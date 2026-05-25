@@ -1,6 +1,7 @@
 import Medusa from "@medusajs/js-sdk"
 
 const BACKEND_URL =
+  process.env.MEDUSA_BACKEND_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
   "http://localhost:9001"
@@ -53,7 +54,7 @@ export const medusa = new Medusa({
   publishableKey: cachedPublishableKey || undefined,
 })
 
-export async function buildStoreHeaders(token?: string): Promise<HeadersInit> {
+export async function buildStoreHeaders(token?: string): Promise<Record<string, string>> {
   const publishableKey = await getPublishableKey()
 
   return {

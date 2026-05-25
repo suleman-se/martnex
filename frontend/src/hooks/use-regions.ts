@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { buildStoreHeaders, getBackendUrl } from '@/lib/medusa-client'
+import { buildStoreHeaders, medusa } from '@/lib/medusa-client'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -16,10 +16,8 @@ export interface StoreRegion {
 
 async function fetchRegions(): Promise<StoreRegion[]> {
   const headers = await buildStoreHeaders()
-  const res = await fetch(`${getBackendUrl()}/store/regions`, { headers })
-  if (!res.ok) throw new Error('Failed to fetch regions')
-  const data = (await res.json()) as { regions: StoreRegion[] }
-  return data.regions ?? []
+  const data = await medusa.store.region.list({}, headers)
+  return (data.regions as unknown as StoreRegion[]) ?? []
 }
 
 // ─── Hook ────────────────────────────────────────────────────────────────────

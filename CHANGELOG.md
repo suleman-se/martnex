@@ -17,6 +17,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.5] - Premium Spotlight Search, Mega-Menus & Inventory Resolution (21 May 2026)
+
+### Added
+- **Immersive Spotlight Search (⌘K)**: Added full-screen blurred backdrop modal panel (`z-[100]`), global keyboard listener hotkeys (`⌘K`, `Ctrl+K`, `/`), and static search trigger buttons in the storefront header.
+- **Search Command Palette Layout**: Dual-pane Command Palette modal including localStorage recent search history (max 5 items, clear function), quick actions (View Cart, Sell on Martnex), and trending categories.
+- **Search Query Matching**: Real-time backend search fetching with query-highlighting matching inside product titles via subcomponent `<HighlightedText>`.
+- **Keyboard Cycle Navigation**: Fully integrated focus cycles (`ArrowDown`/`ArrowUp`) and execution handlers (`Enter` to open, `Escape` to close) within the spotlight search panel.
+- **Premium Category Mega-Menus**: Hover-triggered glassmorphic dropdown navigation panels for *Apparel*, *Footwear*, and *Lifestyle* categories, complete with 150ms timeout hover-leave buffers, detailed subcategory navigation grid, and visual featured product cards displaying Unsplash catalog listings in `store-header.tsx`.
+- **Dynamic Catalog Seeding**: Enhanced seeding backend with rich products, stock images (multiple URLs per product), correct variant pricing, and inventory mappings.
+
+### Fixed
+- **Order Placement Inventory Resolution**: Addressed order place inventory mapping so that when an order is placed, inventories are successfully decremented and resolved in Medusa backend.
+- **Seeding Pricing Fixture**: Fixed missing pricing variables on variant options during the backend seed execution.
+
+---
+
+## [0.8.0] - Storefront UI/UX Premium Revamp (Phase 2) (21 May 2026)
+
+### Added
+- **Scrolly Header & Autocomplete**: Interactive sticky storefront header with scroll state transitions and interactive query prediction autocompletes.
+- **Slide-over Side-Cart Drawer**: Smooth side-sliding cart drawer overlay showing total item listings, price breakdown, and immediate checkout shortcuts.
+- **Currency-Aware Progress Shipping Meter**: Real-time progress bar in cart and drawer showing remaining spend required to qualify for free shipping.
+- **Dynamic Quick Add Variants**: Instant checkout card dialog to select size/color options and add directly from product listing cards.
+- **Custom-Styled Stripe Focus Boundaries**: Seamless premium focused inputs and error highlight boundaries inside Stripe Elements checkout field wrappers.
+- **Transaction Processing Stepper States**: Stepper animation stages showing cart, shipping setup, payment, and transaction processing state layers.
+- **Particle Confetti Receipt Celebration**: Interactive spring-particle confetti canvas trigger mounted on successful order reception.
+- **Micro-interactions**: Spring-bounce animators (`animate-bounce-spring` in `globals.css`) dynamically popping the cart quantity badge on count increases.
+
+---
+
 ## [0.7.1] - Checkout Stability & Infrastructure Fixes (20 May 2026)
 
 ### Fixed

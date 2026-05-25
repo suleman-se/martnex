@@ -1,7 +1,7 @@
 'use client'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { buildStoreHeaders, getBackendUrl } from '@/lib/medusa-client'
+import { buildStoreHeaders, medusa } from '@/lib/medusa-client'
 import type { Cart, CartAddress } from './use-cart'
 
 function toNumber(value: unknown, fallback = 0): number {
@@ -54,7 +54,7 @@ async function updateCartAddress(
   payload: CheckoutAddressPayload
 ): Promise<Cart> {
   const headers = await buildStoreHeaders()
-  const body: { email?: string; shipping_address: CartAddress } = {
+  const body: any = {
     shipping_address: payload.shipping_address,
   }
   const trimmedEmail = payload.email?.trim()
@@ -62,95 +62,44 @@ async function updateCartAddress(
     body.email = trimmedEmail
   }
 
-  const res = await fetch(`${getBackendUrl()}/store/carts/${cartId}`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(body),
-  })
-  if (!res.ok) {
-    const errorData = (await res.json().catch(() => null)) as
-      | { message?: string }
-      | null
-    throw new Error(errorData?.message || 'Failed to update shipping address')
-  }
-  const data = (await res.json()) as { cart: Cart }
-  return normalizeCart(data.cart)
+  const data = await medusa.store.cart.update(cartId, body, {}, headers)
+  return normalizeCart(data.cart as unknown as Cart)
 }
 
 async function fetchShippingOptions(cartId: string): Promise<ShippingOption[]> {
   const headers = await buildStoreHeaders()
-  const res = await fetch(
-    `${getBackendUrl()}/store/shipping-options?cart_id=${cartId}`,
-    { headers }
-  )
-  if (!res.ok) return []
-  const data = (await res.json()) as { shipping_options: ShippingOption[] }
-  return data.shipping_options ?? []
+  const data = await medusa.store.fulfillment.listCartOptions({ cart_id: cartId }, headers)
+  return (data.shipping_options as unknown as ShippingOption[]) ?? []
 }
 
 async function addShippingMethod(cartId: string, optionId: string): Promise<Cart> {
   const headers = await buildStoreHeaders()
-  const res = await fetch(`${getBackendUrl()}/store/carts/${cartId}/shipping-methods`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ option_id: optionId }),
-  })
-  if (!res.ok) {
-    const errorData = (await res.json().catch(() => null)) as { message?: string } | null
-    throw new Error(errorData?.message || 'Failed to set shipping method')
-  }
-  const data = (await res.json()) as { cart: Cart }
-  return normalizeCart(data.cart)
+  const data = await medusa.store.cart.addShippingMethod(
+    cartId,
+    { option_id: optionId },
+    {},
+    headers
+  )
+  return normalizeCart(data.cart as unknown as Cart)
 }
 
 async function initPaymentSession(cartId: string, providerId: string): Promise<Cart> {
   const headers = await buildStoreHeaders()
-  // Create payment collection for cart
-  const collRes = await fetch(`${getBackendUrl()}/store/payment-collections`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ cart_id: cartId }),
-  })
-  if (!collRes.ok) {
-    const errorData = (await collRes.json().catch(() => null)) as { message?: string } | null
-    throw new Error(errorData?.message || 'Failed to create payment collection')
-  }
-  const collData = (await collRes.json()) as { payment_collection: { id: string } }
-  const collectionId = collData.payment_collection.id
-
-  // Create payment session for provider
-  const sessRes = await fetch(
-    `${getBackendUrl()}/store/payment-collections/${collectionId}/payment-sessions`,
-    {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ provider_id: providerId }),
-    }
+  const cartRes = await medusa.store.cart.retrieve(cartId, {}, headers)
+  await medusa.store.payment.initiatePaymentSession(
+    cartRes.cart as any,
+    { provider_id: providerId },
+    {},
+    headers
   )
-  if (!sessRes.ok) {
-    const errorData = (await sessRes.json().catch(() => null)) as { message?: string } | null
-    throw new Error(errorData?.message || 'Failed to create payment session')
-  }
-
   // Re-fetch cart to get updated payment_collection
-  const cartRes = await fetch(`${getBackendUrl()}/store/carts/${cartId}`, {
-    headers: await buildStoreHeaders(),
-  })
-  const cartData = (await cartRes.json()) as { cart: Cart }
-  return normalizeCart(cartData.cart)
+  const updatedCartRes = await medusa.store.cart.retrieve(cartId, {}, headers)
+  return normalizeCart(updatedCartRes.cart as unknown as Cart)
 }
 
 async function completeCart(cartId: string): Promise<{ order_id: string }> {
   const headers = await buildStoreHeaders()
-  const res = await fetch(`${getBackendUrl()}/store/carts/${cartId}/complete`, {
-    method: 'POST',
-    headers,
-  })
-  if (!res.ok) {
-    const errorData = (await res.json().catch(() => null)) as { message?: string } | null
-    throw new Error(errorData?.message || 'Failed to complete order')
-  }
-  const data = (await res.json()) as { type: string; order?: { id: string }; cart?: Cart }
+  const data = await medusa.store.cart.complete(cartId, {}, headers)
   if (data.type === 'order' && data.order?.id) {
     return { order_id: data.order.id }
   }

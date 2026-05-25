@@ -8,9 +8,10 @@ import {
   useElements,
 } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
-import { CreditCard, Truck, CheckCircle2, Loader2 } from 'lucide-react'
+import { CreditCard, Truck, CheckCircle2, Loader2, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { useCheckout } from '@/hooks/use-checkout'
+import { useCart } from '@/hooks/use-cart'
 import { Button } from '@/components/ui/button'
 
 // ─── Stripe singleton ─────────────────────────────────────────────────────────
@@ -35,6 +36,15 @@ function formatTotal(amount: number, currencyCode: string) {
     style: 'currency',
     currency: currencyCode.toUpperCase(),
   }).format(amount)
+}
+
+function getActiveStepIndex(stepText: string): number {
+  const text = stepText.toLowerCase()
+  if (text.includes('shipping')) return 0
+  if (text.includes('session') || text.includes('preparing')) return 1
+  if (text.includes('confirming')) return 2
+  if (text.includes('placing') || text.includes('order')) return 3
+  return 0
 }
 
 // ─── Shared method selection card ─────────────────────────────────────────────
@@ -98,16 +108,9 @@ function PlaceOrderButton({
     <Button
       onClick={onClick}
       disabled={isProcessing}
-      className="w-full h-14 rounded-2xl bg-slate-900 text-sm font-black uppercase tracking-widest hover:bg-slate-800 disabled:opacity-70"
+      className="w-full h-14 rounded-2xl bg-slate-900 text-xs font-black uppercase tracking-widest hover:bg-slate-800 disabled:opacity-70 cursor-pointer shadow-sm"
     >
-      {isProcessing ? (
-        <span className="flex items-center gap-2.5">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          {processingStep}
-        </span>
-      ) : (
-        `Place Order · ${formatTotal(cartTotal, currencyCode)}`
-      )}
+      Place Order · {formatTotal(cartTotal, currencyCode)}
     </Button>
   )
 }
@@ -115,23 +118,33 @@ function PlaceOrderButton({
 // ─── COD-only (no Stripe context needed) ─────────────────────────────────────
 
 function CodOnlyPaymentStep({ cartId, cartTotal, currencyCode, onComplete }: PaymentStepProps) {
+  const { cart } = useCart()
   const { initPayment, completeOrder, getShippingOptions, setShippingMethod } = useCheckout()
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingStep, setProcessingStep] = useState('')
 
+  async function ensureShipping() {
+    // If shipping method is already selected, retain it
+    if (cart?.shipping_methods?.length) {
+      return
+    }
+
+    setProcessingStep('Setting up shipping…')
+    const options = await getShippingOptions(cartId)
+    if (!options.length) {
+      throw new Error('No shipping options available. Please go back and edit your address.')
+    }
+    try {
+      await setShippingMethod.mutateAsync({ cartId, optionId: options[0].id })
+    } catch (err) {
+      if (!/already|exists/i.test((err as Error).message ?? '')) throw err
+    }
+  }
+
   async function handlePlaceOrder() {
     setIsProcessing(true)
     try {
-      setProcessingStep('Setting up shipping…')
-      const options = await getShippingOptions(cartId)
-      if (!options.length) {
-        throw new Error('No shipping options available. Please go back and edit your address.')
-      }
-      try {
-        await setShippingMethod.mutateAsync({ cartId, optionId: options[0].id })
-      } catch (err) {
-        if (!/already|exists/i.test((err as Error).message ?? '')) throw err
-      }
+      await ensureShipping()
 
       setProcessingStep('Preparing payment…')
       await initPayment.mutateAsync({ cartId, providerId: 'pp_system_default' })
@@ -146,6 +159,64 @@ function CodOnlyPaymentStep({ cartId, cartTotal, currencyCode, onComplete }: Pay
     }
   }
 
+  const activeStep = getActiveStepIndex(processingStep)
+  const steps = [
+    'Verifying Delivery Option',
+    'Securing Checkout Session',
+    'Preparing Cash on Delivery',
+    'Securing Order Details',
+  ]
+
+  if (isProcessing) {
+    return (
+      <div className="py-10 text-center space-y-8 animate-in fade-in duration-500">
+        <div className="flex flex-col items-center justify-center gap-4">
+          <div className="relative h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100 shadow-sm">
+            <Loader2 className="h-8 w-8 animate-spin text-slate-900" />
+          </div>
+          <div>
+            <h3 className="font-heading font-black text-slate-900 text-lg">
+              Processing Order
+            </h3>
+            <p className="text-xs text-slate-400 font-medium mt-1">
+              Please do not refresh or close this window
+            </p>
+          </div>
+        </div>
+
+        {/* Stepper */}
+        <div className="max-w-md mx-auto space-y-4 px-6 border-l border-slate-100 ml-8 md:ml-20">
+          {steps.map((label, idx) => {
+            const isCompleted = idx < activeStep
+            const isActive = idx === activeStep
+            return (
+              <div key={label} className="flex items-center gap-3 text-left animate-in slide-in-from-left duration-300">
+                <div
+                  className={`h-6 w-6 rounded-full flex items-center justify-center border text-[10px] font-black transition-all duration-300 shrink-0 ${
+                    isCompleted
+                      ? 'bg-slate-900 border-slate-900 text-white'
+                      : isActive
+                      ? 'bg-slate-900 text-white border-slate-900 animate-pulse'
+                      : 'bg-white border-slate-200 text-slate-400'
+                  }`}
+                >
+                  {isCompleted ? '✓' : idx + 1}
+                </div>
+                <span
+                  className={`text-xs font-bold transition-colors duration-300 ${
+                    isActive ? 'text-slate-900' : isCompleted ? 'text-slate-500' : 'text-slate-300'
+                  }`}
+                >
+                  {label}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-5">
       <MethodCard
@@ -157,10 +228,10 @@ function CodOnlyPaymentStep({ cartId, cartTotal, currencyCode, onComplete }: Pay
         onClick={() => {}}
       />
 
-      <div className="flex items-start gap-3 px-4 py-3.5 bg-amber-50 border border-amber-100 rounded-xl">
-        <Truck className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
-        <p className="text-sm text-amber-700 font-medium">
-          Have the exact amount ready upon delivery. Our delivery partner will confirm the order on arrival.
+      <div className="flex items-start gap-3 px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl">
+        <Info className="h-4 w-4 text-slate-500 mt-0.5 shrink-0" />
+        <p className="text-xs text-slate-600 font-medium leading-relaxed">
+          Have the exact amount ready upon delivery. Our delivery partner will confirm the order details on arrival.
         </p>
       </div>
 
@@ -180,13 +251,20 @@ function CodOnlyPaymentStep({ cartId, cartTotal, currencyCode, onComplete }: Pay
 function PaymentStepWithStripe({ cartId, cartTotal, currencyCode, onComplete }: PaymentStepProps) {
   const stripe = useStripe()
   const elements = useElements()
+  const { cart } = useCart()
   const { initPayment, completeOrder, getShippingOptions, setShippingMethod } = useCheckout()
 
   const [selectedProvider, setSelectedProvider] = useState<PaymentProvider>('stripe')
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingStep, setProcessingStep] = useState('')
+  const [isCardFocused, setIsCardFocused] = useState(false)
 
   async function ensureShipping() {
+    // If shipping method is already selected, retain it
+    if (cart?.shipping_methods?.length) {
+      return
+    }
+
     setProcessingStep('Setting up shipping…')
     const options = await getShippingOptions(cartId)
     if (!options.length) {
@@ -203,7 +281,6 @@ function PaymentStepWithStripe({ cartId, cartTotal, currencyCode, onComplete }: 
     setIsProcessing(true)
     setProcessingStep('Starting…')
     try {
-      // Shipping must always be set before payment initiation
       await ensureShipping()
 
       if (selectedProvider === 'cod') {
@@ -246,9 +323,67 @@ function PaymentStepWithStripe({ cartId, cartTotal, currencyCode, onComplete }: 
     }
   }
 
+  const activeStep = getActiveStepIndex(processingStep)
+  const steps = [
+    'Verifying Delivery Option',
+    'Securing Checkout Session',
+    'Confirming Payment Protocol',
+    'Securing Order Details',
+  ]
+
+  if (isProcessing) {
+    return (
+      <div className="py-10 text-center space-y-8 animate-in fade-in duration-500">
+        <div className="flex flex-col items-center justify-center gap-4">
+          <div className="relative h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100 shadow-sm">
+            <Loader2 className="h-8 w-8 animate-spin text-slate-900" />
+          </div>
+          <div>
+            <h3 className="font-heading font-black text-slate-900 text-lg">
+              Processing Order
+            </h3>
+            <p className="text-xs text-slate-400 font-medium mt-1">
+              Please do not refresh or close this window
+            </p>
+          </div>
+        </div>
+
+        {/* Stepper */}
+        <div className="max-w-md mx-auto space-y-4 px-6 border-l border-slate-100 ml-8 md:ml-20">
+          {steps.map((label, idx) => {
+            const isCompleted = idx < activeStep
+            const isActive = idx === activeStep
+            return (
+              <div key={label} className="flex items-center gap-3 text-left animate-in slide-in-from-left duration-300">
+                <div
+                  className={`h-6 w-6 rounded-full flex items-center justify-center border text-[10px] font-black transition-all duration-300 shrink-0 ${
+                    isCompleted
+                      ? 'bg-slate-900 border-slate-900 text-white'
+                      : isActive
+                      ? 'bg-slate-900 text-white border-slate-900 animate-pulse'
+                      : 'bg-white border-slate-200 text-slate-400'
+                  }`}
+                >
+                  {isCompleted ? '✓' : idx + 1}
+                </div>
+                <span
+                  className={`text-xs font-bold transition-colors duration-300 ${
+                    isActive ? 'text-slate-900' : isCompleted ? 'text-slate-500' : 'text-slate-300'
+                  }`}
+                >
+                  {label}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-5">
-      {/* Method selection — clicking just selects, does not submit */}
+      {/* Method selection */}
       <div className="space-y-3">
         <MethodCard
           label="Credit / Debit Card"
@@ -270,18 +405,29 @@ function PaymentStepWithStripe({ cartId, cartTotal, currencyCode, onComplete }: 
 
       {/* Stripe card input */}
       {selectedProvider === 'stripe' && (
-        <div className="px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-          <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+        <div
+          className={`px-5 py-4 bg-white border rounded-2xl transition-all duration-300 space-y-2.5 ${
+            isCardFocused
+              ? 'border-slate-900 ring-2 ring-slate-900/5 shadow-sm'
+              : 'border-slate-100 shadow-sm'
+          }`}
+        >
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
             Card Details
           </p>
           <CardElement
+            onFocus={() => setIsCardFocused(true)}
+            onBlur={() => setIsCardFocused(false)}
             options={{
               style: {
                 base: {
-                  fontSize: '15px',
-                  color: '#0f172a',
+                  fontSize: '14px',
+                  color: '#1e293b',
                   '::placeholder': { color: '#94a3b8' },
-                  fontFamily: 'Inter, sans-serif',
+                  fontFamily: 'Inter, system-ui, sans-serif',
+                },
+                invalid: {
+                  color: '#ba1a1a',
                 },
               },
             }}
@@ -291,10 +437,10 @@ function PaymentStepWithStripe({ cartId, cartTotal, currencyCode, onComplete }: 
 
       {/* COD info */}
       {selectedProvider === 'cod' && (
-        <div className="flex items-start gap-3 px-4 py-3.5 bg-amber-50 border border-amber-100 rounded-xl">
-          <Truck className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
-          <p className="text-sm text-amber-700 font-medium">
-            Have the exact amount ready upon delivery. Our delivery partner will confirm the order on arrival.
+        <div className="flex items-start gap-3 px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl">
+          <Info className="h-4 w-4 text-slate-500 mt-0.5 shrink-0" />
+          <p className="text-xs text-slate-600 font-medium leading-relaxed">
+            Have the exact amount ready upon delivery. Our delivery partner will confirm the order details on arrival.
           </p>
         </div>
       )}

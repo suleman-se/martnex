@@ -29,6 +29,7 @@ This skill defines the high-level philosophy, core rules, and standards for the 
 - **E2E Testing:** Playwright is used in the `frontend` directory (`pnpm playwright test`).
 - **React 19:** This project uses React 19. In new components, pass `ref` as a regular prop (no `forwardRef` needed). `shadcn/ui` primitives still use `forwardRef` for Radix compatibility — this is expected and acceptable.
 - **Next.js 16.2:** App Router only. `proxy.ts` (was `middleware.ts`). `cookies()`/`headers()` are async. `params`/`searchParams` are async Promises — always `await` them.
+- **Docker Server Components:** Next.js Server Components running in Docker MUST use `MEDUSA_BACKEND_URL: http://backend:9001` to resolve the Medusa API. `NEXT_PUBLIC_MEDUSA_BACKEND_URL` pointing to `localhost` is strictly for client-side browser API calls.
 
 ## 4. AI Assistant Standards (How to Work)
 - **Concise & Actionable:** Skip pleasantries; get to the code and solution.
@@ -68,9 +69,13 @@ src/
 │   │   └── products/ # Product management (ProductForm, VariantBuilder, ImageUpload, ProductsTable)
 │   ├── auth/         # Auth form components (LoginForm, RegisterForm, etc.)
 │   ├── shared/
+│   │   ├── controls/ # <CopyButton />, <SortSelect />
+│   │   ├── empty-states/ # <EmptyState />
+│   │   ├── forms/    # <FormError />, <SubmitButton />
 │   │   ├── guards/   # <ProtectedRoute /> — use this everywhere
 │   │   ├── layouts/  # <BaseDashboardLayout />
-│   │   └── empty-states/ # <EmptyState />
+│   │   ├── loading/  # <LoadingSpinner />, <SkeletonRow />
+│   │   └── typography/ # <PageHeader />, <SectionTitle />
 │   ├── store/        # Buyer storefront UI
 │   │   ├── layout/   # StoreHeader (sticky nav, search, cart badge)
 │   │   ├── products/ # ProductCard, ProductGrid, VariantSelector
@@ -139,6 +144,7 @@ const { products, isLoading } = useSellerProducts();
 - **Checkout prerequisite chain:** For shipping options to appear at checkout, ALL of these must be true: (1) product linked to sales channel, (2) variant has `product_variant_inventory_item` link, (3) inventory level has `stocked_quantity > 0`, (4) stock location linked to sales channel, (5) `manual_manual` provider linked to stock location, (6) fulfillment set + service zone + shipping options exist (`pnpm run setup-shipping`), (7) product has a row in `product_shipping_profile`.
 - **Store routes:** All `/store/*` pages share the `app/store/layout.tsx` shell (StoreHeader + footer). Search and category filter are URL-param driven (`?q=`, `?category=`) for SSR-friendliness and linkability.
 - **Prices NOT in cents** (project-wide rule — `$29.99` stored and displayed as `29.99`).
+- **Immersive Spotlight Search (v0.8.5):** Keydown hotkeys (`⌘K`, `Ctrl+K`, `/`) globally toggle the command palette overlay. The event handler must check if the active element is an input, textarea, or contenteditable element before capturing hotkeys to prevent keydown hijacking. Initializing search history state from `localStorage` must be wrapped in a client-side `useEffect` callback to avoid SSR/CSR hydration mismatches.
 
 ## 10. Architecture Notes & Known Constraints
 - **Multi-product per seller:** Medusa's `createRemoteLinkStep` enforces a 1:1 application-level constraint on module links. Use Knex raw SQL (`INSERT … ON CONFLICT DO NOTHING`) to insert into the pivot table directly. Do NOT set `isList: true` on `defineLink` — it crashes MikroORM's `expandDotPaths` in cross-module contexts (Medusa 2.13.x limitation).
@@ -158,6 +164,8 @@ const { products, isLoading } = useSellerProducts();
 - **Seller Dashboard & Payouts:** Order detail page, real-data dashboard stats, payouts history page, 17 route unit tests — **COMPLETE ✅** _(v0.6.0, 18 May 2026)_
 - **Buyer Storefront:** Product browse/search, product detail + variant selector, persistent cart, 2-step checkout (Stripe Elements + COD), order confirmation — **COMPLETE ✅** _(v0.7.0, 19 May 2026)_
 - **Checkout Stability & Infrastructure Hardening:** 3 payment-step bugs fixed; fulfillment stack automated via `setup-shipping` script; inventory/shipping-profile links enforced in seed + seller product workflow; auth silent token refresh on expiry — **COMPLETE ✅** _(v0.7.1, 20 May 2026)_
+- **Storefront UI/UX Premium Revamp (Phase 2):** Scrolly header & autocomplete, slide-over side-cart drawer, currency-aware progress shipping meter, dynamic quick add variants, custom-styled Stripe focus boundaries, transaction processing stepper states, particle confetti successfully mounted on order receipt — **COMPLETE ✅** _(v0.8.0, 21 May 2026)_
+- **Premium Spotlight Search, Mega-Menus & Inventory Resolution (Phase 5):** Interactive category mega-menus with hover-leave delays, global immersive spotlight overlay (⌘K, Ctrl+K, `/`), client-cached search history, spring-bounce cart micro-animations, stock image product catalog seeding, variant price fixtures, and order place inventory decrement mapping resolution — **COMPLETE ✅** _(v0.8.5, 21 May 2026)_
 
 ## 11. Next Phase — Admin Panel (Phase 7) ⬅️ START HERE
 
