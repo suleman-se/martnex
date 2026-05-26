@@ -7,7 +7,7 @@ import { getDisplayPrice, formatPrice } from '@/lib/api'
 import { X, ShoppingBag, Plus, Minus, Trash2, ArrowRight, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { Drawer } from '@/components/shared/drawer'
 
 export function CartDrawer() {
   const { isCartOpen, closeCart } = useUIStore()
@@ -15,50 +15,17 @@ export function CartDrawer() {
   const { defaultRegion } = useRegions()
   const currencyCode = defaultRegion?.currency_code || 'usd'
 
-  const [mounted, setMounted] = useState(false)
-
-  // Avoid hydration mismatch
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  // Close drawer on ESC
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        closeCart()
-      }
-    }
-    if (isCartOpen) {
-      document.addEventListener('keydown', handleKeyDown)
-      // Prevent body scroll when cart is open
-      document.body.style.overflow = 'hidden'
-    }
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-      document.body.style.overflow = 'unset'
-    }
-  }, [isCartOpen, closeCart])
-
-  if (!mounted) return null
-
   const items = cart?.items || []
   const subtotal = cart?.subtotal || 0
 
   return (
-    <>
-      {/* Scrim backdrop */}
-      <div
-        className={`fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-50 transition-opacity duration-500 ease-in-out ${isCartOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-          }`}
-        onClick={closeCart}
-      />
-
-      {/* Slide-over panel */}
-      <div
-        className={`fixed inset-y-0 right-0 max-w-md w-full bg-white shadow-premium flex flex-col z-50 transition-all duration-500 ease-in-out transform ${isCartOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
-      >
+    <Drawer
+      isOpen={isCartOpen}
+      onClose={closeCart}
+      position="right"
+      showCloseButton={false}
+    >
+      <div className="flex flex-col h-full bg-white">
         {/* Header */}
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
@@ -231,6 +198,6 @@ export function CartDrawer() {
           </div>
         )}
       </div>
-    </>
+    </Drawer>
   )
 }

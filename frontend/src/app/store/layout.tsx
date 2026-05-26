@@ -10,8 +10,8 @@ export default function StoreLayout({ children }: { children: ReactNode }) {
       <StoreHeader />
       <main className="max-w-7xl mx-auto w-full px-6 py-10 flex-1">{children}</main>
       <CartDrawer />
-      
-      <footer className="border-t border-slate-100 bg-white mt-20">
+
+      <footer className="border-t border-slate-100 bg-white">
         {/* Top Sitemap section */}
         <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand Column */}
@@ -59,15 +59,15 @@ export default function StoreLayout({ children }: { children: ReactNode }) {
             <p className="text-xs text-slate-400 leading-relaxed">
               Subscribe to unlock early catalog access and premium merchant deals.
             </p>
-            <div className="flex gap-2">
+            <div className="relative flex items-center border border-slate-200 focus-within:border-slate-400 bg-white rounded-xl p-1 transition-all duration-200">
               <input
                 type="email"
                 placeholder="your@email.com"
-                className="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400 placeholder:text-slate-300"
+                className="w-full bg-transparent px-3 py-1.5 text-xs text-slate-800 focus:outline-none placeholder:text-slate-300"
               />
               <button
                 type="button"
-                className="bg-slate-900 text-white px-3 py-2 text-xs font-bold rounded-xl hover:bg-slate-800 transition-colors shrink-0"
+                className="bg-slate-900 text-white px-4 py-1.5 text-xs font-bold rounded-lg hover:bg-slate-800 transition-colors shrink-0"
               >
                 Join
               </button>
@@ -76,23 +76,23 @@ export default function StoreLayout({ children }: { children: ReactNode }) {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-slate-100 bg-slate-50/50">
-          <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+        <div className="border-t border-slate-100 bg-slate-50/50 pb-16 md:pb-0">
+          <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">
                 Martnex · Multi-Vendor Marketplace
               </p>
-              <span className="h-1.5 w-1.5 rounded-full bg-slate-200" />
+              <span className="hidden sm:inline h-1.5 w-1.5 rounded-full bg-slate-200" />
               <p className="text-[10px] font-medium text-slate-400">
                 Powered by Medusa v2
               </p>
             </div>
-            
-            <div className="flex items-center gap-4 text-slate-400">
+
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-slate-400 text-center">
               <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider">
                 <Globe className="h-3.5 w-3.5" /> USD ($)
               </div>
-              <span className="h-3 w-px bg-slate-200" />
+              <span className="hidden sm:inline h-3 w-px bg-slate-200" />
               <p className="text-[10px] font-medium">
                 &copy; {new Date().getFullYear()} Martnex Inc. All rights reserved.
               </p>

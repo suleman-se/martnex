@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ShoppingBag, ChevronRight } from 'lucide-react'
+import { ShoppingBag, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
 import { toast } from 'sonner'
 import { useMounted } from '@/hooks/use-mounted'
 import { useCart, clearStoredCartId } from '@/hooks/use-cart'
@@ -45,6 +45,7 @@ export default function CheckoutPage() {
 
   const [step, setStep] = useState<Step>('address')
   const [savedAddress, setSavedAddress] = useState<AddressFormValues | null>(null)
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(false)
 
   if (!mounted) return null
   if (isLoading) return <CheckoutSkeleton />
@@ -103,9 +104,9 @@ export default function CheckoutPage() {
     }).format(amount)
 
   return (
-    <div className="max-w-2xl mx-auto animate-in fade-in duration-700">
+    <div className="max-w-2xl mx-auto animate-in fade-in duration-700 pb-20 md:pb-6">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm font-medium text-slate-400 mb-8">
+      <div className="flex items-center gap-2 text-sm font-medium text-slate-400 mb-6">
         <Link href="/store/cart" className="hover:text-slate-700 transition-colors">
           Cart
         </Link>
@@ -115,6 +116,67 @@ export default function CheckoutPage() {
         <span className={step === 'shipping' ? 'text-slate-900 font-bold' : ''}>Delivery</span>
         <ChevronRight className="h-4 w-4" />
         <span className={step === 'payment' ? 'text-slate-900 font-bold' : ''}>Payment</span>
+      </div>
+
+      {/* Collapsible Order Summary Accordion for Mobile */}
+      <div className="block md:hidden mb-6 bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
+        <button
+          onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+          className="w-full flex items-center justify-between p-4 font-bold text-slate-850 text-xs hover:bg-slate-100/50 transition-colors animate-in"
+        >
+          <div className="flex items-center gap-2">
+            <ShoppingBag className="h-4 w-4 text-slate-500" />
+            <span>{isSummaryExpanded ? 'Hide Order Summary' : 'Show Order Summary'}</span>
+            {isSummaryExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+          </div>
+          <span className="font-black text-slate-900">{fmt(cart.total)}</span>
+        </button>
+
+        {isSummaryExpanded && (
+          <div className="p-4 border-t border-slate-100 bg-white space-y-4 animate-in slide-in-from-top-2 duration-200">
+            <div className="space-y-3">
+              {cart.items.map((item) => (
+                <div key={item.id} className="flex items-center gap-3">
+                  {item.thumbnail ? (
+                    <img
+                      src={item.thumbnail}
+                      alt={item.title}
+                      className="h-10 w-10 rounded-xl object-cover bg-slate-50 shrink-0"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-xl bg-slate-100 shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-slate-800 truncate">{item.title}</p>
+                    <p className="text-[10px] text-slate-450">Qty {item.quantity}</p>
+                  </div>
+                  <p className="text-xs font-black text-slate-900 shrink-0">
+                    {fmt(Number.isFinite(item.total) ? item.total : item.unit_price * item.quantity)}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 space-y-1.5 text-xs">
+              {cart.shipping_total > 0 && (
+                <div className="flex justify-between text-slate-500 font-medium">
+                  <span>Shipping</span>
+                  <span>{fmt(cart.shipping_total)}</span>
+                </div>
+              )}
+              {cart.tax_total > 0 && (
+                <div className="flex justify-between text-slate-500 font-medium">
+                  <span>Tax</span>
+                  <span>{fmt(cart.tax_total)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-black text-slate-900 pt-1 text-sm">
+                <span>Total</span>
+                <span>{fmt(cart.total)}</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Main step card */}
@@ -171,7 +233,7 @@ export default function CheckoutPage() {
       </Card>
 
       {/* Order summary sidebar */}
-      <Card className="mt-6 rounded-3xl border-none bg-white p-6 shadow-sm">
+      <Card className="mt-6 rounded-3xl border-none bg-white p-6 shadow-sm hidden md:block">
         <Eyebrow className="mb-4 text-[11px] tracking-[0.2em]">
           Order Summary ({cart.items.length} item{cart.items.length !== 1 ? 's' : ''})
         </Eyebrow>
