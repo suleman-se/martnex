@@ -271,13 +271,14 @@ export function SearchSpotlight({ isOpen, onClose, currencyCode }: SearchSpotlig
             onKeyDown={handleKeyDown}
             className="w-full h-full text-slate-800 placeholder-slate-400 focus:outline-none text-base border-none"
           />
-          <div className="flex items-center gap-1.5 shrink-0 select-none">
+          <div className="flex items-center gap-2 shrink-0 select-none">
             <span className="hidden md:inline-block border border-slate-200 bg-slate-50 text-slate-450 text-[10px] px-1.5 py-0.5 rounded font-mono shadow-sm">
               ESC
             </span>
             <button
               onClick={onClose}
-              className="md:hidden p-1.5 rounded-lg bg-slate-50 text-slate-500 hover:bg-slate-100"
+              className="p-1.5 rounded-lg bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors cursor-pointer"
+              title="Close Search"
             >
               <X className="h-5 w-5" />
             </button>
@@ -297,7 +298,7 @@ export function SearchSpotlight({ isOpen, onClose, currencyCode }: SearchSpotlig
                 }}
                 className={`text-[11px] font-extrabold px-3 py-1 rounded-full border transition-all shrink-0 select-none ${
                   selectedCategoryId === null
-                    ? 'bg-slate-900 border-slate-900 text-white shadow-sm scale-102 font-black'
+                    ? 'bg-slate-900 border-slate-900 text-white shadow-sm scale-102 font-black hover:bg-slate-800 hover:border-slate-800'
                     : 'bg-white border-slate-200 text-slate-500 hover:border-slate-350 hover:text-slate-800'
                 }`}
               >
@@ -312,7 +313,7 @@ export function SearchSpotlight({ isOpen, onClose, currencyCode }: SearchSpotlig
                   }}
                   className={`text-[11px] font-extrabold px-3 py-1 rounded-full border transition-all shrink-0 select-none ${
                     selectedCategoryId === cat.id
-                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm scale-102 font-black'
+                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm scale-102 font-black hover:bg-slate-800 hover:border-slate-800'
                       : 'bg-white border-slate-200 text-slate-500 hover:border-slate-350 hover:text-slate-800'
                   }`}
                 >
@@ -338,8 +339,8 @@ export function SearchSpotlight({ isOpen, onClose, currencyCode }: SearchSpotlig
                   }}
                   className={`text-[11px] font-extrabold px-3 py-1 rounded-full border transition-all shrink-0 select-none ${
                     selectedPriceRange === p.value
-                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm scale-102 font-black'
-                      : 'bg-white border-slate-200 text-slate-500 hover:border-slate-350 hover:text-slate-800'
+                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm scale-102 font-black hover:bg-slate-800 hover:border-slate-800'
+                      : 'bg-white border-slate-200 text-slate-500 hover:border-slate-350 hover:text-slate-850'
                   }`}
                 >
                   {p.label}

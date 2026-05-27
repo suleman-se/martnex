@@ -102,7 +102,7 @@ export async function fetchProductByHandle(handle: string): Promise<StoreProduct
 export async function fetchProductCategories(): Promise<ProductCategory[]> {
   const headers = await buildStoreHeaders()
   const data = await medusa.store.category.list({}, headers)
-  return (data.product_categories as unknown as ProductCategory[]) || []
+  return (data.categories as unknown as ProductCategory[]) || []
 }
 
 // ─── Price Helpers ────────────────────────────────────────────────────────────

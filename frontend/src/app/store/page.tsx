@@ -2,6 +2,7 @@ import { fetchProducts, fetchProductCategories } from '@/lib/api'
 import { ProductGrid } from '@/components/store/products/product-grid'
 import { StoreFilters } from '@/components/store/store-filters'
 import { StorePagination } from '@/components/store/store-pagination'
+import { StoreEditorialHero } from '@/components/store/layout/store-editorial-hero'
 import { AlertCircle } from 'lucide-react'
 import { EmptyState } from '@/components/shared/empty-states/empty-state'
 import { Button } from '@/components/ui/button'
@@ -62,6 +63,9 @@ export default async function StorePage({ searchParams }: StorePageProps) {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
+      {/* Editorial Landing Hero: Visible on landing view without filters/searches */}
+      {!q && !category && offset === 0 && <StoreEditorialHero />}
+
       {/* Filter and search controls (Client component for interactive states) */}
       <StoreFilters categories={categories} />
 

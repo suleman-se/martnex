@@ -106,7 +106,7 @@ export function StoreFilters({ categories }: StoreFiltersProps) {
             onClick={() => handleFilterChange({ clearCategory: true })}
             variant="outline"
             className={`h-auto rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-widest transition-all ${!currentCategory
-                ? 'bg-slate-900 text-white'
+                ? 'bg-slate-900 text-white hover:bg-slate-800 hover:text-white'
                 : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
               }`}
           >
@@ -122,7 +122,7 @@ export function StoreFilters({ categories }: StoreFiltersProps) {
               }
               variant="outline"
               className={`h-auto rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-widest transition-all ${currentCategory === cat.handle
-                  ? 'bg-slate-900 text-white'
+                  ? 'bg-slate-900 text-white hover:bg-slate-800 hover:text-white'
                   : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
                 }`}
             >
