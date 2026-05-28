@@ -1,4 +1,4 @@
-import { buildStoreHeaders, medusa } from './medusa-client'
+import { buildStoreHeaders, medusa, getBackendUrl } from './medusa-client'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -126,3 +126,39 @@ export function formatPrice(amount: number, currencyCode: string): string {
     currency: currencyCode.toUpperCase(),
   }).format(amount)
 }
+
+// ─── Sellers ──────────────────────────────────────────────────────────────────
+
+export interface SellerProfile {
+  id: string
+  business_name: string
+  business_email: string
+  verification_status: string
+  verified_at: string | null
+  created_at: string
+}
+
+export interface FetchSellerResponse {
+  seller: SellerProfile
+  products: StoreProduct[]
+}
+
+export async function fetchSellerById(id: string): Promise<FetchSellerResponse | null> {
+  const headers = await buildStoreHeaders()
+  try {
+    const res = await fetch(`${getBackendUrl()}/store/sellers/${id}`, {
+      headers,
+      next: { revalidate: 60 },
+    })
+    if (!res.ok) {
+      if (res.status === 404) return null
+      throw new Error(`Failed to fetch seller: ${res.statusText}`)
+    }
+    const data = await res.json()
+    return data as FetchSellerResponse
+  } catch (err) {
+    console.error('Error fetching seller by ID:', err)
+    return null
+  }
+}
+

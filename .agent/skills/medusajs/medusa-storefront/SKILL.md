@@ -178,3 +178,26 @@ await sdk.client.fetch("/store/reviews", {
     rating: 5,
   })
 })
+```
+
+---
+
+## 6. Multi-Vendor & Brand Storefronts (HIGH)
+
+- `sdk-public-sellers`  
+  → Retrieve dynamic vendor catalogs (profile details and linked active products) in a single high-performance query from `GET /store/sellers/:id` on Server Components.
+  
+- `next-revalidate-sellers`  
+  → Apply lightweight edge revalidation on custom seller details requests to balance visual responsiveness with seller catalog changes:
+  ```ts
+  fetch(`${backendUrl}/store/sellers/${id}`, {
+    headers,
+    next: { revalidate: 60 } // Cache for 60 seconds
+  })
+  ```
+
+- `theme-slate-inversion`  
+  → When mapping custom solid backgrounds/containers that flip between light and dark modes, utilize the palette's inverted mapping:
+  *   Light mode: `bg-slate-900` (black fill), `text-white`
+  *   Dark mode: `dark:bg-slate-100` (dark charcoal fill), `dark:text-slate-900` (white text)
+  *   Borders: Use low-number classes like `dark:border-slate-150` which maps to subtle slate `#1e293b` dividers in dark mode.

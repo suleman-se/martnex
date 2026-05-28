@@ -131,6 +131,10 @@ Content-Type: application/json
 - `GET /store/products/:id` - Get product details
 - `GET /store/products/search` - Search products
 
+#### Sellers & Merchants
+- `GET /store/sellers` - List all verified, active sellers
+- `GET /store/sellers/:id` - Get public seller profile details (business name, email, joined date) and their complete active products catalog showcase
+
 #### Categories
 - `GET /store/collections` - List all categories
 - `GET /store/collections/:id` - Get category details

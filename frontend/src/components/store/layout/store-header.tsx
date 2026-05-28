@@ -19,6 +19,7 @@ import { SearchSpotlight } from './header/search-spotlight'
 import { CategoryMegaMenu } from './header/category-mega-menu'
 import { MobileCategoryDrawer } from './header/mobile-category-drawer'
 import { MobileNavbar } from './header/mobile-navbar'
+import { ThemeToggle } from './header/theme-toggle'
 
 export function StoreHeader() {
   const { itemCount } = useCart()
@@ -169,7 +170,7 @@ export function StoreHeader() {
           </nav>
 
           {/* Portal Link & Cart */}
-          <div className="hidden md:flex items-center gap-3 shrink-0 ml-auto">
+          <div className="flex items-center gap-2.5 md:gap-3 shrink-0 ml-auto">
             {/* Sell on Martnex Capsule */}
             <Link
               href="/seller"
@@ -178,6 +179,9 @@ export function StoreHeader() {
               <Store className="h-3.5 w-3.5" />
               <span>Sell on Martnex</span>
             </Link>
+
+            {/* Premium Theme Switcher */}
+            <ThemeToggle />
 
             {/* Cart Icon trigger button */}
             <button

@@ -50,6 +50,54 @@
   * {
     @apply border-border/20; /* The "No-Line" Rule: Subdued borders if any */
   }
+
+  .dark {
+    --color-background: #090d16; /* Premium Obsidian Dark background */
+    --color-foreground: #f8fafc; /* Slate 50 */
+    
+    --color-card: #111827; /* Gray 900 */
+    --color-card-foreground: #f8fafc;
+    
+    --color-popover: #111827;
+    --color-popover-foreground: #f8fafc;
+    
+    --color-primary: #ffffff;
+    --color-primary-foreground: #090d16;
+    
+    --color-secondary: #1f2937; /* Gray 800 */
+    --color-secondary-foreground: #f8fafc;
+    
+    --color-muted: #1f2937;
+    --color-muted-foreground: #9ca3af;
+    
+    --color-accent: #374151; /* Gray 700 */
+    --color-accent-foreground: #ffffff;
+    
+    --color-border: #1f2937;
+    color-scheme: dark;
+
+    /* Premium Tailwind Color Palette Inversions */
+    --color-white: #111827; /* Redefine white as premium card dark */
+    --color-slate-50: #0f172a; /* Slate 900 for low contrast panels */
+    --color-slate-100: #1e293b; /* Slate 800 for borders & dividers */
+    --color-slate-150: #1e293b;
+    --color-slate-200: #334155;
+    --color-slate-205: #334155;
+    --color-slate-250: #334155;
+    --color-slate-300: #475569;
+    --color-slate-350: #475569;
+    --color-slate-400: #94a3b8; /* Slate 400 */
+    --color-slate-450: #94a3b8;
+    --color-slate-500: #cbd5e1; /* Invert slate-500 to light gray text */
+    --color-slate-650: #e2e8f0;
+    --color-slate-700: #f1f5f9;
+    --color-slate-750: #f8fafc;
+    --color-slate-800: #f8fafc;
+    --color-slate-850: #ffffff;
+    --color-slate-900: #ffffff;
+    --color-slate-950: #ffffff;
+  }
+  
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);

@@ -49,7 +49,7 @@ export function VariantSelector({ product, onVariantChange }: VariantSelectorPro
                 <button
                   key={v.value}
                   onClick={() => handleOptionChange(option.id, v.value)}
-                  className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${
+                  className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-slate-900 text-white border-slate-900'
                       : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'

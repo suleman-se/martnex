@@ -7,7 +7,7 @@
     <a href="#"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
     <a href="#"><img src="https://img.shields.io/badge/Medusa-v2.13-8C4FFF" alt="Medusa v2"></a>
     <a href="#"><img src="https://img.shields.io/badge/Next.js-16.2-black" alt="Next.js 16.2"></a>
-    <a href="#"><img src="https://img.shields.io/badge/version-0.8.5-brightgreen" alt="v0.8.5"></a>
+    <a href="#"><img src="https://img.shields.io/badge/version-0.9.5-brightgreen" alt="v0.9.5"></a>
   </p>
 
   <p>
@@ -43,17 +43,25 @@ Martnex allows you to toggle your entire platform's behavior using a single envi
 
 ---
 
-## ✅ What's Live (v0.8.5)
+## ✅ What's Live (v0.9.5)
 
 | Feature | Status |
 | :--- | :---: |
-| **Immersive Spotlight Search (⌘K)** — global keyboard trigger, client-cached history, dynamic query highlighter | ✅ |
-| **Category Mega-Menus** — hover-triggered glassmorphic dropdowns with featured product cards | ✅ |
-| **Buyer Storefront** — product browse, search & category filter | ✅ |
-| **Product Detail** — variant selector, add-to-cart | ✅ |
-| **Cart** — persistent (localStorage), qty controls, spring-bounce count badge animations | ✅ |
-| **Checkout** — shipping address → Stripe Elements / Cash on Delivery | ✅ |
-| **Order Confirmation** — receipt, shipping address, CTA, receipt particle confetti | ✅ |
+| **Obsidian Midnight Dark Theme (Phase E)** — Luxury sun/moon toggle transitions with storewide HSL variable inversions | ✅ |
+| **Merchant Storefront & Brand Pages (Phase F)** — Dedicated Server Component route `/store/merchants/[id]` displaying brand bio, sustainability metrics, and a responsive product grid | ✅ |
+| **Verified Merchant Drawer & Card (Phase D)** — Custom badges next to pricing, slide-out vendor preview drawers, and details page verified cards | ✅ |
+| **Touch Snapping Cross-Sells (Phase C)** — Related product recommendations carousel with 1-click inline quick-add swatches | ✅ |
+| **Editorial Hero Landing Page (Phase B)** — Curator grids, parallax visual headers, and smooth-scroll anchors on landing | ✅ |
+| **Glassmorphic Loading Skeletons (Phase A)** — Pulse-shimmering grids and pages to prevent layout shifting | ✅ |
+| **Mobile-Native UX Responsiveness** — App-like bottom navigation bars, stacked search command panes, mobile purchase buy bars, and collapsible checkout accordion drawers | ✅ |
+| **Immersive Spotlight Search (⌘K)** — Global keyboard shortcut command palettes, price/category capsules filters, debounced queries, and highlighted matches | ✅ |
+| **Category Mega-Menus** — Hover-triggered mega-menus with featured product highlights and curations | ✅ |
+| **Buyer Storefront** — Product browse, search, and category listing grids | ✅ |
+| **Product Detail & Variants** — Dynamic variant selectors with hand cursor hover styling and add-to-cart | ✅ |
+| **Cart** — Persistent (localStorage) sidebar cart drawer, quantity adjusters, and springy count bubble animations | ✅ |
+| **Checkout** — Shipping options selector (standard/express), Stripe CardElements, COD, and transaction timeline steppers | ✅ |
+| **Order Receipt Confetti** — Completed checkout receipt panels, fulfillment timelines, and standard particle falling rain confetti | ✅ |
+| **Catalog Seeding** — Multi-variant stock seeds, multiple gallery URLs, price swatches, and live inventory decrement syncs | ✅ |
 | **Catalog Seeding** — rich products, stock images (multiple URLs per product), variant price fixtures, inventory level mapping | ✅ |
 | Seller registration & verification workflow | ✅ |
 | Seller product management (create, edit, delete, images, variants) | ✅ |
