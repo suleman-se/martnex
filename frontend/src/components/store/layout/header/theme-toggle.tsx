@@ -41,7 +41,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="h-9 w-9 rounded-xl bg-slate-50 border border-slate-150/40 hover:bg-slate-100/70 dark:bg-slate-800 dark:border-slate-700/60 dark:hover:bg-slate-700 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 transition-all cursor-pointer relative overflow-hidden select-none shrink-0"
+      className="h-9 w-9 rounded-xl bg-slate-50 border border-slate-150/40 hover:bg-slate-100/70 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-all cursor-pointer relative overflow-hidden select-none shrink-0"
       title={theme === 'light' ? 'Switch to Midnight Dark Mode' : 'Switch to Light Mode'}
     >
       <div className="relative w-5 h-5 flex items-center justify-center">

@@ -85,8 +85,8 @@ export default async function MerchantStorefrontPage({ params }: MerchantPagePro
                 <h1 className="text-2xl font-heading font-black tracking-tight text-slate-900 leading-none">
                   {seller.business_name}
                 </h1>
-                <div className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-emerald-650 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/30 border border-emerald-100/50 px-2 py-0.5 rounded shrink-0">
-                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <div className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/70 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/30 border border-emerald-200/80 px-2 py-0.5 rounded shrink-0">
+                  <ShieldCheck strokeWidth={2.5} className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Verified Partner</span>
                 </div>
               </div>
@@ -144,7 +144,7 @@ export default async function MerchantStorefrontPage({ params }: MerchantPagePro
             <Sparkles className="h-3.5 w-3.5 text-slate-400" />
             <span>Brand Story & Craftsmanship</span>
           </h4>
-          <p className="text-sm font-semibold text-slate-550 leading-relaxed italic max-w-4xl">
+          <p className="text-sm font-semibold text-slate-500 leading-relaxed italic max-w-4xl">
             "{brandStory}"
           </p>
         </div>

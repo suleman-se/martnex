@@ -62,7 +62,7 @@ Martnex allows you to toggle your entire platform's behavior using a single envi
 | **Checkout** — Shipping options selector (standard/express), Stripe CardElements, COD, and transaction timeline steppers | ✅ |
 | **Order Receipt Confetti** — Completed checkout receipt panels, fulfillment timelines, and standard particle falling rain confetti | ✅ |
 | **Catalog Seeding** — Multi-variant stock seeds, multiple gallery URLs, price swatches, and live inventory decrement syncs | ✅ |
-| **Catalog Seeding** — rich products, stock images (multiple URLs per product), variant price fixtures, inventory level mapping | ✅ |
+| Rich products, stock images (multiple URLs per product), variant price fixtures, inventory level mapping | ✅ |
 | Seller registration & verification workflow | ✅ |
 | Seller product management (create, edit, delete, images, variants) | ✅ |
 | Multi-product per seller (many-to-many via Knex pivot) | ✅ |

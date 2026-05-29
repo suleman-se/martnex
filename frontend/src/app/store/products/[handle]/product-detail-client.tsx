@@ -279,7 +279,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   <h5 className="text-xs font-black text-slate-800 truncate">
                     Martnex Premium Goods
                   </h5>
-                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <ShieldCheck strokeWidth={2.5} className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 </div>
                 <p className="text-[10px] text-slate-450 font-bold mt-0.5">
                   Verified Independent Artisan

@@ -192,7 +192,7 @@ export function StoreHeader() {
               <ShoppingCart className="h-5 w-5" />
               {itemCount > 0 && (
                 <span
-                  className={`absolute -top-1 -right-1 h-5 w-5 rounded-full bg-slate-900 text-white text-[10px] font-black flex items-center justify-center ${
+                  className={`absolute top-0 -right-1 h-4 w-4 rounded-full bg-slate-900 text-white text-[10px] font-black flex items-center justify-center ${
                     cartBounce ? 'animate-bounce-spring' : 'animate-in zoom-in duration-300'
                   }`}
                 >

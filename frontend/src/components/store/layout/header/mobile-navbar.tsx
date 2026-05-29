@@ -45,7 +45,7 @@ export function MobileNavbar({
       >
         <ShoppingCart className="h-5 w-5" />
         {itemCount > 0 && (
-          <span className="absolute top-1 right-1.5 h-3.5 w-3.5 rounded-full bg-slate-900 text-white text-[9px] font-black flex items-center justify-center">
+          <span className="absolute top-1 right-1 h-3.5 w-3.5 rounded-full bg-slate-900 text-white text-[9px] font-black flex items-center justify-center">
             {itemCount > 99 ? '99+' : itemCount}
           </span>
         )}

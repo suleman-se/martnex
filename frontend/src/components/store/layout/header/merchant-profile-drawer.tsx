@@ -28,13 +28,13 @@ export function MerchantProfileDrawer({ isOpen, onClose }: MerchantProfileDrawer
           </div>
           <div className="space-y-1.5 min-w-0">
             <div className="flex items-center gap-1.5">
-              <h3 className="text-base font-black text-slate-950 truncate">
+              <h3 className="text-base font-bold text-slate-950 truncate">
                 Martnex Premium Goods
               </h3>
-              <ShieldCheck className="h-4.5 w-4.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <ShieldCheck strokeWidth={2.5} className="h-4.5 w-4.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
             </div>
             
-            <p className="text-[10px] font-black uppercase tracking-wider text-emerald-650 bg-emerald-50 border border-emerald-100/50 px-2 py-0.5 rounded inline-block dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/30">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/70 border border-emerald-200/80 px-2 py-0.5 rounded inline-block dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/30">
               Verified Platform Artisan
             </p>
 
@@ -145,7 +145,7 @@ export function MerchantProfileDrawer({ isOpen, onClose }: MerchantProfileDrawer
             <Link
               href="/store/merchants/01KQ9V6DK0NQDY3VKD9STRSS8F"
               onClick={onClose}
-              className="flex items-center justify-center w-full py-3.5 px-4 rounded-2xl bg-slate-900 text-white font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-colors gap-2 cursor-pointer shadow-sm select-none dark:bg-slate-100 dark:text-slate-900"
+              className="flex items-center justify-center w-full py-3.5 px-4 rounded-2xl bg-slate-900 text-white font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-colors gap-2 cursor-pointer shadow-sm select-none"
             >
               <span>View Complete Storefront</span>
               <Sparkles className="h-4 w-4 text-amber-400 shrink-0 animate-pulse" />
