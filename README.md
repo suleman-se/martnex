@@ -7,7 +7,7 @@
     <a href="#"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
     <a href="#"><img src="https://img.shields.io/badge/Medusa-v2.13-8C4FFF" alt="Medusa v2"></a>
     <a href="#"><img src="https://img.shields.io/badge/Next.js-16.2-black" alt="Next.js 16.2"></a>
-    <a href="#"><img src="https://img.shields.io/badge/version-0.9.5-brightgreen" alt="v0.9.5"></a>
+    <a href="#"><img src="https://img.shields.io/badge/version-0.9.8-brightgreen" alt="v0.9.8"></a>
   </p>
 
   <p>
@@ -43,39 +43,15 @@ Martnex allows you to toggle your entire platform's behavior using a single envi
 
 ---
 
-## ✅ What's Live (v0.9.5)
+## ✅ Core Features
 
-| Feature | Status |
-| :--- | :---: |
-| **Obsidian Midnight Dark Theme (Phase E)** — Luxury sun/moon toggle transitions with storewide HSL variable inversions | ✅ |
-| **Merchant Storefront & Brand Pages (Phase F)** — Dedicated Server Component route `/store/merchants/[id]` displaying brand bio, sustainability metrics, and a responsive product grid | ✅ |
-| **Verified Merchant Drawer & Card (Phase D)** — Custom badges next to pricing, slide-out vendor preview drawers, and details page verified cards | ✅ |
-| **Touch Snapping Cross-Sells (Phase C)** — Related product recommendations carousel with 1-click inline quick-add swatches | ✅ |
-| **Editorial Hero Landing Page (Phase B)** — Curator grids, parallax visual headers, and smooth-scroll anchors on landing | ✅ |
-| **Glassmorphic Loading Skeletons (Phase A)** — Pulse-shimmering grids and pages to prevent layout shifting | ✅ |
-| **Mobile-Native UX Responsiveness** — App-like bottom navigation bars, stacked search command panes, mobile purchase buy bars, and collapsible checkout accordion drawers | ✅ |
-| **Immersive Spotlight Search (⌘K)** — Global keyboard shortcut command palettes, price/category capsules filters, debounced queries, and highlighted matches | ✅ |
-| **Category Mega-Menus** — Hover-triggered mega-menus with featured product highlights and curations | ✅ |
-| **Buyer Storefront** — Product browse, search, and category listing grids | ✅ |
-| **Product Detail & Variants** — Dynamic variant selectors with hand cursor hover styling and add-to-cart | ✅ |
-| **Cart** — Persistent (localStorage) sidebar cart drawer, quantity adjusters, and springy count bubble animations | ✅ |
-| **Checkout** — Shipping options selector (standard/express), Stripe CardElements, COD, and transaction timeline steppers | ✅ |
-| **Order Receipt Confetti** — Completed checkout receipt panels, fulfillment timelines, and standard particle falling rain confetti | ✅ |
-| **Catalog Seeding** — Multi-variant stock seeds, multiple gallery URLs, price swatches, and live inventory decrement syncs | ✅ |
-| Rich products, stock images (multiple URLs per product), variant price fixtures, inventory level mapping | ✅ |
-| Seller registration & verification workflow | ✅ |
-| Seller product management (create, edit, delete, images, variants) | ✅ |
-| Multi-product per seller (many-to-many via Knex pivot) | ✅ |
-| Seller orders list with live API data, search & filters | ✅ |
-| Seller order detail page (items, shipping, payment status) | ✅ |
-| Automatic commission creation on order.placed | ✅ |
-| Seller dashboard with real revenue, orders & commission stats | ✅ |
-| Seller payouts page (history, status badges, stats) | ✅ |
-| Commission & payout management (admin + seller) | ✅ |
-| Email verification & password reset (Nodemailer) | ✅ |
-| Admin seller approval / reject / suspend workflows | ✅ |
-| JWT auth compatible with all Medusa store routes | ✅ |
-| Docker Compose (backend + frontend + postgres + redis) | ✅ |
+- **🏪 Dual Store Modes**: Toggle between single-merchant e-commerce and a multi-vendor marketplace with one environment variable (`STORE_MODE`).
+- **🛍️ Complete Buyer Journey**: Immersive category mega-menus, global spotlight search (⌘K), touch recommendation carousels, persistent cart drawer, multi-step checkout (Stripe/COD), order confetti receipt, and a type-safe account portal (addresses/profile).
+- **💼 Comprehensive Seller Center**: Onboarding verification flow, dashboard stats (commissions & aggregate revenue), product CRUD with dynamic uploader and variant generator, scoped orders management, and payouts history.
+- **🛡️ Secure Platform Architecture**: JWT token refresh rotation, role-based access controllers (RBAC), Knex link modules, Nodemailer sync, and automatic commission creation hooks.
+- **📱 Premium Responsive Design**: Full-screen drawers, responsive headers, obsidian dark mode styling, and optimized layouts supporting mobile, tablet, and desktop viewports.
+
+For a detailed release history and implementation roadmap, please see the [Changelog](CHANGELOG.md).
 
 ---
 

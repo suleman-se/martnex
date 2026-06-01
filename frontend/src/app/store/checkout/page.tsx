@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ShoppingBag, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
+import { ShoppingBag, ChevronRight, ChevronDown, ChevronUp, CheckCircle2, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { useMounted } from '@/hooks/use-mounted'
 import { useCart, clearStoredCartId } from '@/hooks/use-cart'
@@ -15,6 +15,10 @@ import { EmptyState } from '@/components/shared/empty-states/empty-state'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Eyebrow } from '@/components/shared/typography/eyebrow'
+import { useQuery } from '@tanstack/react-query'
+import { fetchMe } from '@/lib/api'
+import { SavedAddressSelector } from '@/components/store/checkout/saved-address-selector'
+import { CustomerAddress } from '@/types/address'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -46,6 +50,55 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<Step>('address')
   const [savedAddress, setSavedAddress] = useState<AddressFormValues | null>(null)
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(false)
+
+  const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<string | null>(null)
+  const [hasPrepopulated, setHasPrepopulated] = useState(false)
+
+  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+  const { data: customerData } = useQuery({
+    queryKey: ['checkout-customer-profile'],
+    queryFn: () => fetchMe(token ?? undefined),
+    enabled: mounted && !!token,
+  })
+  const savedAddresses: CustomerAddress[] = customerData?.customer?.addresses || []
+
+  useEffect(() => {
+    if (customerData?.customer && !savedAddress && !hasPrepopulated) {
+      const defaultShipping = (customerData.customer.addresses as CustomerAddress[] | undefined)?.find(
+        (a: CustomerAddress) => a.is_default_shipping
+      ) || (customerData.customer.addresses as CustomerAddress[] | undefined)?.[0]
+        
+      if (defaultShipping) {
+        const initialAddress: AddressFormValues = {
+          email: customerData.customer.email || '',
+          first_name: defaultShipping.first_name || '',
+          last_name: defaultShipping.last_name || '',
+          address_1: defaultShipping.address_1 || '',
+          address_2: defaultShipping.address_2 || '',
+          city: defaultShipping.city || '',
+          country_code: defaultShipping.country_code || '',
+          postal_code: defaultShipping.postal_code || '',
+          phone: defaultShipping.phone || '',
+        }
+        setSavedAddress(initialAddress)
+        setSelectedSavedAddressId(defaultShipping.id)
+        setHasPrepopulated(true)
+      } else if (customerData.customer.email) {
+        setSavedAddress({
+          email: customerData.customer.email,
+          first_name: '',
+          last_name: '',
+          address_1: '',
+          address_2: '',
+          city: '',
+          country_code: '',
+          postal_code: '',
+          phone: '',
+        })
+        setHasPrepopulated(true)
+      }
+    }
+  }, [customerData, savedAddress, hasPrepopulated])
 
   if (!mounted) return null
   if (isLoading) return <CheckoutSkeleton />
@@ -186,6 +239,29 @@ export default function CheckoutPage() {
             <h2 className="text-2xl font-heading font-black text-slate-900 mb-6">
               Shipping Information
             </h2>
+
+            {savedAddresses.length > 0 && (
+              <SavedAddressSelector
+                savedAddresses={savedAddresses}
+                selectedSavedAddressId={selectedSavedAddressId}
+                customerEmail={customerData?.customer?.email || ''}
+                onSelect={(addressValues, id) => {
+                  setSelectedSavedAddressId(id)
+                  setSavedAddress({
+                    email: customerData?.customer?.email || '',
+                    first_name: addressValues.first_name,
+                    last_name: addressValues.last_name,
+                    address_1: addressValues.address_1,
+                    address_2: addressValues.address_2,
+                    city: addressValues.city,
+                    country_code: addressValues.country_code,
+                    postal_code: addressValues.postal_code,
+                    phone: addressValues.phone || '',
+                  })
+                }}
+              />
+            )}
+
             <AddressForm
               defaultValues={savedAddress ?? undefined}
               onSubmit={handleAddressSubmit}

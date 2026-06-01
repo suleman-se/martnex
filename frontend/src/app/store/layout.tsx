@@ -76,7 +76,7 @@ export default function StoreLayout({ children }: { children: ReactNode }) {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-slate-100 bg-slate-50/50 pb-16 md:pb-0">
+        <div className="border-t border-slate-100 bg-slate-50/50 pb-16 lg:pb-0">
           <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">

@@ -48,7 +48,7 @@ export function MobileCategoryDrawer({
             className="flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100/80 rounded-2xl border border-slate-100 transition-all group"
           >
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold">
+              <div className="h-10 w-10 bg-slate-900 px-2.5 text-white rounded-xl flex items-center justify-center font-bold">
                 All
               </div>
               <div>

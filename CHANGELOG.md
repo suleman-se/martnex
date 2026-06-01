@@ -13,7 +13,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > Most pages are frontend-only — Medusa's native `/admin/*` API is used directly with an admin Bearer token.
 > After this phase: `pnpm run seed` → login to `/admin` → click "Set Up Shipping" → done. Zero manual scripts.
 
-> Future (post-Phase 7): Buyer account area (order history), product reviews, seller fulfillment actions.
+> Future (post-Phase 7): Product reviews, seller fulfillment actions.
+
+---
+
+## [0.9.8] - Strict Type-Safe Buyer Account Portal & Responsive Layout Refinements (1 June 2026)
+
+### Added
+- **Centralized Address Models**: Created unified TypeScript interfaces (`AddressInput`, `CustomerAddress`, `CustomerProfile`) at `src/types/address.ts` to govern all buyer account forms, checkout saved selectors, and API endpoints, fully preventing `any` typed fields.
+- **Modular Addresses Dashboard**: Simplified the monolithic profile addresses managers by modularizing form, card, and alert layers into isolated components: `<AddressCard />`, `<AddressEditorCard />`, and `<DeleteAddressDialog />`.
+- **Checkout Saved Address Selector**: Created a dynamic, touch-friendly saved address grid at checkout (`<SavedAddressSelector />`) that automatically checks for defaults, handles email sync, and includes a fallback toggle for custom ad-hoc addresses.
+- **Centralized Scrolling Lock**: Created custom React hook `useBodyScrollLock(isOpen)` to handle body element overlays and backdrop locks on mobile drawer pages.
+- **TODO on Mocked Data**: Injected persistent `TODO` blocks on mock calculations (e.g., Simulated Savings Index multiplier formula) within the buyer's account overview route.
+
+### Changed
+- **Optimized Mobile & Tablet Header Spacing**: Adjusted the `StoreHeader` layout to dynamically hide text-heavy capsule buttons like "Sign In" or "Hi, [Name]" on screens below `lg` (1024px) threshold, freeing up significant horizontal width. Extended the mobile hamburger menu toggle to display on tablets as well.
+- **Unified Mobile & Tablet Touch Experience**: Shifted the sticky bottom navbar (`MobileNavbar`) and float-bar purchase widgets to display on both mobile and tablet viewports (screens below `lg` threshold), creating a cohesive touch navigation ecosystem. Adjusted safe footer padding across all touch breakpoints.
+- **Always-Visible Bottom Navbar**: Boosted the bottom navigation bar layering index to `z-50` to guarantee absolute layering above all background viewport overlays.
+- **Tablet Touch Quick Add Integration**: Extended the responsive touch Quick Add triggers in `<ProductCard />` to tablet screens, replacing desktop-hover animations with clean, tap-to-select variant overlays.
+- **Responsive Padding & Gaps**: Resized headers container margins and flex gaps responsively (`px-4 sm:px-6` and `gap-3 sm:gap-6`) to let search spotlight buttons shrink seamlessly without vertical page wraps.
+
+---
+
+## [0.9.5] - Premium Storefront Skeletons, Editorial Landing Pages, Snap Carousels, & Brand Storefront Profiles (25 May 2026)
+
+### Added
+- **Pulse-Shimmering Skeletons**: Integrated an automatic layout skeletonizer wrapper (`<Skeletonify />` / `.skeleton-auto`) to dynamically paint shimmer overlays on any active React tree without layout shifts.
+- **Parallax Landing Hero**: Added dynamic editorial curation grids, parallax image layers, and smooth anchors targeting catalog products.
+- **Brand Storefront Profiles**: Developed merchant product collections segments (`/store/merchants/[id]`) showing vendor stats, badges, and verified product lists.
+- **HSL Inverted Obsidian Dark Mode**: Standardized theme factory switches across storefront routes.
+
+---
+
+## [0.9.0] - Premium Mobile Storefront Responsiveness & Native-App UX (25 May 2026)
+
+### Added
+- **App-like Sticky Bottom Navbar**: Mounted fixed bottom navigation anchors (`<MobileNavbar />`) to easily toggle cart, category drawers, explore feeds, and user profiles.
+- **Category Explorer Drawer**: Full-screen slide-up exploration sheets for catalogs (`<MobileCategoryDrawer />`).
+- **Collapsible Checkout Summary Accordions**: Touch-collapsible cart summaries showing itemized fees on narrow devices.
 
 ---
 

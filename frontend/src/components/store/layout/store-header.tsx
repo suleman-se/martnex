@@ -6,7 +6,8 @@ import {
   Search,
   Menu,
   X,
-  Store
+  Store,
+  User
 } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { useCart } from '@/hooks/use-cart'
@@ -14,6 +15,8 @@ import { useProductCategories } from '@/hooks/use-product-categories'
 import { useRegions } from '@/hooks/use-regions'
 import { useUIStore } from '@/hooks/use-ui-store'
 import { Button } from '@/components/ui/button'
+import { useAuthStore } from '@/lib/store/auth-store'
+import { useMounted } from '@/hooks/use-mounted'
 
 import { SearchSpotlight } from './header/search-spotlight'
 import { CategoryMegaMenu } from './header/category-mega-menu'
@@ -27,12 +30,15 @@ export function StoreHeader() {
   const { openCart } = useUIStore()
   const { defaultRegion } = useRegions()
   const currencyCode = defaultRegion?.currency_code || 'usd'
+  const mounted = useMounted()
+  const { isAuthenticated, user } = useAuthStore()
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [cartBounce, setCartBounce] = useState(false)
+
 
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const prevItemCountRef = useRef(itemCount)
@@ -102,7 +108,7 @@ export function StoreHeader() {
             : 'border-b border-slate-100 shadow-sm'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-3 sm:gap-6">
           {/* Logo */}
           <Link href="/store" className="flex items-center gap-2.5 shrink-0 group">
             <div className="h-8 w-8 bg-slate-900 rounded-xl flex items-center justify-center text-white font-extrabold text-sm transition-transform group-hover:rotate-3 duration-300">
@@ -132,7 +138,7 @@ export function StoreHeader() {
           </div>
 
           {/* Category nav — desktop with Hover Mega Dropdown */}
-          <nav className="hidden md:flex items-center gap-2 h-16 shrink-0">
+          <nav className="hidden lg:flex items-center gap-2 h-16 shrink-0">
             <div className="h-full flex items-center">
               <Link
                 href="/store"
@@ -170,15 +176,35 @@ export function StoreHeader() {
           </nav>
 
           {/* Portal Link & Cart */}
-          <div className="flex items-center gap-2.5 md:gap-3 shrink-0 ml-auto">
-            {/* Sell on Martnex Capsule */}
-            <Link
-              href="/seller"
-              className="hidden lg:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 hover:border-slate-800 text-xs font-bold text-slate-500 hover:text-slate-950 transition-all hover:bg-slate-50/50"
-            >
-              <Store className="h-3.5 w-3.5" />
-              <span>Sell on Martnex</span>
-            </Link>
+          <div className="flex items-center gap-1.5 sm:gap-2.5 md:gap-3 shrink-0 ml-auto">
+            {/* Sell on Martnex / Account Avatar Capsule */}
+            {mounted && isAuthenticated ? (
+              <Link
+                href="/store/account"
+                className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 hover:border-slate-800 text-xs font-bold text-slate-700 hover:text-slate-900 transition-all hover:bg-slate-50/50 bg-slate-50/20"
+              >
+                <User className="h-3.5 w-3.5 text-slate-400" />
+                <span>Hi, {user?.first_name || 'Account'}</span>
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/seller"
+                  className="hidden lg:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 hover:border-slate-800 text-xs font-bold text-slate-500 hover:text-slate-950 transition-all hover:bg-slate-50/50"
+                >
+                  <Store className="h-3.5 w-3.5" />
+                  <span>Sell on Martnex</span>
+                </Link>
+                <Link
+                  href="/login"
+                  className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 hover:border-slate-800 text-xs font-bold text-slate-700 hover:text-slate-900 transition-all hover:bg-slate-50/50 bg-slate-50/20"
+                >
+                  <User className="h-3.5 w-3.5 text-slate-400" />
+                  <span>Sign In</span>
+                </Link>
+              </>
+            )}
+
 
             {/* Premium Theme Switcher */}
             <ThemeToggle />
@@ -203,7 +229,7 @@ export function StoreHeader() {
 
             {/* Mobile menu toggle */}
             <Button
-              className="md:hidden h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-700"
+              className="lg:hidden h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-700"
               onClick={() => setMobileMenuOpen((o) => !o)}
               aria-label="Toggle menu"
               variant="ghost"

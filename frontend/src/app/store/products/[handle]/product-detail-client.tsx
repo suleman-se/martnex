@@ -84,7 +84,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       : []
 
   return (
-    <div className="animate-in fade-in duration-700 pb-28 md:pb-8">
+    <div className="animate-in fade-in duration-700 pb-28 lg:pb-8">
       <Link
         href="/store"
         className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-400 hover:text-slate-700 mb-8 transition-colors"
@@ -310,7 +310,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       />
 
       {/* Sticky Bottom Purchase CTA Bar for Mobile */}
-      <div className="fixed bottom-16 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-100 p-4 shadow-premium md:hidden animate-in slide-in-from-bottom duration-300 pb-safe">
+      <div className="fixed bottom-16 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-100 p-4 shadow-premium lg:hidden animate-in slide-in-from-bottom duration-300 pb-safe">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="relative h-10 w-10 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 shrink-0 shadow-sm">

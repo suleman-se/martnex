@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useProducts } from '@/hooks/use-products'
 import { useProductCategories } from '@/hooks/use-product-categories'
+import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
 import { useUIStore } from '@/hooks/use-ui-store'
 import { getDisplayPrice, formatPrice } from '@/lib/api'
 
@@ -88,16 +89,7 @@ export function SearchSpotlight({ isOpen, onClose, currencyCode }: SearchSpotlig
   }, [searchQuery])
 
   // Prevent background scrolling when search is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [isOpen])
+  useBodyScrollLock(isOpen)
 
   // Global Escape key handler to close modal when not focused on search input
   useEffect(() => {

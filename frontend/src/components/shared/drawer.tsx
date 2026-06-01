@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
+import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock'
 
 interface DrawerProps {
   isOpen: boolean
@@ -32,7 +33,9 @@ export function Drawer({
     setMounted(true)
   }, [])
 
-  // Close on Escape key and prevent body scroll when open
+  useBodyScrollLock(isOpen)
+
+  // Close on Escape key when open
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
@@ -42,12 +45,10 @@ export function Drawer({
 
     if (isOpen) {
       document.addEventListener('keydown', handleKeyDown, true)
-      document.body.style.overflow = 'hidden'
     }
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown, true)
-      document.body.style.overflow = 'unset'
     }
   }, [isOpen, onClose])
 

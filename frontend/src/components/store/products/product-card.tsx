@@ -130,7 +130,7 @@ export function ProductCard({ product, currencyCode = 'usd' }: ProductCardProps)
         <button
           onClick={handleQuickAdd}
           disabled={isAdding}
-          className={`absolute bottom-2.5 right-2.5 h-9 w-9 bg-slate-900/90 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all duration-200 cursor-pointer z-10 md:hidden ${showMobileSelector ? 'opacity-0 pointer-events-none scale-75' : 'opacity-100 scale-100'
+          className={`absolute bottom-2.5 right-2.5 h-9 w-9 bg-slate-900/90 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all duration-200 cursor-pointer z-10 lg:hidden ${showMobileSelector ? 'opacity-0 pointer-events-none scale-75' : 'opacity-100 scale-100'
             }`}
           aria-label={hasMultipleVariants ? "Select Options" : "Quick Add to Cart"}
         >
@@ -150,7 +150,7 @@ export function ProductCard({ product, currencyCode = 'usd' }: ProductCardProps)
           <button
             onClick={handleQuickAdd}
             disabled={isAdding}
-            className="hidden md:flex absolute inset-x-0 bottom-0 h-11 bg-slate-900/95 hover:bg-slate-900 backdrop-blur-md text-white font-black text-[10px] tracking-widest uppercase items-center justify-center gap-2 transition-all duration-300 shadow-lg cursor-pointer z-10 opacity-0 translate-y-full group-hover:opacity-100 group-hover:translate-y-0"
+            className="hidden lg:flex absolute inset-x-0 bottom-0 h-11 bg-slate-900/95 hover:bg-slate-900 backdrop-blur-md text-white font-black text-[10px] tracking-widest uppercase items-center justify-center gap-2 transition-all duration-300 shadow-lg cursor-pointer z-10 opacity-0 translate-y-full group-hover:opacity-100 group-hover:translate-y-0"
           >
             {isAdding ? (
               <Loader2 className="h-4 w-4 animate-spin text-white" />
@@ -171,7 +171,7 @@ export function ProductCard({ product, currencyCode = 'usd' }: ProductCardProps)
         {/* Quick Add Variant Selector Overlay (Desktop hover / Mobile tap toggle) */}
         {hasMultipleVariants && (
           <div
-            className={`absolute inset-x-0 bottom-0 bg-white/95 backdrop-blur-md border-t border-slate-100 p-3.5 flex flex-col gap-2 z-20 transition-all duration-300 transform translate-y-full md:group-hover:translate-y-0 ${showMobileSelector ? 'translate-y-0 shadow-premium' : ''
+            className={`absolute inset-x-0 bottom-0 bg-white/95 backdrop-blur-md border-t border-slate-100 p-3.5 flex flex-col gap-2 z-20 transition-all duration-300 transform translate-y-full lg:group-hover:translate-y-0 ${showMobileSelector ? 'translate-y-0 shadow-premium' : ''
               }`}
             onClick={(e) => {
               e.preventDefault()

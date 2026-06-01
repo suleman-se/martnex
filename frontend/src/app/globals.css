@@ -86,6 +86,7 @@
     --color-accent-foreground: #ffffff;
     
     --color-border: #1f2937;
+    --color-input: #111827;
     color-scheme: dark;
 
     /* Premium Tailwind Color Palette Inversions */
@@ -116,6 +117,11 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     letter-spacing: -0.015em;
+  }
+
+  input, select, textarea {
+    color: var(--color-foreground);
+    background-color: var(--color-input);
   }
   
   h1, h2, h3, h4, h5, h6 {

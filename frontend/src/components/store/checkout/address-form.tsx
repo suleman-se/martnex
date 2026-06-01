@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -62,8 +63,15 @@ export function AddressForm({
     register,
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<AddressFormValues>({ defaultValues })
+
+  useEffect(() => {
+    if (defaultValues) {
+      reset(defaultValues)
+    }
+  }, [defaultValues, reset])
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">

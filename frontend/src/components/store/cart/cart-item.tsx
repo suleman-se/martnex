@@ -24,6 +24,12 @@ export function CartItemRow({
   isPending = false,
 }: CartItemRowProps) {
   const productHandle = item.product?.handle
+  const variantTitle = item.variant_title || item.variant?.title
+  const isDefault = !variantTitle || 
+    variantTitle === 'Default Variant' || 
+    variantTitle === 'Default' || 
+    variantTitle === 'Default variant'
+
   const lineTotal = Number.isFinite(item.total)
     ? item.total
     : Number(item.unit_price) * Number(item.quantity)
@@ -60,8 +66,8 @@ export function CartItemRow({
           ) : (
             <p className="font-bold text-slate-900 text-sm leading-snug">{item.title}</p>
           )}
-          {item.variant?.title && item.variant.title !== 'Default Variant' && (
-            <p className="text-xs text-slate-400 font-medium mt-0.5">{item.variant.title}</p>
+          {variantTitle && !isDefault && (
+            <p className="text-xs text-slate-400 font-medium mt-0.5">{variantTitle}</p>
           )}
         </div>
 

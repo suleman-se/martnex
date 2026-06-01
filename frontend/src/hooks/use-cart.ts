@@ -20,6 +20,7 @@ export interface CartLineItem {
   unit_price: number
   total: number
   thumbnail?: string
+  variant_title?: string
   variant?: { id: string; title: string }
   product?: { id: string; title: string; handle: string }
 }

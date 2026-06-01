@@ -83,7 +83,7 @@ export function CartDrawer() {
                       {item.title}
                     </h3>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
-                      {item.variant?.title || 'Default Variant'}
+                      {item.variant_title || item.variant?.title || 'Default Variant'}
                     </p>
                   </div>
 

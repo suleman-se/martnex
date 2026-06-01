@@ -1,4 +1,5 @@
 import { buildStoreHeaders, medusa, getBackendUrl } from './medusa-client'
+import { AddressInput, CustomerAddress } from '@/types/address'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -161,4 +162,108 @@ export async function fetchSellerById(id: string): Promise<FetchSellerResponse |
     return null
   }
 }
+
+// ─── Customer / Buyer Portal ──────────────────────────────────────────────────
+
+/** Retrieve current logged-in buyer details */
+export async function fetchMe(token?: string): Promise<{ customer: any }> {
+  const headers = await buildStoreHeaders(token)
+  const res = await fetch(`${getBackendUrl()}/store/customers/me`, {
+    headers,
+    cache: 'no-store',
+  })
+  if (!res.ok) {
+    throw new Error(`Failed to fetch current customer: ${res.statusText}`)
+  }
+  return res.json()
+}
+
+/** Retrieve customer order history list */
+export async function fetchCustomerOrders(
+  limit = 10,
+  offset = 0,
+  token?: string
+): Promise<{ orders: any[]; count: number }> {
+  const headers = await buildStoreHeaders(token)
+  const res = await fetch(
+    `${getBackendUrl()}/store/orders?limit=${limit}&offset=${offset}`,
+    {
+      headers,
+      cache: 'no-store',
+    }
+  )
+  if (!res.ok) {
+    throw new Error(`Failed to fetch customer orders: ${res.statusText}`)
+  }
+  return res.json()
+}
+
+/** Update customer profile data */
+export async function updateCustomer(
+  payload: { first_name?: string; last_name?: string; phone?: string },
+  token?: string
+): Promise<any> {
+  const headers = await buildStoreHeaders(token)
+  const res = await fetch(`${getBackendUrl()}/store/customers/me`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) {
+    throw new Error(`Failed to update customer: ${res.statusText}`)
+  }
+  return res.json()
+}
+
+/** Add a shipping address */
+export async function addCustomerAddress(
+  address: AddressInput,
+  token?: string
+): Promise<{ address: CustomerAddress }> {
+  const headers = await buildStoreHeaders(token)
+  const res = await fetch(`${getBackendUrl()}/store/customers/me/addresses`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(address),
+  })
+  if (!res.ok) {
+    throw new Error(`Failed to add customer address: ${res.statusText}`)
+  }
+  return res.json()
+}
+
+/** Update a shipping address */
+export async function updateCustomerAddress(
+  addressId: string,
+  address: Partial<AddressInput>,
+  token?: string
+): Promise<{ address: CustomerAddress }> {
+  const headers = await buildStoreHeaders(token)
+  const res = await fetch(`${getBackendUrl()}/store/customers/me/addresses/${addressId}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(address),
+  })
+  if (!res.ok) {
+    throw new Error(`Failed to update customer address: ${res.statusText}`)
+  }
+  return res.json()
+}
+
+/** Delete a shipping address */
+export async function deleteCustomerAddress(
+  addressId: string,
+  token?: string
+): Promise<{ id: string; object: string; deleted: boolean }> {
+  const headers = await buildStoreHeaders(token)
+  const res = await fetch(`${getBackendUrl()}/store/customers/me/addresses/${addressId}`, {
+    method: 'DELETE',
+    headers,
+  })
+  if (!res.ok) {
+    throw new Error(`Failed to delete customer address: ${res.statusText}`)
+  }
+  return res.json()
+}
+
 

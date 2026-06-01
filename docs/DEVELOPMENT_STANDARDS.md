@@ -83,6 +83,21 @@ When working on seller product images, follow the current lifecycle contract:
 - Delete files only after the corresponding product create/update succeeds.
 - Normalize any backend-served `/static/...` media URLs before rendering in the frontend.
 
+### Strict TypeScript Type Safety
+- **Zero `any` Types**: Prohibit the use of `any` types. Declare explicit, strictly defined interfaces for all component props, API request/response structures, and custom forms.
+- **Interface Extension and Reuse**: Prevent redundant type declarations by extending base interfaces (e.g., `extends AddressInput`) or using standard utility types (`Omit`, `Partial`, `Pick`) to compose child structures.
+
+### Overlay Scroll-Locking
+- When implementing drawer panels, dialog modals, or spotlight overlays, prevent viewport/background scrolling on both desktop and mobile devices by calling the centralized `useBodyScrollLock(isOpen)` hook.
+
+### Buyer Account Portal & Componentization (v0.9.8)
+To maintain long-term codebase health and isolation, avoid placing large, monolithic forms or dialog states inside orchestrator route pages. All buyer account modules are componentized into isolated, reusable sub-components:
+- **Centralized Types**: All buyer storefront address forms, profile configurations, and checkout inputs must use the shared, strictly typed schemas defined in `src/types/address.ts`. Redundant/duplicate models or inline `any` declarations are prohibited.
+- **Address Card (`AddressCard`)**: Renders custom delivery addresses with status badges. Modifying/deleting addresses must safely bubble actions to parent handlers without containing full dialog/modal state inline.
+- **Address Editor Card (`AddressEditorCard`)**: Manages individual address fields (names, phone numbers, postal codes). Dynamically calculates form validity, loading indicators, and sole-default checkbox locks.
+- **Delete Address Dialog (`DeleteAddressDialog`)**: Encapsulates standard Radix `AlertDialog` layers, verifying safety constraints (e.g., promoting new defaults if deleting an active default, warning when deleting the sole saved address).
+- **Checkout Saved Address Selector (`SavedAddressSelector`)**: Displays a high-contrast selectable grid of saved options at checkout. Emits normalized `AddressInput` values upon selection, including a custom card trigger to input new ad-hoc addresses seamlessly.
+
 ## 5. Security & Validation
 - **Input Validation**: Mandatory Zod schemas for all forms and API payloads.
 - **Ownership Enforcement**: Verify resource ownership on every backend operation.
