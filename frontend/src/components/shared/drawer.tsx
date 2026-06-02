@@ -58,7 +58,7 @@ export function Drawer({
   const isBottom = position === 'bottom'
 
   // Backdrop classes
-  const backdropClasses = `fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 transition-opacity duration-300 ${
+  const backdropClasses = `fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity duration-300 ${
     isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
   } ${isBottom ? 'md:hidden' : ''}`
 

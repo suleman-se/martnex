@@ -25,9 +25,9 @@ export function CartDrawer() {
       position="right"
       showCloseButton={false}
     >
-      <div className="flex flex-col h-full bg-white">
+      <div className="flex flex-col h-full bg-white dark:bg-card">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between shrink-0">
+        <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             <ShoppingBag className="h-5 w-5 text-slate-800" />
             <h2 className="font-heading font-black text-slate-900 text-base uppercase tracking-wider">
@@ -159,7 +159,7 @@ export function CartDrawer() {
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="p-6 border-t border-slate-100 space-y-4 shrink-0 bg-slate-50/50">
+          <div className="p-6 border-t border-slate-100 dark:border-slate-800 space-y-4 shrink-0 bg-slate-50/50">
             {/* Totals */}
             <div className="space-y-2">
               <div className="flex justify-between items-center text-xs font-semibold text-slate-500">
@@ -170,7 +170,7 @@ export function CartDrawer() {
                 <span>Taxes</span>
                 <span>Calculated at checkout</span>
               </div>
-              <div className="h-px bg-slate-200/50 my-1" />
+              <div className="h-px bg-slate-200/50 dark:bg-slate-800 my-1" />
               <div className="flex justify-between items-center text-sm font-black text-slate-900">
                 <span>Subtotal</span>
                 <span className="text-base">{formatPrice(subtotal, currencyCode)}</span>
@@ -182,7 +182,7 @@ export function CartDrawer() {
               <Link
                 href="/store/checkout"
                 onClick={closeCart}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3.5 px-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all hover:shadow-premium group/btn"
+                className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900 py-3.5 px-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all hover:shadow-premium group/btn"
               >
                 <span>Proceed to Checkout</span>
                 <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-0.5" />
@@ -190,7 +190,7 @@ export function CartDrawer() {
               <Link
                 href="/store/cart"
                 onClick={closeCart}
-                className="w-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 py-3.5 px-4 rounded-2xl font-bold text-xs flex items-center justify-center transition-colors"
+                className="w-full bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 py-3.5 px-4 rounded-2xl font-bold text-xs flex items-center justify-center transition-colors"
               >
                 View Shopping Bag
               </Link>

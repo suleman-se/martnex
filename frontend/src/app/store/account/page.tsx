@@ -8,6 +8,7 @@ import { ShoppingBag, Sparkles, MapPin, User, ArrowRight, Package } from 'lucide
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Order, OrderItem } from '@/types/order'
 
 export default function AccountDashboardPage() {
   const mounted = useMounted()
@@ -27,7 +28,7 @@ export default function AccountDashboardPage() {
   const totalOrdersCount = data?.count || orders.length
 
   // Calculate active shipments (fulfillment status not completed or delivered)
-  const activeShipments = orders.filter((o: any) => {
+  const activeShipments = orders.filter((o: Order) => {
     const status = (o.status || '').toLowerCase()
     return status === 'placed' || status === 'processing' || status === 'shipped'
   }).length
@@ -67,9 +68,9 @@ export default function AccountDashboardPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header and Welcome */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-heading font-black text-slate-900">
+          <h1 className="text-2xl lg:text-3xl font-heading font-black text-slate-900">
             Welcome Back, <span className="text-slate-700">{formattedName}</span>
           </h1>
           <p className="text-sm text-slate-400 mt-1 font-medium">
@@ -85,7 +86,7 @@ export default function AccountDashboardPage() {
       </div>
 
       {/* 3-Column Statistics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
         {/* Stat 1: Total Purchases */}
         <Card className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm flex items-center gap-5 relative overflow-hidden group">
           <div className="absolute right-0 bottom-0 translate-x-4 translate-y-4 opacity-5 group-hover:opacity-10 transition-opacity duration-300">
@@ -144,9 +145,9 @@ export default function AccountDashboardPage() {
       </div>
 
       {/* Split Layout: Recent Orders & Quick Navigation */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
         {/* Left 3 Columns: Recent Orders */}
-        <div className="lg:col-span-3 space-y-4">
+        <div className="xl:col-span-3 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-black text-slate-850 uppercase tracking-[0.15em]">Recent Purchases</h2>
             {totalOrdersCount > 0 && (
@@ -173,9 +174,9 @@ export default function AccountDashboardPage() {
             </Card>
           ) : (
             <div className="space-y-3">
-              {recentOrders.map((order: any) => {
-                const itemThumbnails = (order.items || []).map((it: any) => it.thumbnail).filter(Boolean)
-                const itemsCount = (order.items || []).reduce((acc: number, it: any) => acc + (it.quantity || 1), 0)
+              {recentOrders.map((order: Order) => {
+                const itemThumbnails = (order.items || []).map((it: OrderItem) => it.thumbnail).filter((t): t is string => typeof t === 'string')
+                const itemsCount = (order.items || []).reduce((acc: number, it: OrderItem) => acc + (it.quantity || 1), 0)
 
                 return (
                   <Card key={order.id} className="rounded-2xl border border-slate-100 bg-white p-4 hover:border-slate-205 transition-all flex items-center justify-between gap-4 group">
@@ -228,7 +229,7 @@ export default function AccountDashboardPage() {
         </div>
 
         {/* Right 2 Columns: Quick Actions */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="xl:col-span-2 space-y-4">
           <h2 className="text-base font-black text-slate-850 uppercase tracking-[0.15em]">Quick Settings</h2>
           <div className="flex flex-col gap-3">
             {quickActions.map((action) => {

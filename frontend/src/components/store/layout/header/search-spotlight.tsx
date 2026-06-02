@@ -240,16 +240,16 @@ export function SearchSpotlight({ isOpen, onClose, currencyCode }: SearchSpotlig
 
   return (
     <div
-      className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[100] flex items-start justify-center md:pt-[10vh] md:px-4 animate-in fade-in duration-200"
+      className="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-start justify-center md:pt-[10vh] md:px-4 animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose()
         }
       }}
     >
-      <div className="relative bg-white w-full h-full md:h-auto md:max-h-[80vh] md:max-w-3xl md:rounded-2xl shadow-2xl border-0 md:border md:border-slate-100 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative bg-white dark:bg-card w-full h-full md:h-auto md:max-h-[80vh] md:max-w-3xl md:rounded-2xl shadow-2xl border-0 md:border md:border-slate-100 dark:md:border-slate-800 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Search Input Box */}
-        <div className="relative h-14 border-b border-slate-100 flex items-center px-4 gap-3 shrink-0">
+        <div className="relative h-14 border-b border-slate-100 dark:border-slate-800 flex items-center px-4 gap-3 shrink-0">
           <Search className="h-5 w-5 text-slate-400" />
           <input
             ref={inputRef}
@@ -290,8 +290,8 @@ export function SearchSpotlight({ isOpen, onClose, currencyCode }: SearchSpotlig
                 }}
                 className={`text-[11px] font-extrabold px-3 py-1 rounded-full border transition-all shrink-0 select-none ${
                   selectedCategoryId === null
-                    ? 'bg-slate-900 border-slate-900 text-white shadow-sm scale-102 font-black hover:bg-slate-800 hover:border-slate-800'
-                    : 'bg-white border-slate-200 text-slate-500 hover:border-slate-350 hover:text-slate-800'
+                    ? 'bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100 text-white dark:text-slate-900 shadow-sm scale-102 font-black hover:bg-slate-800 dark:hover:bg-slate-200 hover:border-slate-800 dark:hover:border-slate-200'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-750 text-slate-500 dark:text-slate-400 hover:border-slate-350 dark:hover:border-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
                 All
@@ -305,8 +305,8 @@ export function SearchSpotlight({ isOpen, onClose, currencyCode }: SearchSpotlig
                   }}
                   className={`text-[11px] font-extrabold px-3 py-1 rounded-full border transition-all shrink-0 select-none ${
                     selectedCategoryId === cat.id
-                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm scale-102 font-black hover:bg-slate-800 hover:border-slate-800'
-                      : 'bg-white border-slate-200 text-slate-500 hover:border-slate-350 hover:text-slate-800'
+                      ? 'bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100 text-white dark:text-slate-900 shadow-sm scale-102 font-black hover:bg-slate-800 dark:hover:bg-slate-200 hover:border-slate-800 dark:hover:border-slate-200'
+                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-750 text-slate-500 dark:text-slate-400 hover:border-slate-350 dark:hover:border-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                   }`}
                 >
                   {cat.name}
@@ -331,8 +331,8 @@ export function SearchSpotlight({ isOpen, onClose, currencyCode }: SearchSpotlig
                   }}
                   className={`text-[11px] font-extrabold px-3 py-1 rounded-full border transition-all shrink-0 select-none ${
                     selectedPriceRange === p.value
-                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm scale-102 font-black hover:bg-slate-800 hover:border-slate-800'
-                      : 'bg-white border-slate-200 text-slate-500 hover:border-slate-350 hover:text-slate-850'
+                      ? 'bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100 text-white dark:text-slate-900 shadow-sm scale-102 font-black hover:bg-slate-800 dark:hover:bg-slate-200 hover:border-slate-800 dark:hover:border-slate-200'
+                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-750 text-slate-500 dark:text-slate-400 hover:border-slate-350 dark:hover:border-slate-500 hover:text-slate-850 dark:hover:text-slate-200'
                   }`}
                 >
                   {p.label}
@@ -430,7 +430,7 @@ export function SearchSpotlight({ isOpen, onClose, currencyCode }: SearchSpotlig
           </div>
 
           {/* Right Pane (Live Matches or Trending Categories - 2/3) */}
-          <div className="flex-1 p-5 flex flex-col bg-white md:overflow-y-auto">
+          <div className="flex-1 p-5 flex flex-col bg-white dark:bg-card md:overflow-y-auto">
             {searchQuery.length < 2 ? (
               /* EMPTY QUERY: Display Trending Categories */
               <div className="space-y-6 flex-1 flex flex-col justify-center">

@@ -41,7 +41,7 @@ export function StorePagination({ totalCount, pageSize, offset }: StorePaginatio
         onClick={() => handlePageChange(Math.max(0, offset - pageSize))}
         disabled={currentPage === 1 || isPending}
         variant="outline"
-        className="rounded-xl border-slate-200 bg-white text-sm font-bold text-slate-600 hover:bg-slate-50"
+        className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-card text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
       >
         Previous
       </Button>
@@ -52,7 +52,7 @@ export function StorePagination({ totalCount, pageSize, offset }: StorePaginatio
         onClick={() => handlePageChange(offset + pageSize)}
         disabled={currentPage >= totalPages || isPending}
         variant="outline"
-        className="rounded-xl border-slate-200 bg-white text-sm font-bold text-slate-600 hover:bg-slate-50"
+        className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-card text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
       >
         Next
       </Button>

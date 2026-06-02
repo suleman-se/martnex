@@ -8,6 +8,7 @@ import { ShoppingBag, ArrowRight, Package, Calendar, ChevronLeft, ChevronRight }
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Order, OrderItem } from '@/types/order'
 
 const ITEMS_PER_PAGE = 8
 
@@ -41,7 +42,7 @@ export default function OrderHistoryPage() {
     if (s === 'processing' || s === 'requires_action') {
       return 'bg-amber-50 text-amber-750 dark:bg-amber-950/30 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40'
     }
-    return 'bg-slate-55/70 text-slate-700 dark:bg-slate-900/40 dark:text-slate-400 border border-slate-100 dark:border-slate-800'
+    return 'bg-slate-55/70 text-slate-700 border border-slate-100 dark:border-slate-800'
   }
 
   function getStatusLabel(statusText: string): string {
@@ -56,7 +57,7 @@ export default function OrderHistoryPage() {
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-heading font-black text-slate-900">
+        <h1 className="text-2xl lg:text-3xl font-heading font-black text-slate-900">
           Order History
         </h1>
         <p className="text-sm text-slate-400 mt-1 font-medium">
@@ -84,8 +85,8 @@ export default function OrderHistoryPage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {orders.map((order: any) => {
-            const itemsCount = (order.items || []).reduce((acc: number, it: any) => acc + (it.quantity || 1), 0)
+          {orders.map((order: Order) => {
+            const itemsCount = (order.items || []).reduce((acc: number, it: OrderItem) => acc + (it.quantity || 1), 0)
             const dateStr = new Date(order.created_at).toLocaleDateString('en-US', {
               month: 'long',
               day: 'numeric',
@@ -95,7 +96,7 @@ export default function OrderHistoryPage() {
             return (
               <Card
                 key={order.id}
-                className="rounded-3xl border border-slate-100 bg-white p-5 md:p-6 shadow-sm hover:border-slate-205 transition-all flex flex-col gap-5"
+                className="rounded-3xl border border-slate-100 bg-white p-5 lg:p-6 shadow-sm hover:border-slate-205 transition-all flex flex-col gap-5"
               >
                 {/* Order Top Bar: Date, ID, Status, Total */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
@@ -120,11 +121,11 @@ export default function OrderHistoryPage() {
                 </div>
 
                 {/* Order Items Horizontal Timeline Preview */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap gap-3">
-                      {(order.items || []).map((item: any) => (
-                        <div key={item.id} className="flex items-center gap-2.5 bg-slate-50 border border-slate-100 rounded-2xl p-2 max-w-[200px] shrink-0">
+                      {(order.items || []).map((item: OrderItem) => (
+                        <div key={item.id} className="flex items-center gap-2.5 w-full bg-slate-50 border border-slate-100 rounded-2xl p-2 max-w-[200px] shrink-0">
                           {item.thumbnail ? (
                             <img
                               src={item.thumbnail}

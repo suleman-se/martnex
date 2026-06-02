@@ -79,14 +79,14 @@ export default function AccountLayout({
   }
 
   return (
-    <div className="max-w-7xl mx-auto w-full animate-in fade-in duration-500 min-h-[70vh] flex flex-col md:flex-row gap-8 py-4">
-      {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex flex-col w-64 shrink-0 bg-white/50 backdrop-blur-md border border-slate-100 rounded-3xl p-6 h-fit shadow-sm space-y-6">
-        <div className="flex items-center gap-3 px-2 pb-4 border-b border-slate-100">
-          <div className="h-10 w-10 bg-slate-900 px-2.5 rounded-2xl flex items-center justify-center text-white font-extrabold text-base shadow-sm">
+    <div className="max-w-7xl mx-auto w-full animate-in fade-in duration-500 min-h-[70vh] flex flex-col md:flex-row gap-6 lg:gap-8 py-4">
+      {/* Sidebar - Tablet (compact icon+label) & Desktop (full) */}
+      <aside className="hidden md:flex flex-col md:w-16 lg:w-64 shrink-0 bg-white/50 backdrop-blur-md border border-slate-100 rounded-3xl md:p-3 lg:p-6 h-fit shadow-sm space-y-2 lg:space-y-6 sticky top-20">
+        <div className="flex items-center gap-3 md:justify-center lg:justify-start px-2 lg:px-2 pb-3 lg:pb-4 border-b border-slate-100">
+          <div className="h-10 w-10 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-extrabold text-base shadow-sm shrink-0">
             <User className="h-5 w-5" />
           </div>
-          <div>
+          <div className="hidden lg:block">
             <h2 className="text-sm font-black text-slate-800 truncate max-w-[150px]">
               {user?.first_name ? `${user.first_name} ${user.last_name}` : 'Buyer Account'}
             </h2>
@@ -104,31 +104,33 @@ export default function AccountLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all ${
+                title={item.label}
+                className={`flex items-center md:justify-center lg:justify-start gap-3 md:px-2 lg:px-4 py-3 rounded-2xl text-xs font-bold transition-all ${
                   isActive
                     ? 'bg-slate-900 text-white shadow-sm'
                     : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
                 <Icon className={`h-4.5 w-4.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                <span>{item.label}</span>
+                <span className="hidden lg:inline">{item.label}</span>
               </Link>
             )
           })}
         </nav>
 
-        <div className="pt-4 border-t border-slate-100">
+        <div className="pt-3 lg:pt-4 border-t border-slate-100">
           <button
             onClick={handleSignOut}
-            className="flex w-full items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
+            title="Sign Out"
+            className="flex w-full items-center md:justify-center lg:justify-start gap-3 md:px-2 lg:px-4 py-3 rounded-2xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
           >
             <LogOut className="h-4.5 w-4.5 shrink-0 text-rose-550 dark:text-rose-400" />
-            <span>Sign Out</span>
+            <span className="hidden lg:inline">Sign Out</span>
           </button>
         </div>
       </aside>
 
-      {/* Swipeable Tabs Navigation - Mobile */}
+      {/* Swipeable Tabs Navigation - Mobile only (tablet uses icon sidebar) */}
       <div className="block md:hidden overflow-x-auto scrollbar-none border border-slate-100 bg-white/50 backdrop-blur-md rounded-2xl p-2 shrink-0 mb-2">
         <nav className="flex items-center gap-1.5 min-w-max">
           {menuItems.map((item) => {

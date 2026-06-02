@@ -39,8 +39,9 @@ export default function ProfileSettingsPage() {
       await refreshUser()
       toast.success('Your profile details have been successfully updated.')
     },
-    onError: (err: any) => {
-      toast.error(err.message || 'Failed to update profile settings.')
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : 'Failed to update profile settings.'
+      toast.error(message)
     }
   })
 

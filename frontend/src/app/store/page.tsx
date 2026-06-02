@@ -1,4 +1,4 @@
-import { fetchProducts, fetchProductCategories } from '@/lib/api'
+import { fetchProducts, fetchProductCategories, StoreProduct, ProductCategory } from '@/lib/api'
 import { ProductGrid } from '@/components/store/products/product-grid'
 import { StoreFilters } from '@/components/store/store-filters'
 import { StorePagination } from '@/components/store/store-pagination'
@@ -25,8 +25,8 @@ export default async function StorePage({ searchParams }: StorePageProps) {
   const offsetStr = resolvedParams.offset ?? '0'
   const offset = parseInt(offsetStr, 10) || 0
 
-  let categories: any[] = []
-  let products: any[] = []
+  let categories: ProductCategory[] = []
+  let products: StoreProduct[] = []
   let count = 0
 
   try {

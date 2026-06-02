@@ -26,7 +26,11 @@ export default function CartPage() {
   const popularProducts = popularData?.products || []
 
   // Optimistic reducer for cart items and totals
-  const [optimisticCart, setOptimisticCart] = useOptimistic<Cart | null, { type: 'update' | 'remove'; payload: any }>(
+  const [optimisticCart, setOptimisticCart] = useOptimistic<
+    Cart | null,
+    | { type: 'remove'; payload: string }
+    | { type: 'update'; payload: { lineItemId: string; quantity: number } }
+  >(
     cart || null,
     (state, action) => {
       if (!state) return null

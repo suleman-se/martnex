@@ -72,7 +72,7 @@ function MethodCard({
       className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 text-left transition-all duration-150 ${
         selected
           ? 'border-slate-900 bg-slate-900 text-white'
-          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'
+          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-450 dark:hover:border-slate-700'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
     >
       <span className={`shrink-0 ${selected ? 'text-white' : 'text-slate-400'}`}>
@@ -194,10 +194,10 @@ function CodOnlyPaymentStep({ cartId, cartTotal, currencyCode, onComplete }: Pay
                 <div
                   className={`h-6 w-6 rounded-full flex items-center justify-center border text-[10px] font-black transition-all duration-300 shrink-0 ${
                     isCompleted
-                      ? 'bg-slate-900 border-slate-900 text-white'
+                      ? 'bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100 text-white dark:text-slate-900'
                       : isActive
-                      ? 'bg-slate-900 text-white border-slate-900 animate-pulse'
-                      : 'bg-white border-slate-200 text-slate-400'
+                      ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100 animate-pulse'
+                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500'
                   }`}
                 >
                   {isCompleted ? '✓' : idx + 1}
@@ -358,10 +358,10 @@ function PaymentStepWithStripe({ cartId, cartTotal, currencyCode, onComplete }: 
                 <div
                   className={`h-6 w-6 rounded-full flex items-center justify-center border text-[10px] font-black transition-all duration-300 shrink-0 ${
                     isCompleted
-                      ? 'bg-slate-900 border-slate-900 text-white'
+                      ? 'bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100 text-white dark:text-slate-900'
                       : isActive
-                      ? 'bg-slate-900 text-white border-slate-900 animate-pulse'
-                      : 'bg-white border-slate-200 text-slate-400'
+                      ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100 animate-pulse'
+                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500'
                   }`}
                 >
                   {isCompleted ? '✓' : idx + 1}
@@ -406,10 +406,10 @@ function PaymentStepWithStripe({ cartId, cartTotal, currencyCode, onComplete }: 
       {/* Stripe card input */}
       {selectedProvider === 'stripe' && (
         <div
-          className={`px-5 py-4 bg-white border rounded-2xl transition-all duration-300 space-y-2.5 ${
+          className={`px-5 py-4 bg-white dark:bg-slate-900 border rounded-2xl transition-all duration-300 space-y-2.5 ${
             isCardFocused
-              ? 'border-slate-900 ring-2 ring-slate-900/5 shadow-sm'
-              : 'border-slate-100 shadow-sm'
+              ? 'border-slate-900 dark:border-slate-100 ring-2 ring-slate-900/5 dark:ring-slate-100/5 shadow-sm'
+              : 'border-slate-100 dark:border-slate-800 shadow-sm'
           }`}
         >
           <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
@@ -422,7 +422,7 @@ function PaymentStepWithStripe({ cartId, cartTotal, currencyCode, onComplete }: 
               style: {
                 base: {
                   fontSize: '14px',
-                  color: '#1e293b',
+                  color: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? '#f8fafc' : '#1e293b',
                   '::placeholder': { color: '#94a3b8' },
                   fontFamily: 'Inter, system-ui, sans-serif',
                 },

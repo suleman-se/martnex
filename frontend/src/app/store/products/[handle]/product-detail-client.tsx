@@ -95,7 +95,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Images */}
         <div className="space-y-4">
-          <div className="relative aspect-square bg-white rounded-3xl overflow-hidden shadow-sm">
+          <div className="relative aspect-square bg-white dark:bg-card rounded-3xl overflow-hidden shadow-sm">
             {images[selectedImage] ? (
               <Image
                 src={images[selectedImage].url}
@@ -172,8 +172,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               onDecrease={() => setQuantity((q) => Math.max(1, q - 1))}
               onIncrease={() => setQuantity((q) => q + 1)}
               disableDecrease={quantity <= 1}
-              className="border-slate-200 bg-white px-3 py-1.5"
-              valueClassName="w-6 text-sm"
+              className="border-slate-200 dark:border-slate-800 bg-white dark:bg-card px-3 py-1.5"
+              valueClassName="w-6 text-sm text-slate-900"
             />
           </div>
 
@@ -181,7 +181,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           <Button
             onClick={handleAddToCart}
             disabled={addItem.isPending || !activeVariant}
-            className="h-14 w-full rounded-2xl bg-slate-900 text-sm font-black uppercase tracking-widest hover:bg-slate-800 gap-2 cursor-pointer transition-all duration-300 hover:shadow-premium active:scale-[0.99]"
+            className="h-14 w-full rounded-2xl text-sm font-black uppercase tracking-widest gap-2 cursor-pointer transition-all duration-300 hover:shadow-premium active:scale-[0.99]"
           >
             {addItem.isPending ? (
               <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -256,7 +256,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     </span>
                   </button>
                   <div
-                    className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-40 border-t border-slate-100 opacity-100 p-4 bg-white' : 'max-h-0 opacity-0'
+                    className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-40 border-t border-slate-100 dark:border-slate-800 opacity-100 p-4 bg-white dark:bg-card' : 'max-h-0 opacity-0'
                       }`}
                   >
                     <p className="text-xs text-slate-500 leading-relaxed font-medium">
@@ -355,7 +355,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           <Button
             onClick={handleAddToCart}
             disabled={addItem.isPending || !activeVariant}
-            className="h-11 px-5 rounded-xl bg-slate-900 text-xs font-black uppercase tracking-widest hover:bg-slate-800 shrink-0 flex items-center gap-1.5 shadow-sm"
+            className="h-11 px-5 rounded-xl text-xs font-black uppercase tracking-widest shrink-0 flex items-center gap-1.5 shadow-sm"
           >
             {addItem.isPending ? (
               <span className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

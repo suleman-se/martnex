@@ -8,13 +8,26 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-white shadow-premium hover:opacity-90 active:scale-95",
-        premium: "bg-gradient-to-br from-[#000000] to-[#333b50] text-white shadow-premium hover:shadow-2xl hover:-translate-y-0.5 active:scale-95",
-        destructive: "bg-destructive text-destructive-foreground hover:opacity-90 shadow-sm",
-        outline: "border border-border bg-transparent hover:bg-secondary text-primary",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-muted active:scale-95",
-        tonal: "bg-[#e0e3e5] text-primary hover:bg-[#e6e8ea] active:scale-95",
-        ghost: "hover:bg-accent/40 text-muted-foreground hover:text-primary transition-colors",
+        default:
+          "bg-slate-900 text-white shadow-premium hover:bg-slate-800 active:scale-95",
+        premium:
+          "bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 text-white " +
+          "border border-slate-950/10 shadow-lg shadow-slate-900/10 " +
+          "hover:shadow-xl hover:shadow-slate-900/15 hover:-translate-y-0.5 active:scale-[0.98] " +
+          "transition-all duration-300 ease-out font-black tracking-wider",
+        destructive:
+          "bg-destructive text-destructive-foreground hover:opacity-90 shadow-sm",
+        outline:
+          "border border-slate-200 bg-transparent hover:bg-slate-50 text-slate-900 " +
+          "dark:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-muted active:scale-95",
+        tonal:
+          "bg-slate-100 text-slate-900 hover:bg-slate-200 active:scale-95 " +
+          "dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700",
+        ghost:
+          "hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors " +
+          "dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-slate-100",
         link: "text-primary underline-offset-4 hover:underline font-bold",
       },
       size: {

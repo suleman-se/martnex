@@ -62,18 +62,18 @@ export default function RegisterForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-900 rounded-lg text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-300">
+        <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 text-red-900 dark:text-red-300 rounded-lg text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-300">
           <p className="flex items-center gap-2">
-            <span className="block h-2 w-2 rounded-full bg-red-900 animate-pulse"></span>
+            <span className="block h-2 w-2 rounded-full bg-current animate-pulse"></span>
             {error}
           </p>
         </div>
       )}
 
       {success && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-500">
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-emerald-900 dark:text-emerald-300 rounded-lg text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-500">
           <p className="flex items-center gap-2">
-            <span className="block h-2 w-2 rounded-full bg-emerald-900 animate-pulse"></span>
+            <span className="block h-2 w-2 rounded-full bg-current animate-pulse"></span>
             Account created successfully. Verifying...
           </p>
         </div>

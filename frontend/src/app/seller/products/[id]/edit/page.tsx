@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useSellerProduct, useUpdateProduct } from '@/hooks/use-seller-products';
-import { ProductForm } from '@/components/seller/products/ProductForm';
+import { ProductForm, ProductFormData } from '@/components/seller/products/ProductForm';
 
 interface EditProductPageProps {
   params: Promise<{ id: string }>;
@@ -16,7 +16,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const { data: product, isLoading: isFetching } = useSellerProduct(id);
   const { handleUpdate, isProcessing } = useUpdateProduct();
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: ProductFormData) => {
     try {
       await handleUpdate({ id, ...data });
       toast.success('Product updated successfully');

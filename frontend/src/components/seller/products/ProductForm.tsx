@@ -56,7 +56,7 @@ const productSchema = z.object({
   status: z.enum(['draft', 'proposed', 'published']),
 });
 
-type ProductFormData = z.infer<typeof productSchema>;
+export type ProductFormData = z.infer<typeof productSchema>;
 
 const DEFAULT_OPTION_TITLE = 'Default option';
 const DEFAULT_OPTION_VALUE = 'Default option value';
@@ -138,23 +138,27 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
         title: option.title,
         values: option.values.map((value) => value.value),
       })) || [];
-  const initialVariants = initialData?.variants?.map((variant) => ({
-    id: variant.id,
-    title: variant.title,
-    prices: variant.prices?.length
+  const initialVariants = initialData?.variants?.map((variant) => {
+    const basePrice = variant.prices?.length
       ? variant.prices.map((price) => ({ amount: price.amount, currency_code: price.currency_code }))
-      : [{ amount: (variant as any).calculated_price?.calculated_amount ?? 0, currency_code: 'usd' }],
-    inventory_quantity: variant.inventory_quantity,
-    sku: variant.sku || undefined,
-    options: usesSyntheticSimpleProduct
-      ? []
-      : variant.options
-          .map((opt: any) => ({
-            title: opt.title || opt.option?.title || '',
-            value: typeof opt.value === 'string' ? opt.value : opt.value?.value || '',
-          }))
-          .filter((opt: any) => opt.title),
-  })) || [];
+      : [{ amount: (variant as unknown as { calculated_price?: { calculated_amount?: number } }).calculated_price?.calculated_amount ?? 0, currency_code: 'usd' }];
+
+    return {
+      id: variant.id,
+      title: variant.title,
+      prices: basePrice,
+      inventory_quantity: variant.inventory_quantity,
+      sku: variant.sku || undefined,
+      options: usesSyntheticSimpleProduct
+        ? []
+        : (variant.options as unknown as Array<{ title?: string; value?: string | { value?: string }; option?: { title?: string } }>)
+            .map((opt) => ({
+              title: opt.title || opt.option?.title || '',
+              value: typeof opt.value === 'string' ? opt.value : opt.value?.value || '',
+            }))
+            .filter((opt) => opt.title),
+    };
+  }) || [];
 
   const {
     register,
@@ -173,7 +177,7 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
       pending_delete_file_ids: [],
       options: initialOptions,
       variants: initialVariants,
-      status: initialData.status as any || 'draft',
+      status: (initialData.status as 'draft' | 'proposed' | 'published') || 'draft',
     } : {
       status: 'draft',
       images: [],
@@ -358,14 +362,21 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
                     render={({ field: variantsField }) => (
                       <VariantBuilder
                         value={{
-                          options: (optionsField.value as any[])?.length
-                            ? (optionsField.value as any[]).map((o: any) => ({
+                          options: (optionsField.value as { id?: string; title: string; values: string[] }[])?.length
+                            ? (optionsField.value as { id?: string; title: string; values: string[] }[]).map((o) => ({
                                 id: o.id ?? Math.random().toString(),
                                 title: o.title,
                                 values: o.values,
                               }))
                             : [],
-                          variants: variantsField.value as any || [],
+                          variants: (variantsField.value as unknown as Array<{
+                            id?: string;
+                            title: string;
+                            prices: { amount: number; currency_code: string }[];
+                            inventory_quantity: number;
+                            sku?: string;
+                            options: { title: string; value: string }[];
+                          }>) || [],
                         }}
                         onChange={(val) => {
                           optionsField.onChange(val.options);

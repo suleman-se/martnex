@@ -11,22 +11,22 @@ interface AuthFeedbackPanelProps {
 
 const variantClasses = {
   success: {
-    container: 'bg-emerald-50 text-emerald-900',
-    iconWrap: 'bg-emerald-100',
-    title: 'text-emerald-900',
-    message: 'text-emerald-700/80',
+    container: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300',
+    iconWrap: 'bg-emerald-100 dark:bg-emerald-900/40',
+    title: 'text-emerald-900 dark:text-emerald-300',
+    message: 'text-emerald-700/80 dark:text-emerald-400/80',
   },
   error: {
-    container: 'bg-red-50 text-red-900',
-    iconWrap: 'bg-red-100',
-    title: 'text-red-900',
-    message: 'text-red-700/80',
+    container: 'bg-red-50 dark:bg-red-950/40 text-red-900 dark:text-red-300',
+    iconWrap: 'bg-red-100 dark:bg-red-900/40',
+    title: 'text-red-900 dark:text-red-300',
+    message: 'text-red-700/80 dark:text-red-400/80',
   },
   warning: {
-    container: 'bg-amber-50 text-amber-900',
-    iconWrap: 'bg-amber-100',
-    title: 'text-amber-900',
-    message: 'text-amber-700/80',
+    container: 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300',
+    iconWrap: 'bg-amber-100 dark:bg-amber-900/40',
+    title: 'text-amber-900 dark:text-amber-300',
+    message: 'text-amber-700/80 dark:text-amber-400/80',
   },
 } as const;
 

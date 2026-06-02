@@ -30,9 +30,9 @@ export function DeleteAddressDialog({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="rounded-3xl border border-slate-100 bg-white p-6 md:p-8">
+      <AlertDialogContent className="rounded-3xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-card p-6 md:p-8">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-lg font-black text-slate-850 uppercase tracking-[0.1em]">
+          <AlertDialogTitle className="text-lg font-black text-slate-850 dark:text-slate-100 uppercase tracking-[0.1em]">
             Delete shipping destination?
           </AlertDialogTitle>
           <AlertDialogDescription className="text-xs font-semibold text-slate-500 leading-relaxed">
@@ -73,7 +73,7 @@ export function DeleteAddressDialog({
             Are you sure you want to delete this address? This action is permanent and cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="flex items-center gap-3 mt-6 pt-4 border-t border-slate-100">
+        <AlertDialogFooter className="flex items-center gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
           <AlertDialogCancel className="rounded-2xl h-10 px-5 font-bold text-xs uppercase tracking-widest bg-slate-100 text-slate-700 hover:bg-slate-200 border-0 cursor-pointer shadow-none">
             Cancel
           </AlertDialogCancel>

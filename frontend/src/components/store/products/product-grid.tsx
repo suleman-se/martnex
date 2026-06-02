@@ -1,7 +1,7 @@
 'use client'
 
 import { ProductCard } from './product-card'
-import type { StoreProduct } from '@/hooks/use-products'
+import { StoreProduct } from '@/lib/api'
 import { ShoppingBag } from 'lucide-react'
 import { EmptyState } from '@/components/shared/empty-states/empty-state'
 import { Skeletonify } from '@/components/shared/skeletons'
@@ -12,7 +12,8 @@ interface ProductGridProps {
   currencyCode?: string
 }
 
-const MOCK_PRODUCT: any = {
+// TODO: Replace with real api-backed skeleton frames
+const MOCK_PRODUCT: StoreProduct = {
   id: 'mock-id',
   title: 'Loading Premium Item',
   handle: 'mock-handle',

@@ -6,8 +6,10 @@ import React from 'react'
 const SHIMMER_CLASS = 'animate-pulse bg-slate-100 rounded-xl shrink-0'
 
 import { ProductCard } from '@/components/store/products/product-card'
+import { StoreProduct } from '@/lib/api'
 
-const MOCK_PRODUCT: any = {
+// TODO: Replace with real api-backed skeleton frames
+const MOCK_PRODUCT: StoreProduct = {
   id: 'mock-id',
   title: 'Loading Premium Item',
   handle: 'mock-handle',

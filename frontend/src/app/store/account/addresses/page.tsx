@@ -120,7 +120,7 @@ export default function SavedAddressesPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-heading font-black text-slate-900">
+          <h1 className="text-2xl lg:text-3xl font-heading font-black text-slate-900">
             Saved Addresses
           </h1>
           <p className="text-sm text-slate-400 mt-1 font-medium">
@@ -152,7 +152,7 @@ export default function SavedAddressesPage() {
 
       {/* Address Cards List */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {Array.from({ length: 2 }).map((_, idx) => (
             <div key={idx} className="h-44 w-full bg-slate-50 rounded-3xl animate-pulse" />
           ))}
@@ -166,7 +166,7 @@ export default function SavedAddressesPage() {
           </p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {addresses.map((addr, index) => {
             const isFirst = index === 0
             return (

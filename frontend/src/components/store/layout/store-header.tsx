@@ -209,10 +209,10 @@ export function StoreHeader() {
             {/* Premium Theme Switcher */}
             <ThemeToggle />
 
-            {/* Cart Icon trigger button */}
+            {/* Cart Icon trigger button — desktop only; bottom navbar handles mobile/tablet */}
             <button
               onClick={openCart}
-              className="relative flex items-center justify-center h-10 w-10 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors shrink-0 cursor-pointer"
+              className="relative hidden lg:flex items-center justify-center h-10 w-10 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors shrink-0 cursor-pointer"
               aria-label={`Cart (${itemCount} items)`}
             >
               <ShoppingCart className="h-5 w-5" />

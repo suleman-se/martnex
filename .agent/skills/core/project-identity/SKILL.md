@@ -15,7 +15,7 @@ This skill defines the high-level philosophy, core rules, and standards for the 
 
 ## 2. Core Identity
 - **Martnex:** An open-source multi-vendor marketplace built on Medusa.js (v2) and Next.js (v16).
-- **Three Core Roles:** 
+- **Three Core Roles:**
   1. **Buyer:** Browse, purchase, review products.
   2. **Seller:** Manage products, track earnings, request payouts.
   3. **Admin:** Manage platform, approve sellers, resolve disputes.
@@ -36,16 +36,17 @@ This skill defines the high-level philosophy, core rules, and standards for the 
 - **Show, Don't Tell:** Provide code examples rather than long theoretical explanations.
 - **Flag Risks:** Proactively warn about breaking changes, security vulnerabilities, or complex migrations.
 - **Reuse Before Create:** ALWAYS reuse existing shared/common components before creating new ones. Search `src/components/shared`, `src/components/ui`, and existing domain component folders first.
-- **"Fixed" Convention:** 
+- **"Fixed" Convention:**
   - Use "Fixed" only for bugs discovered in already merged/released code.
   - Corrections during active development are part of implementation, not "fixes."
 
 ## 5. Aesthetics & UX Standards (PREMIUM ONLY)
 - **Visual Excellence:** Implement designs that WOW the user. Use curated color palettes (no generic red/blue).
-- **Typography:** Use modern pairings (e.g., Inter, Roboto, or Outfit) via Google Fonts.
+- **Typography:** Use modern pairings (e.g., Inter, Roboto) via Google Fonts.
 - **Micro-animations:** Add subtle hover effects and transitions to make the UI feel "alive".
 - **Glassmorphism & Gradients:** Use modern effects where appropriate for a high-end feel.
 - **No Placeholders:** Use realistic mock data or generated images for demos.
+- **Dark Mode:** All UI components MUST support dark mode using Tailwind `dark:` variants. Never use hardcoded light-only colors (`bg-white`, `text-gray-900`, etc.) without a `dark:` counterpart. Use the CSS variable system defined in `globals.css` (e.g., `bg-card`, `text-foreground`) wherever possible.
 
 ## 6. Security Principles
 - No hardcoded secrets (use `.env`).
@@ -71,15 +72,16 @@ src/
 │   ├── shared/
 │   │   ├── controls/ # <CopyButton />, <SortSelect />
 │   │   ├── empty-states/ # <EmptyState />
-│   │   ├── forms/    # <FormError />, <SubmitButton />
+│   │   ├── forms/    # <FormError />, <SubmitButton />, <AuthFeedbackPanel />
 │   │   ├── guards/   # <ProtectedRoute /> — use this everywhere
 │   │   ├── layouts/  # <BaseDashboardLayout />
 │   │   ├── loading/  # <LoadingSpinner />, <SkeletonRow />
 │   │   └── typography/ # <PageHeader />, <SectionTitle />
 │   ├── store/        # Buyer storefront UI
-│   │   ├── layout/   # StoreHeader (sticky nav, search, cart badge)
+│   │   ├── layout/   # StoreHeader (sticky nav, search, cart badge), MobileNavbar (bottom)
 │   │   ├── products/ # ProductCard, ProductGrid, VariantSelector
 │   │   ├── cart/     # CartItemRow, CartSummary
+│   │   ├── account/  # AddressCard, AddressEditorCard, DeleteAddressDialog, SavedAddressSelector
 │   │   └── checkout/ # AddressForm, PaymentStep (Stripe Elements + COD)
 │   └── ui/           # shadcn/ui primitives only
 └── hooks/            # Data fetching with React Query (staleTime: 30s-5min)
@@ -122,6 +124,21 @@ const { products, isLoading } = useSellerProducts();
 **6. Dashboard Shells — Use `<BaseDashboardLayout />`:**
 - Universal shell for Admin and Seller dashboards to ensure layout consistency.
 
+**7. Button Variants — Dark Mode Aware:**
+All `<Button>` variants in `src/components/ui/button.tsx` support both modes:
+- `default`: black bg / white text → white bg / black text in dark
+- `premium`: dark gradient → light gradient in dark
+- `outline`: slate-200 border → slate-700 border in dark
+- `tonal`: slate-100 surface → slate-800 surface in dark
+- `ghost`: subtle slate hover → dark slate hover in dark
+- `secondary`/`destructive`/`link`: driven by CSS vars (auto-adapt)
+
+**8. Responsive Breakpoints (Storefront):**
+- Mobile: `< 768px` — MobileNavbar (bottom bar) visible; StoreHeader hides desktop nav.
+- Tablet: `768px–1023px` — MobileNavbar visible; compact icon sidebar in account area.
+- Desktop: `≥ 1024px` — full StoreHeader nav; full sidebar in account area.
+- **Key rule:** Use `lg:` (1024px) as the mobile→desktop flip point, not `md:`.
+
 ## 8. Backend Architecture
 - **Medusa v2** with custom modules and workflows.
 - **Module Links:** Extensive use of link modules (e.g., `seller-product`) to extend core Medusa entities.
@@ -130,33 +147,30 @@ const { products, isLoading } = useSellerProducts();
 - **Seller Product API:** Seller product create/update routes normalize frontend-friendly payloads into Medusa core workflow inputs.
 - **File Storage:** Local file uploads are served from `/static` via the Medusa file module; seller uploads use `/store/uploads` and `/store/uploads/:id`.
 - **Redis:** Mandatory for production-like environments (via `Modules.CACHE`).
-- **Fulfillment Infrastructure:** Must be provisioned once via `pnpm run setup-shipping` (script: `backend/src/scripts/setup-shipping.ts`). Creates: Default Fulfillment Set → Worldwide service zone → Standard ($0) + Express ($9.99) shipping options + `manual_manual` provider linked to stock location. Idempotent — safe to re-run. Without this, checkout shows "No shipping options available".
-- **Shipping Profile Requirement:** Every product MUST have a row in `product_shipping_profile` or checkout fails with "shipping profiles not satisfied". Seed Step 8 repairs missing links on every run; `create-seller-product.ts` workflow enforces this for new products via `linkProductToShippingProfileStep`.
-- **Inventory Requirement:** Every variant MUST have a `product_variant_inventory_item` link AND an `inventory_level` with `stocked_quantity > 0`. Seed repairs missing links and levels; seller product workflow enforces this for new products.
+- **Fulfillment Infrastructure:** Must be provisioned once via `pnpm run setup-shipping`. Creates: Default Fulfillment Set → Worldwide service zone → Standard ($0) + Express ($9.99) shipping options. Idempotent — safe to re-run.
+- **Shipping Profile Requirement:** Every product MUST have a row in `product_shipping_profile` or checkout fails. Seed Step 8 repairs missing links; `create-seller-product.ts` enforces this for new products.
+- **Inventory Requirement:** Every variant MUST have a `product_variant_inventory_item` link AND an `inventory_level` with `stocked_quantity > 0`.
 
-## 9. Storefront Patterns (Buyer — v0.7.0+)
+## 9. Storefront Patterns (Buyer)
 
-- **Cart persistence:** Cart ID stored as `martnex_cart_id` in `localStorage`. `getStoredCartId()` / `setStoredCartId()` / `clearStoredCartId()` are all exported from `use-cart.ts`. Always call `clearStoredCartId()` after a successful order completion.
-- **Lazy cart creation:** `addItem` creates the cart on first use if no cart ID exists. Requires a `regionId` — obtain via `useRegions().defaultRegion?.id`.
-- **PaymentStep architecture (v0.7.1):** `PaymentStep` is the exported entry point. Renders `CodOnlyPaymentStep` when `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` is absent, or `<Elements><PaymentStepWithStripe></Elements>` when key is present. Both share `MethodCard` (radio-style provider card) and `PlaceOrderButton` (spinner + step label). Method card click ONLY selects provider — never triggers submission. `handlePlaceOrder` ALWAYS calls `ensureShipping()` first before any payment operation.
-- **Stripe payment flow:** Provider ID = `pp_stripe_stripe`. Client secret lives in `cart.payment_collection.payment_sessions[n].data.client_secret`. Only rendered when `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` is set.
-- **COD payment flow:** Provider ID = `pp_system_default`. No card entry — call `initPayment` then `completeOrder` directly.
-- **Checkout prerequisite chain:** For shipping options to appear at checkout, ALL of these must be true: (1) product linked to sales channel, (2) variant has `product_variant_inventory_item` link, (3) inventory level has `stocked_quantity > 0`, (4) stock location linked to sales channel, (5) `manual_manual` provider linked to stock location, (6) fulfillment set + service zone + shipping options exist (`pnpm run setup-shipping`), (7) product has a row in `product_shipping_profile`.
-- **Store routes:** All `/store/*` pages share the `app/store/layout.tsx` shell (StoreHeader + footer). Search and category filter are URL-param driven (`?q=`, `?category=`) for SSR-friendliness and linkability.
+- **Cart persistence:** Cart ID stored as `martnex_cart_id` in `localStorage`. Always call `clearStoredCartId()` after a successful order.
+- **Lazy cart creation:** `addItem` creates the cart on first use. Requires a `regionId` — obtain via `useRegions().defaultRegion?.id`.
+- **PaymentStep architecture:** `PaymentStep` renders `CodOnlyPaymentStep` when `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` is absent, or Stripe Elements when key is present.
+- **Checkout prerequisite chain:** Product linked to sales channel → variant has inventory link → `stocked_quantity > 0` → stock location linked to sales channel → fulfillment set + shipping options exist → product has `product_shipping_profile` row.
+- **Store routes:** All `/store/*` pages share `app/store/layout.tsx` (StoreHeader + footer). Search and category filter are URL-param driven (`?q=`, `?category=`) for SSR-friendliness.
 - **Prices NOT in cents** (project-wide rule — `$29.99` stored and displayed as `29.99`).
-- **Immersive Spotlight Search (v0.8.5):** Keydown hotkeys (`⌘K`, `Ctrl+K`, `/`) globally toggle the command palette overlay. The event handler must check if the active element is an input, textarea, or contenteditable element before capturing hotkeys to prevent keydown hijacking. Initializing search history state from `localStorage` must be wrapped in a client-side `useEffect` callback to avoid SSR/CSR hydration mismatches.
-- **Dynamic Multi-Vendor Policy Accordions & Trust Badges via Medusa Product Metadata (Future Standard):** To support vendor-specific shipping, sourcing, and sizing details dynamically without bloated database schemas, leverage Medusa v2's flexible `metadata` field on the product object. Custom JSON schemas like `{"shipping_info": "...", "sourcing_info": "...", "fit_info": "..."}` can be set per-product. The storefront should check for these override keys inside `product.metadata` and seamlessly fall back to premium, curated platform-wide defaults when undefined.
-- **Automatic Layout Skeletonizer (`<Skeletonify />` / `.skeleton-auto` — v0.9.5):** Reusable layout skeletonizer wrapper that dynamically shimmers any React node tree without static layout shifts. (1) Replaces image sources via CSS `content: url(...)` with a transparent inline SVG to fully block out thumbnails while shimmering at 100% opacity. (2) Hides internal SVG vector paths (`svg * { opacity: 0 }`) while keeping the icon SVG container shimmering to elegantly mask icons. (3) Excludes structural wrapper elements (like outer `a` link wrappers) from getting painted by skeleton selectors, ensuring child text and image elements shimmer individually. (4) Hides all interactive and absolute absolute layout elements (such as `button`, `span.absolute`, `div.z-20`) inside skeletonized trees to eliminate visual noise. (5) Never override block-level text elements with `inline-block` to avoid layout shifts.
-- **Buyer Account Portal & Address Manager (v0.9.8):** Enforces strict componentization standards. Monolithic pages under `/store/account` must be refactored into domain-isolated sub-components utilizing centralized models from `src/types/address.ts`. The portal includes modular sub-components: `AddressCard` (information displaying and custom hover visual tags), `AddressEditorCard` (inputs mapping, validity hooks, and sole-default overrides), `DeleteAddressDialog` (Radix `AlertDialog` validation and default promotion warnings), and `SavedAddressSelector` (checkout grid component with ad-hoc creation triggers). Background scroll locking must be handled via the customized `useBodyScrollLock` hooks on any active viewport overlay.
-- **Optimized Mobile Responsive Stacking & Headers (v0.9.8):** To maximize search bar display space on mobile viewports (< 640px), the top `StoreHeader` hides text-heavy interactive elements like `Sign In` or `Hi, User` capsules since the sticky `MobileNavbar` already encapsulates dedicated bottom navigation anchors to profile, cart, and category explorers. Padding and gaps are reduced responsively (`px-4 sm:px-6` and `gap-3 sm:gap-6`) to prevent horizontal layout wrapping. The sticky bottom navbar is locked to layer `z-50` to guarantee absolute visibility above page contents on mobile.
+- **Spotlight Search:** Keydown hotkeys (`⌘K`, `Ctrl+K`, `/`) toggle command palette. Guard against input/textarea focus before capturing. Search history must be initialized in `useEffect` to avoid SSR hydration mismatch.
+- **Buyer Account Portal:** `/store/account` layout uses a sticky `md:w-16 lg:w-64` icon/full sidebar. All account sub-pages use componentized sub-components (`AddressCard`, `AddressEditorCard`, `DeleteAddressDialog`, `SavedAddressSelector`) with centralized types from `src/types/address.ts`.
+- **Auth Screens:** All auth pages (`/login`, `/register`, `/forgot-password`, etc.) support dark mode. Background uses explicit `dark:bg-[#090d16]`. `AuthContainer` card uses `dark:border-slate-700/40`. All feedback panels (`AuthFeedbackPanel`, inline banners) have `dark:` color variants.
+- **Skeletonizer:** `.skeleton-auto` CSS utility shimmers any React tree without static layout shifts.
 
 ## 10. Architecture Notes & Known Constraints
-- **Multi-product per seller:** Medusa's `createRemoteLinkStep` enforces a 1:1 application-level constraint on module links. Use Knex raw SQL (`INSERT … ON CONFLICT DO NOTHING`) to insert into the pivot table directly. Do NOT set `isList: true` on `defineLink` — it crashes MikroORM's `expandDotPaths` in cross-module contexts (Medusa 2.13.x limitation).
+- **Multi-product per seller:** Use Knex raw SQL (`INSERT … ON CONFLICT DO NOTHING`) to insert into pivot tables. Do NOT set `isList: true` on `defineLink` — crashes MikroORM in cross-module contexts (Medusa 2.13.x limitation).
 - **Prices are stored as dollars (not cents).** Never multiply or divide by 100 for display.
 - **HTTP methods:** Medusa v2 only supports GET, POST, DELETE on store routes. Use POST for updates (no PUT/PATCH).
 - **Workflows required for ALL mutations** — never call module services directly from route handlers.
 
-## 10. Completed Milestones
+## 11. Completed Milestones
 - **Refactoring Phase 1:** Monolith to Feature-Sliced migration — **COMPLETE ✅**
 - **Auth Persistence:** Refresh token rotation via Redis — **COMPLETE ✅**
 - **Seller Onboarding:** Multi-step verification flow — **COMPLETE ✅**
@@ -164,37 +178,15 @@ const { products, isLoading } = useSellerProducts();
 - **Role Sync:** JWT role synchronization across services — **COMPLETE ✅**
 - **Dashboard Layouts:** Standardized `<BaseDashboardLayout>` across platform — **COMPLETE ✅**
 - **Client Call Deduping:** Publishable key and customer refresh requests use single-flight caching — **COMPLETE ✅**
-- **Seller Order Fulfillment:** Live orders dashboard (`/seller/orders`), scoped order APIs, auto-commission on `order.placed` — **COMPLETE ✅** _(v0.5.0, 13 May 2026)_
-- **Seller Dashboard & Payouts:** Order detail page, real-data dashboard stats, payouts history page, 17 route unit tests — **COMPLETE ✅** _(v0.6.0, 18 May 2026)_
-- **Buyer Storefront:** Product browse/search, product detail + variant selector, persistent cart, 2-step checkout (Stripe Elements + COD), order confirmation — **COMPLETE ✅** _(v0.7.0, 19 May 2026)_
-- **Checkout Stability & Infrastructure Hardening:** 3 payment-step bugs fixed; fulfillment stack automated via `setup-shipping` script; inventory/shipping-profile links enforced in seed + seller product workflow; auth silent token refresh on expiry — **COMPLETE ✅** _(v0.7.1, 20 May 2026)_
-- **Storefront UI/UX Premium Revamp (Phase 2):** Scrolly header & autocomplete, slide-over side-cart drawer, currency-aware progress shipping meter, dynamic quick add variants, custom-styled Stripe focus boundaries, transaction processing stepper states, particle confetti successfully mounted on order receipt — **COMPLETE ✅** _(v0.8.0, 21 May 2026)_
-- **Premium Spotlight Search, Mega-Menus & Inventory Resolution (Phase 5):** Interactive category mega-menus with hover-leave delays, global immersive spotlight overlay (⌘K, Ctrl+K, `/`), client-cached search history, spring-bounce cart micro-animations, stock image product catalog seeding, variant price fixtures, and order place inventory decrement mapping resolution — **COMPLETE ✅** _(v0.8.5, 21 May 2026)_
-- **Premium Mobile Storefront Responsiveness & Native-App UX (Phase 6):** App-like sticky bottom navigation bar, full-screen slide-up mobile category explore drawer sheet, responsive spotlight search command overlay stacked vertically, 2-column e-commerce product catalog grids with persistent touch Quick Add buttons, mobile-native sticky bottom purchase Buy Bar, and collapsible top checkout summary accordion — **COMPLETE ✅** _(v0.9.0, 25 May 2026)_
-- **Premium Storefront Skeletons, Editorial Landing Pages, Snap Carousels, & Brand Storefront Profiles (Phase F):** Pulse-shimmer loading skeletons, parallax visual heroes, recommended touch carousels with 1-click adds, dynamic brand storefront route segments (`/store/merchants/[id]`), cursor-pointer variant hovers, and premium HSL-inverted obsidian dark mode compatibility — **COMPLETE ✅** _(v0.9.5, 25 May 2026)_
-- **Refined Address Manager & Checkout Selector (Phase G):** Unified address models (`types/address.ts`) with zero `any` types; sole-default checkbox constraints; dynamic Radix warnings for deleting defaults/only addresses; mobile-responsive saved address selector grid at checkout; and centralized viewports scroll locking (`useBodyScrollLock` hook) — **COMPLETE ✅** _(v0.9.8, 1 Jun 2026)_
-
-## 11. Next Phase — Admin Panel (Phase 7) ⬅️ START HERE
-
-> **Plan file:** `docs/superpowers/plans/2026-05-20-admin-panel.md`
-
-The admin panel is the **immediate next task**. Do not start buyer account area, reviews, or other features until this is shipped.
-
-**Goal:** After this phase a fresh install needs only `pnpm run seed` + logging into `/admin` — zero manual scripts.
-
-**Key architecture fact:** Medusa's native `/admin/*` API is fully live and accepts a Bearer token from `POST /auth/user/emailpass`. Most admin pages are **frontend-only** — no new backend routes needed.
-
-| Task | Page | What it replaces / adds |
-|---|---|---|
-| 1 | `/admin` dashboard | Blank shell → real stats |
-| 2 | `/admin/commissions` | API exists, UI missing |
-| 3 | `/admin/payouts` | API exists, UI missing |
-| 4 | `/admin/orders` | Uses `GET /admin/orders` (Medusa native) |
-| 5 | `/admin/users` | Uses `GET /admin/customers` (Medusa native) |
-| 6 | `/admin/settings/shipping` | Replaces `pnpm run setup-shipping` |
-| 7 | `/admin/settings/store` | Replaces `pnpm run create-publishable-key` |
-| 8 | `/admin/settings` hub | 404 → real page |
-
-**Admin auth:** `POST /auth/user/emailpass` → Bearer token. Works on all `/admin/*` routes including custom Martnex ones (`authenticate("user", ["session", "bearer"])`).
-
-**What already exists:** `/admin` layout + shell, `AdminSidebar`, `AdminHeader`, `/admin/sellers` page, backend routes for sellers/commissions/payouts.
+- **Seller Order Fulfillment:** Live orders dashboard, scoped order APIs, auto-commission on `order.placed` — **COMPLETE ✅** _(v0.5.0)_
+- **Seller Dashboard & Payouts:** Order detail page, real-data dashboard stats, payouts history, 17 route unit tests — **COMPLETE ✅** _(v0.6.0)_
+- **Buyer Storefront:** Product browse/search, product detail + variant selector, persistent cart, 2-step checkout (Stripe + COD), order confirmation — **COMPLETE ✅** _(v0.7.0)_
+- **Checkout Stability & Infrastructure Hardening:** Payment-step bug fixes, fulfillment stack automation, inventory/shipping-profile enforcement, auth silent token refresh — **COMPLETE ✅** _(v0.7.1)_
+- **Storefront UI/UX Premium Revamp:** Scrolly header, autocomplete, side-cart drawer, shipping meter, quick-add variants, Stripe focus styling, confetti receipt — **COMPLETE ✅** _(v0.8.0)_
+- **Premium Spotlight Search & Mega-Menus:** Category mega-menus, global spotlight overlay (⌘K), search history, spring-bounce cart animations — **COMPLETE ✅** _(v0.8.5)_
+- **Premium Mobile Storefront:** Sticky bottom nav, full-screen category drawer, touch Quick Add, native sticky Buy Bar, collapsible checkout accordion — **COMPLETE ✅** _(v0.9.0)_
+- **Storefront Skeletons, Carousels & Brand Profiles:** Pulse-shimmer skeletons, parallax heroes, recommendation carousels, brand storefront routes, dark mode — **COMPLETE ✅** _(v0.9.5)_
+- **Address Manager & Checkout Selector:** Unified address types, sole-default constraints, Radix delete dialogs, saved address selector at checkout, scroll locking — **COMPLETE ✅** _(v0.9.8)_
+- **Tablet Responsiveness (Account Area):** Compact icon sidebar on tablet, sticky aside, correct `md:flex-row` outer container, inner grids shifted to `lg:` breakpoints — **COMPLETE ✅** _(v0.9.9)_
+- **Auth Screen Dark Mode:** Dark backgrounds, dark card borders, dark feedback panels (error/success/warning) across all auth forms and layouts — **COMPLETE ✅** _(v0.9.9)_
+- **Button Variant Dark Mode:** All 7 button variants (`default`, `premium`, `outline`, `tonal`, `ghost`, `secondary`, `destructive`) now explicitly support `dark:` Tailwind classes — **COMPLETE ✅** _(v0.9.9)_

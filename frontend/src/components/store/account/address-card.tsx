@@ -82,7 +82,7 @@ export function AddressCard({
           onClick={() => onDeleteClick(address.id)}
           variant="ghost"
           size="sm"
-          className="h-8 rounded-lg text-[10px] font-bold text-rose-500 hover:text-rose-600 border border-rose-600 hover:border-rose-50 hover:bg-rose-50 cursor-pointer flex items-center gap-1"
+          className="h-8 rounded-lg text-[10px] font-bold !text-rose-500 hover:text-rose-600 border border-rose-600 hover:border-rose-50 hover:bg-rose-50 cursor-pointer flex items-center gap-1"
         >
           <Trash2 className="h-3 w-3" />
           Delete

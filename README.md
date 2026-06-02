@@ -7,7 +7,7 @@
     <a href="#"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
     <a href="#"><img src="https://img.shields.io/badge/Medusa-v2.13-8C4FFF" alt="Medusa v2"></a>
     <a href="#"><img src="https://img.shields.io/badge/Next.js-16.2-black" alt="Next.js 16.2"></a>
-    <a href="#"><img src="https://img.shields.io/badge/version-0.9.8-brightgreen" alt="v0.9.8"></a>
+    <a href="#"><img src="https://img.shields.io/badge/version-0.9.9-brightgreen" alt="v0.9.9"></a>
   </p>
 
   <p>
@@ -49,7 +49,7 @@ Martnex allows you to toggle your entire platform's behavior using a single envi
 - **🛍️ Complete Buyer Journey**: Immersive category mega-menus, global spotlight search (⌘K), touch recommendation carousels, persistent cart drawer, multi-step checkout (Stripe/COD), order confetti receipt, and a type-safe account portal (addresses/profile).
 - **💼 Comprehensive Seller Center**: Onboarding verification flow, dashboard stats (commissions & aggregate revenue), product CRUD with dynamic uploader and variant generator, scoped orders management, and payouts history.
 - **🛡️ Secure Platform Architecture**: JWT token refresh rotation, role-based access controllers (RBAC), Knex link modules, Nodemailer sync, and automatic commission creation hooks.
-- **📱 Premium Responsive Design**: Full-screen drawers, responsive headers, obsidian dark mode styling, and optimized layouts supporting mobile, tablet, and desktop viewports.
+- **📱 Premium Responsive Design**: Full-screen drawers, responsive headers, obsidian dark mode (all components including button variants), and optimized layouts supporting mobile, tablet, and desktop viewports.
 
 For a detailed release history and implementation roadmap, please see the [Changelog](CHANGELOG.md).
 

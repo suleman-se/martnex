@@ -80,7 +80,7 @@ export function StoreFilters({ categories }: StoreFiltersProps) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search products…"
-            className="h-11 rounded-2xl border-slate-200 bg-white pl-4 pr-8 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm focus-visible:ring-slate-900/10"
+            className="h-11 rounded-2xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-4 pr-8 text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 shadow-sm focus-visible:ring-slate-900/10"
           />
           {search && (
             <Button
@@ -106,8 +106,8 @@ export function StoreFilters({ categories }: StoreFiltersProps) {
             onClick={() => handleFilterChange({ clearCategory: true })}
             variant="outline"
             className={`h-auto rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-widest transition-all ${!currentCategory
-                ? 'bg-slate-900 text-white hover:bg-slate-800 hover:text-white'
-                : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
+                ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 hover:text-white dark:hover:text-slate-900'
+                : 'bg-white dark:bg-card border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-600'
               }`}
           >
             All
@@ -122,8 +122,8 @@ export function StoreFilters({ categories }: StoreFiltersProps) {
               }
               variant="outline"
               className={`h-auto rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-widest transition-all ${currentCategory === cat.handle
-                  ? 'bg-slate-900 text-white hover:bg-slate-800 hover:text-white'
-                  : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
+                  ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 hover:text-white dark:hover:text-slate-900'
+                  : 'bg-white dark:bg-card border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-600'
                 }`}
             >
               {cat.name}

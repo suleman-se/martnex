@@ -54,7 +54,10 @@ async function updateCartAddress(
   payload: CheckoutAddressPayload
 ): Promise<Cart> {
   const headers = await buildStoreHeaders()
-  const body: any = {
+  const body: {
+    shipping_address: CartAddress
+    email?: string
+  } = {
     shipping_address: payload.shipping_address,
   }
   const trimmedEmail = payload.email?.trim()

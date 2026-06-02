@@ -43,7 +43,12 @@ export default function AuthLayout({
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-mesh font-sans p-6 lg:p-8 animate-in fade-in duration-700">
+    <div className="min-h-screen flex items-center justify-center bg-[#f7f9fb] dark:bg-[#090d16] font-sans p-6 lg:p-8 animate-in fade-in duration-700">
+      {/* Ambient background glow — light and dark aware */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-indigo-100/50 dark:bg-indigo-900/10 blur-[120px]" />
+        <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] rounded-full bg-slate-200/60 dark:bg-slate-800/20 blur-[120px]" />
+      </div>
       <div className="w-full max-w-md space-y-8">
         {children}
       </div>

@@ -37,7 +37,7 @@ export default async function LoginPage({
     >
       <div className="-mt-4 mb-8">
         {message && (
-          <div className="p-4 bg-indigo-50/50 text-primary rounded-xl text-[11px] font-black uppercase tracking-wider flex items-center gap-3 border border-indigo-100">
+          <div className="p-4 bg-indigo-50/50 dark:bg-indigo-950/30 text-primary rounded-xl text-[11px] font-black uppercase tracking-wider flex items-center gap-3 border border-indigo-100 dark:border-indigo-800/40">
              <div className="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
              {message}
           </div>

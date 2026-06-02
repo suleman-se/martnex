@@ -10,13 +10,13 @@ export function ThemeToggle() {
   // Load theme preference on mount to avoid hydration mismatch
   useEffect(() => {
     setMounted(true)
-    const saved = localStorage.getItem('martnex_theme') as 'light' | 'dark' | null
+    const saved = typeof window !== 'undefined' ? (localStorage.getItem('martnex_theme') as 'light' | 'dark' | null) : null
     if (saved) {
       setTheme(saved)
       if (saved === 'dark') {
         document.documentElement.classList.add('dark')
       }
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    } else if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       setTheme('dark')
       document.documentElement.classList.add('dark')
     }
@@ -25,7 +25,9 @@ export function ThemeToggle() {
   const toggleTheme = () => {
     const nextTheme = theme === 'light' ? 'dark' : 'light'
     setTheme(nextTheme)
-    localStorage.setItem('martnex_theme', nextTheme)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('martnex_theme', nextTheme)
+    }
     
     if (nextTheme === 'dark') {
       document.documentElement.classList.add('dark')

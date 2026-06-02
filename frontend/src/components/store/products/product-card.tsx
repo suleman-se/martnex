@@ -9,6 +9,7 @@ import { getDisplayPrice, formatPrice } from '@/lib/api'
 import { useCart } from '@/hooks/use-cart'
 import { useRegions } from '@/hooks/use-regions'
 import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
 
 interface ProductCardProps {
   product: StoreProduct
@@ -127,15 +128,17 @@ export function ProductCard({ product, currencyCode = 'usd' }: ProductCardProps)
         )}
 
         {/* Mobile-only Quick Add Trigger (Tap to open variants, or direct add if single-variant) */}
-        <button
+        <Button
           onClick={handleQuickAdd}
           disabled={isAdding}
-          className={`absolute bottom-2.5 right-2.5 h-9 w-9 bg-slate-900/90 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all duration-200 cursor-pointer z-10 lg:hidden ${showMobileSelector ? 'opacity-0 pointer-events-none scale-75' : 'opacity-100 scale-100'
+          size="icon"
+          variant="outline"
+          className={`absolute bottom-2.5 right-2.5 h-9 w-9 bg-white text-slate-900 hover:bg-slate-50 border-0 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all duration-200 cursor-pointer z-10 lg:hidden ${showMobileSelector ? 'opacity-0 pointer-events-none scale-75' : 'opacity-100 scale-100'
             }`}
           aria-label={hasMultipleVariants ? "Select Options" : "Quick Add to Cart"}
         >
           {isAdding && !isAddingVariantId ? (
-            <Loader2 className="h-4 w-4 animate-spin text-white" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : isSuccess ? (
             <Check className="h-4 w-4 text-emerald-400" />
           ) : hasMultipleVariants ? (
@@ -143,17 +146,18 @@ export function ProductCard({ product, currencyCode = 'usd' }: ProductCardProps)
           ) : (
             <ShoppingCart className="h-4 w-4" />
           )}
-        </button>
+        </Button>
 
         {/* Desktop-only Single Variant Add to Cart Button */}
         {!hasMultipleVariants && (
-          <button
+          <Button
             onClick={handleQuickAdd}
             disabled={isAdding}
-            className="hidden lg:flex absolute inset-x-0 bottom-0 h-11 bg-slate-900/95 hover:bg-slate-900 backdrop-blur-md text-white font-black text-[10px] tracking-widest uppercase items-center justify-center gap-2 transition-all duration-300 shadow-lg cursor-pointer z-10 opacity-0 translate-y-full group-hover:opacity-100 group-hover:translate-y-0"
+            variant="outline"
+            className="hidden lg:flex absolute inset-x-0 bottom-0 h-11 bg-white/90 text-slate-900 hover:bg-white border-0 backdrop-blur-md font-black text-[10px] tracking-widest uppercase items-center justify-center gap-2 transition-all duration-300 shadow-lg cursor-pointer z-10 opacity-0 translate-y-full group-hover:opacity-100 group-hover:translate-y-0 rounded-none"
           >
             {isAdding ? (
-              <Loader2 className="h-4 w-4 animate-spin text-white" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : isSuccess ? (
               <>
                 <Check className="h-4 w-4 text-emerald-400" />
@@ -165,58 +169,150 @@ export function ProductCard({ product, currencyCode = 'usd' }: ProductCardProps)
                 <span>Add to Cart — {price != null ? formatPrice(price, currencyCode) : ''}</span>
               </>
             )}
-          </button>
+          </Button>
         )}
 
-        {/* Quick Add Variant Selector Overlay (Desktop hover / Mobile tap toggle) */}
+        {/* Desktop-only Multiple Variant Options Hover Button */}
         {hasMultipleVariants && (
-          <div
-            className={`absolute inset-x-0 bottom-0 bg-white/95 backdrop-blur-md border-t border-slate-100 p-3.5 flex flex-col gap-2 z-20 transition-all duration-300 transform translate-y-full lg:group-hover:translate-y-0 ${showMobileSelector ? 'translate-y-0 shadow-premium' : ''
-              }`}
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-            }}
+          <Button
+            onClick={handleQuickAdd}
+            disabled={isAdding}
+            variant="outline"
+            className="hidden lg:flex absolute inset-x-0 bottom-0 h-11 bg-white/90 text-slate-900 hover:bg-white border-0 backdrop-blur-md font-black text-[10px] tracking-widest uppercase items-center justify-center gap-2 transition-all duration-300 shadow-lg cursor-pointer z-10 opacity-0 translate-y-full group-hover:opacity-100 group-hover:translate-y-0 rounded-none"
           >
-            {/* Selector Title Header */}
-            <div className="flex items-center justify-between shrink-0">
-              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                Select Option to Add
-              </span>
-            </div>
+            <Plus className="h-3.5 w-3.5" />
+            <span>Select Options</span>
+          </Button>
+        )}
 
-            {/* Sizing & Pricing Swatches Row (Single-line Horizontal Slider) */}
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 -mx-1 px-1">
-              {product.variants.map((variant) => {
-                const isAddingThis = isAddingVariantId === variant.id
-                const vPrice = getVariantPrice(variant)
-                const vPriceFormatted = vPrice != null ? formatPrice(vPrice, currencyCode) : ''
-                return (
-                  <button
-                    key={variant.id}
-                    onClick={(e) => handleVariantAdd(e, variant.id)}
-                    disabled={isAdding}
-                    className={`h-8 shrink-0 px-3 rounded-full border text-[10px] uppercase transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer select-none disabled:opacity-50 ${isAddingThis
-                        ? 'bg-slate-900 border-slate-900 text-white shadow-sm'
-                        : 'border-slate-200 hover:border-slate-900 hover:bg-slate-900 hover:text-white bg-white text-slate-800 active:scale-95 hover:shadow-sm'
-                      }`}
-                  >
-                    {isAddingThis ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                    ) : (
-                      <>
-                        <span className="font-black leading-none">{variant.title}</span>
-                        {vPriceFormatted && (
-                          <>
-                            <span className="text-[8px] opacity-40 leading-none select-none">•</span>
-                            <span className="font-extrabold text-[9px] opacity-80 leading-none">{vPriceFormatted}</span>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </button>
-                )
-              })}
+        {/* Desktop-only Quick Add Variant Selector Popover Dropdown (Opens on click/tap, not hover) */}
+        {hasMultipleVariants && showMobileSelector && (
+          <div className="hidden lg:block">
+            {/* Backdrop overlay to close dropdown */}
+            <div
+              className="absolute inset-0 bg-slate-900/10 backdrop-blur-sm z-20 cursor-default animate-in fade-in duration-200"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setShowMobileSelector(false)
+              }}
+            />
+            
+            <div
+              className="absolute inset-x-3 bottom-3 bg-white dark:bg-card border border-slate-100 dark:border-slate-800 rounded-2xl shadow-premium p-3 flex flex-col gap-2.5 z-30 animate-in slide-in-from-bottom-2 duration-300"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+              }}
+            >
+              {/* Selector Title Header */}
+              <div className="flex items-center justify-between shrink-0">
+                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                  Select Option
+                </span>
+                <button
+                  onClick={() => setShowMobileSelector(false)}
+                  className="text-slate-400 hover:text-slate-655 transition-colors cursor-pointer"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+
+              {/* Swatches List */}
+              <div className="flex flex-col gap-1.5 max-h-[140px] overflow-y-auto scrollbar-none">
+                {product.variants.map((variant) => {
+                  const isAddingThis = isAddingVariantId === variant.id
+                  const vPrice = getVariantPrice(variant)
+                  const vPriceFormatted = vPrice != null ? formatPrice(vPrice, currencyCode) : ''
+                  return (
+                    <Button
+                      key={variant.id}
+                      onClick={(e) => handleVariantAdd(e, variant.id)}
+                      disabled={isAdding}
+                      variant={isAddingThis ? "default" : "outline"}
+                      className="w-full h-10 px-3.5 rounded-xl text-[10px] uppercase font-black tracking-wider transition-all duration-200 flex items-center justify-between gap-3 cursor-pointer select-none disabled:opacity-50 text-left"
+                    >
+                      <span className="truncate">{variant.title}</span>
+                      {isAddingThis ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0 text-slate-900 dark:text-white" />
+                      ) : (
+                        vPriceFormatted && <span className="font-extrabold text-[9px] opacity-80 shrink-0">{vPriceFormatted}</span>
+                      )}
+                    </Button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile/Tablet slide-up bottom sheet modal (Opens on click/tap, not hover) */}
+        {hasMultipleVariants && showMobileSelector && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center lg:hidden">
+            {/* Viewport Backdrop */}
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 animate-in fade-in"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setShowMobileSelector(false)
+              }}
+            />
+            
+            {/* Bottom Sheet Card */}
+            <div
+              className="relative w-full max-w-lg bg-white dark:bg-card border-t border-slate-100 rounded-t-3xl shadow-2xl p-6 flex flex-col gap-4 z-50 animate-in slide-in-from-bottom duration-300 max-h-[80vh] overflow-y-auto pb-safe"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+              }}
+            >
+              {/* Drag Handle Indicator */}
+              <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mb-1 shrink-0" />
+
+              {/* Selector Title Header */}
+              <div className="flex items-center justify-between shrink-0">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    Select Option
+                  </span>
+                  <h4 className="font-heading font-black text-slate-900 text-sm mt-0.5 truncate max-w-[280px]">
+                    {product.title}
+                  </h4>
+                </div>
+                <Button
+                variant="outline"
+                  onClick={() => setShowMobileSelector(false)}
+                  className="h-8 w-8 rounded-full px-2"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Swatches List */}
+              <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto scrollbar-none pb-4">
+                {product.variants.map((variant) => {
+                  const isAddingThis = isAddingVariantId === variant.id
+                  const vPrice = getVariantPrice(variant)
+                  const vPriceFormatted = vPrice != null ? formatPrice(vPrice, currencyCode) : ''
+                  return (
+                    <Button
+                      key={variant.id}
+                      onClick={(e) => handleVariantAdd(e, variant.id)}
+                      disabled={isAdding}
+                      variant={isAddingThis ? "default" : "outline"}
+                      className="w-full h-12 px-4 rounded-2xl text-xs uppercase font-black tracking-wider transition-all duration-200 flex items-center justify-between gap-4 cursor-pointer select-none disabled:opacity-50 text-left"
+                    >
+                      <span className="truncate">{variant.title}</span>
+                      {isAddingThis ? (
+                        <Loader2 className="h-4 w-4 animate-spin shrink-0 text-slate-900 dark:text-white" />
+                      ) : (
+                        vPriceFormatted && <span className="font-extrabold text-xs opacity-80 shrink-0">{vPriceFormatted}</span>
+                      )}
+                    </Button>
+                  )
+                })}
+              </div>
             </div>
           </div>
         )}

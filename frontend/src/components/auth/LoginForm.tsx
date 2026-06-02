@@ -57,10 +57,10 @@ export default function LoginForm() {
       {error && (
         <div className={`p-4 rounded-lg text-xs font-bold flex items-center gap-3 animate-in fade-in duration-300 ${
           lockedMinutes !== null
-            ? 'bg-amber-50 text-amber-900 border border-amber-200'
+            ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50'
             : emailNotVerified
             ? 'bg-secondary text-primary'
-            : 'bg-red-50 text-red-900 border border-red-200'
+            : 'bg-red-50 dark:bg-red-950/40 text-red-900 dark:text-red-300 border border-red-200 dark:border-red-800/50'
         }`}>
           <div className="h-2 w-2 rounded-full bg-current animate-pulse shrink-0"></div>
           <div>

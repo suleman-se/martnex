@@ -180,7 +180,7 @@ export function AddressForm({
       <Button
         type="submit"
         disabled={isLoading}
-        className="w-full h-14 rounded-2xl bg-slate-900 text-sm font-black uppercase tracking-widest hover:bg-slate-800"
+        className="w-full h-14 rounded-2xl text-sm uppercase tracking-widest"
       >
         {isLoading ? 'Saving…' : 'Continue to Payment'}
       </Button>

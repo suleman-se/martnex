@@ -4,13 +4,13 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useSellerProducts } from '@/hooks/use-seller-products';
-import { ProductForm } from '@/components/seller/products/ProductForm';
+import { ProductForm, ProductFormData } from '@/components/seller/products/ProductForm';
 
 export default function NewProductPage() {
   const router = useRouter();
   const { handleCreate, isProcessing } = useSellerProducts();
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: ProductFormData) => {
     try {
       await handleCreate(data);
       toast.success('Product created successfully');

@@ -72,7 +72,7 @@ export function ShippingSelector({ cartId, onComplete, onBack }: ShippingSelecto
   if (error || !options || options.length === 0) {
     return (
       <div className="py-8 text-center space-y-4">
-        <p className="text-sm font-medium text-slate-500 font-bold">
+        <p className="text-sm font-medium text-slate-500">
           No shipping options are currently configured for your country.
         </p>
         <Button onClick={onBack} variant="outline" className="rounded-xl text-xs font-bold">
@@ -96,14 +96,14 @@ export function ShippingSelector({ cartId, onComplete, onBack }: ShippingSelecto
               disabled={setShippingMethod.isPending}
               className={`w-full flex items-center justify-between p-5 rounded-2xl border text-left transition-all duration-300 cursor-pointer ${
                 isSelected
-                  ? 'border-slate-900 bg-slate-50/50 shadow-sm'
-                  : 'border-slate-100 bg-white hover:border-slate-300'
+                  ? 'border-slate-900 dark:border-slate-100 bg-slate-50/50 dark:bg-slate-900/50 shadow-sm'
+                  : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-card hover:border-slate-300 dark:hover:border-slate-700'
               }`}
             >
               <div className="flex items-center gap-4">
                 <div
                   className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                    isSelected ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-400'
+                    isSelected ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900' : 'bg-slate-50 dark:bg-slate-800 text-slate-400'
                   }`}
                 >
                   <Truck className="h-5 w-5" />
@@ -121,8 +121,8 @@ export function ShippingSelector({ cartId, onComplete, onBack }: ShippingSelecto
                 <div
                   className={`h-5 w-5 rounded-full border flex items-center justify-center shrink-0 transition-all ${
                     isSelected
-                      ? 'border-slate-900 bg-slate-900 text-white'
-                      : 'border-slate-200 bg-white'
+                      ? 'border-slate-900 dark:border-slate-100 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'
                   }`}
                 >
                   {isSelected && <Check className="h-3 w-3" />}
@@ -134,11 +134,11 @@ export function ShippingSelector({ cartId, onComplete, onBack }: ShippingSelecto
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex items-center justify-between pt-6 border-t border-slate-100">
+      <div className="flex items-center justify-between pt-6 border-t border-slate-100 dark:border-slate-800">
         <Button
           onClick={onBack}
           variant="ghost"
-          className="h-10 px-4 rounded-xl text-xs font-bold text-slate-400 hover:text-slate-700 cursor-pointer"
+          className="h-10 px-4 rounded-xl text-xs font-bold text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer"
         >
           ← Edit Address
         </Button>
