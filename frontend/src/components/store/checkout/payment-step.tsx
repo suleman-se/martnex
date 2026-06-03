@@ -3,16 +3,19 @@
 import { useState } from 'react'
 import {
   Elements,
-  CardElement,
   useStripe,
   useElements,
+  CardElement
 } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
-import { CreditCard, Truck, CheckCircle2, Loader2, Info } from 'lucide-react'
+import { CreditCard, Truck, Loader2, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { useCheckout } from '@/hooks/use-checkout'
 import { useCart } from '@/hooks/use-cart'
 import { Button } from '@/components/ui/button'
+
+import { PaymentMethodCard } from './payment-method-card'
+import { StripePaymentForm } from './stripe-payment-form'
 
 // ─── Stripe singleton ─────────────────────────────────────────────────────────
 
@@ -47,63 +50,22 @@ function getActiveStepIndex(stepText: string): number {
   return 0
 }
 
-// ─── Shared method selection card ─────────────────────────────────────────────
-
-function MethodCard({
-  label,
-  description,
-  icon,
-  selected,
-  disabled,
-  onClick,
-}: {
-  label: string
-  description: string
-  icon: React.ReactNode
-  selected: boolean
-  disabled: boolean
-  onClick: () => void
-}) {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 text-left transition-all duration-150 ${
-        selected
-          ? 'border-slate-900 bg-slate-900 text-white'
-          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-450 dark:hover:border-slate-700'
-      } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-    >
-      <span className={`shrink-0 ${selected ? 'text-white' : 'text-slate-400'}`}>
-        {icon}
-      </span>
-      <span className="flex-1 min-w-0">
-        <span className="block text-sm font-bold">{label}</span>
-        <span className={`text-xs ${selected ? 'text-slate-300' : 'text-slate-400'}`}>
-          {description}
-        </span>
-      </span>
-      {selected && <CheckCircle2 className="h-4 w-4 shrink-0 text-white" />}
-    </button>
-  )
-}
-
 // ─── Shared place-order button ────────────────────────────────────────────────
 
-function PlaceOrderButton({
-  isProcessing,
-  processingStep,
-  cartTotal,
-  currencyCode,
-  onClick,
-}: {
+interface PlaceOrderButtonProps {
   isProcessing: boolean
   processingStep: string
   cartTotal: number
   currencyCode: string
   onClick: () => void
-}) {
+}
+
+function PlaceOrderButton({
+  isProcessing,
+  cartTotal,
+  currencyCode,
+  onClick,
+}: PlaceOrderButtonProps) {
   return (
     <Button
       onClick={onClick}
@@ -112,6 +74,64 @@ function PlaceOrderButton({
     >
       Place Order · {formatTotal(cartTotal, currencyCode)}
     </Button>
+  )
+}
+
+// ─── Processing Loader overlay ────────────────────────────────────────────────
+
+interface ProcessingLoaderProps {
+  processingStep: string
+  activeStep: number
+  steps: string[]
+}
+
+function ProcessingLoader({ activeStep, steps }: ProcessingLoaderProps) {
+  return (
+    <div className="py-10 text-center space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col items-center justify-center gap-4">
+        <div className="relative h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100 shadow-sm">
+          <Loader2 className="h-8 w-8 animate-spin text-slate-900" />
+        </div>
+        <div>
+          <h3 className="font-heading font-black text-slate-900 text-lg">
+            Processing Order
+          </h3>
+          <p className="text-xs text-slate-400 font-medium mt-1">
+            Please do not refresh or close this window
+          </p>
+        </div>
+      </div>
+
+      {/* Stepper */}
+      <div className="max-w-md mx-auto space-y-4 px-6 border-l border-slate-100 ml-8 md:ml-20">
+        {steps.map((label, idx) => {
+          const isCompleted = idx < activeStep
+          const isActive = idx === activeStep
+          return (
+            <div key={label} className="flex items-center gap-3 text-left animate-in slide-in-from-left duration-300">
+              <div
+                className={`h-6 w-6 rounded-full flex items-center justify-center border text-[10px] font-black transition-all duration-300 shrink-0 ${
+                  isCompleted
+                    ? 'bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100 text-white dark:text-slate-900'
+                    : isActive
+                    ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100 animate-pulse'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-450 dark:text-slate-500'
+                }`}
+              >
+                {isCompleted ? '✓' : idx + 1}
+              </div>
+              <span
+                className={`text-xs font-bold transition-colors duration-300 ${
+                  isActive ? 'text-slate-900' : isCompleted ? 'text-slate-500' : 'text-slate-300'
+                }`}
+              >
+                {label}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
@@ -124,7 +144,6 @@ function CodOnlyPaymentStep({ cartId, cartTotal, currencyCode, onComplete }: Pay
   const [processingStep, setProcessingStep] = useState('')
 
   async function ensureShipping() {
-    // If shipping method is already selected, retain it
     if (cart?.shipping_methods?.length) {
       return
     }
@@ -168,58 +187,12 @@ function CodOnlyPaymentStep({ cartId, cartTotal, currencyCode, onComplete }: Pay
   ]
 
   if (isProcessing) {
-    return (
-      <div className="py-10 text-center space-y-8 animate-in fade-in duration-500">
-        <div className="flex flex-col items-center justify-center gap-4">
-          <div className="relative h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100 shadow-sm">
-            <Loader2 className="h-8 w-8 animate-spin text-slate-900" />
-          </div>
-          <div>
-            <h3 className="font-heading font-black text-slate-900 text-lg">
-              Processing Order
-            </h3>
-            <p className="text-xs text-slate-400 font-medium mt-1">
-              Please do not refresh or close this window
-            </p>
-          </div>
-        </div>
-
-        {/* Stepper */}
-        <div className="max-w-md mx-auto space-y-4 px-6 border-l border-slate-100 ml-8 md:ml-20">
-          {steps.map((label, idx) => {
-            const isCompleted = idx < activeStep
-            const isActive = idx === activeStep
-            return (
-              <div key={label} className="flex items-center gap-3 text-left animate-in slide-in-from-left duration-300">
-                <div
-                  className={`h-6 w-6 rounded-full flex items-center justify-center border text-[10px] font-black transition-all duration-300 shrink-0 ${
-                    isCompleted
-                      ? 'bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100 text-white dark:text-slate-900'
-                      : isActive
-                      ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100 animate-pulse'
-                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500'
-                  }`}
-                >
-                  {isCompleted ? '✓' : idx + 1}
-                </div>
-                <span
-                  className={`text-xs font-bold transition-colors duration-300 ${
-                    isActive ? 'text-slate-900' : isCompleted ? 'text-slate-500' : 'text-slate-300'
-                  }`}
-                >
-                  {label}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    )
+    return <ProcessingLoader activeStep={activeStep} steps={steps} processingStep={processingStep} />
   }
 
   return (
     <div className="space-y-5">
-      <MethodCard
+      <PaymentMethodCard
         label="Cash on Delivery"
         description="Pay when your order arrives"
         icon={<Truck className="h-5 w-5" />}
@@ -260,7 +233,6 @@ function PaymentStepWithStripe({ cartId, cartTotal, currencyCode, onComplete }: 
   const [isCardFocused, setIsCardFocused] = useState(false)
 
   async function ensureShipping() {
-    // If shipping method is already selected, retain it
     if (cart?.shipping_methods?.length) {
       return
     }
@@ -332,60 +304,14 @@ function PaymentStepWithStripe({ cartId, cartTotal, currencyCode, onComplete }: 
   ]
 
   if (isProcessing) {
-    return (
-      <div className="py-10 text-center space-y-8 animate-in fade-in duration-500">
-        <div className="flex flex-col items-center justify-center gap-4">
-          <div className="relative h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100 shadow-sm">
-            <Loader2 className="h-8 w-8 animate-spin text-slate-900" />
-          </div>
-          <div>
-            <h3 className="font-heading font-black text-slate-900 text-lg">
-              Processing Order
-            </h3>
-            <p className="text-xs text-slate-400 font-medium mt-1">
-              Please do not refresh or close this window
-            </p>
-          </div>
-        </div>
-
-        {/* Stepper */}
-        <div className="max-w-md mx-auto space-y-4 px-6 border-l border-slate-100 ml-8 md:ml-20">
-          {steps.map((label, idx) => {
-            const isCompleted = idx < activeStep
-            const isActive = idx === activeStep
-            return (
-              <div key={label} className="flex items-center gap-3 text-left animate-in slide-in-from-left duration-300">
-                <div
-                  className={`h-6 w-6 rounded-full flex items-center justify-center border text-[10px] font-black transition-all duration-300 shrink-0 ${
-                    isCompleted
-                      ? 'bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100 text-white dark:text-slate-900'
-                      : isActive
-                      ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100 animate-pulse'
-                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500'
-                  }`}
-                >
-                  {isCompleted ? '✓' : idx + 1}
-                </div>
-                <span
-                  className={`text-xs font-bold transition-colors duration-300 ${
-                    isActive ? 'text-slate-900' : isCompleted ? 'text-slate-500' : 'text-slate-300'
-                  }`}
-                >
-                  {label}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    )
+    return <ProcessingLoader activeStep={activeStep} steps={steps} processingStep={processingStep} />
   }
 
   return (
     <div className="space-y-5">
       {/* Method selection */}
       <div className="space-y-3">
-        <MethodCard
+        <PaymentMethodCard
           label="Credit / Debit Card"
           description="Visa, Mastercard, Amex"
           icon={<CreditCard className="h-5 w-5" />}
@@ -393,7 +319,7 @@ function PaymentStepWithStripe({ cartId, cartTotal, currencyCode, onComplete }: 
           disabled={isProcessing}
           onClick={() => setSelectedProvider('stripe')}
         />
-        <MethodCard
+        <PaymentMethodCard
           label="Cash on Delivery"
           description="Pay when your order arrives"
           icon={<Truck className="h-5 w-5" />}
@@ -405,34 +331,10 @@ function PaymentStepWithStripe({ cartId, cartTotal, currencyCode, onComplete }: 
 
       {/* Stripe card input */}
       {selectedProvider === 'stripe' && (
-        <div
-          className={`px-5 py-4 bg-white dark:bg-slate-900 border rounded-2xl transition-all duration-300 space-y-2.5 ${
-            isCardFocused
-              ? 'border-slate-900 dark:border-slate-100 ring-2 ring-slate-900/5 dark:ring-slate-100/5 shadow-sm'
-              : 'border-slate-100 dark:border-slate-800 shadow-sm'
-          }`}
-        >
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-            Card Details
-          </p>
-          <CardElement
-            onFocus={() => setIsCardFocused(true)}
-            onBlur={() => setIsCardFocused(false)}
-            options={{
-              style: {
-                base: {
-                  fontSize: '14px',
-                  color: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? '#f8fafc' : '#1e293b',
-                  '::placeholder': { color: '#94a3b8' },
-                  fontFamily: 'Inter, system-ui, sans-serif',
-                },
-                invalid: {
-                  color: '#ba1a1a',
-                },
-              },
-            }}
-          />
-        </div>
+        <StripePaymentForm
+          isCardFocused={isCardFocused}
+          setIsCardFocused={setIsCardFocused}
+        />
       )}
 
       {/* COD info */}

@@ -12,6 +12,7 @@ import { AddressCard } from '@/components/store/account/address-card'
 import { CustomerAddress, AddressInput } from '@/types/address'
 import { AddressEditorCard } from '@/components/store/account/address-editor-card'
 import { DeleteAddressDialog } from '@/components/store/account/delete-address-dialog'
+import { SkeletonAddresses } from '@/components/shared/skeletons'
 
 export default function SavedAddressesPage() {
   const mounted = useMounted()
@@ -87,7 +88,7 @@ export default function SavedAddressesPage() {
     }
   })
 
-  if (!mounted) return null
+
 
   const customer = data?.customer
   const addresses: CustomerAddress[] = customer?.addresses || []
@@ -152,11 +153,7 @@ export default function SavedAddressesPage() {
 
       {/* Address Cards List */}
       {isLoading ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {Array.from({ length: 2 }).map((_, idx) => (
-            <div key={idx} className="h-44 w-full bg-slate-50 rounded-3xl animate-pulse" />
-          ))}
-        </div>
+        <SkeletonAddresses />
       ) : addresses.length === 0 ? (
         <Card className="rounded-3xl border border-slate-100 bg-white p-12 text-center text-slate-400 font-medium">
           <MapPin className="h-12 w-12 text-slate-350 mx-auto mb-4" />

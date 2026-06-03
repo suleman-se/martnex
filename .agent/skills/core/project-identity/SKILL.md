@@ -78,11 +78,11 @@ src/
 │   │   ├── loading/  # <LoadingSpinner />, <SkeletonRow />
 │   │   └── typography/ # <PageHeader />, <SectionTitle />
 │   ├── store/        # Buyer storefront UI
-│   │   ├── layout/   # StoreHeader (sticky nav, search, cart badge), MobileNavbar (bottom)
-│   │   ├── products/ # ProductCard, ProductGrid, VariantSelector
+│   │   ├── layout/   # StoreHeader; header/ sub-folder: SearchInput, SearchFilters, SearchResultsList, SearchSpotlight (⌘K)
+│   │   ├── products/ # ProductCard (container) → ProductCardMedia, ProductCardDetails, QuickAddVariantSelector
 │   │   ├── cart/     # CartItemRow, CartSummary
 │   │   ├── account/  # AddressCard, AddressEditorCard, DeleteAddressDialog, SavedAddressSelector
-│   │   └── checkout/ # AddressForm, PaymentStep (Stripe Elements + COD)
+│   │   └── checkout/ # AddressForm, PaymentMethodCard, StripePaymentForm, PaymentStep (Stripe + COD)
 │   └── ui/           # shadcn/ui primitives only
 └── hooks/            # Data fetching with React Query (staleTime: 30s-5min)
 ```
@@ -155,13 +155,15 @@ All `<Button>` variants in `src/components/ui/button.tsx` support both modes:
 
 - **Cart persistence:** Cart ID stored as `martnex_cart_id` in `localStorage`. Always call `clearStoredCartId()` after a successful order.
 - **Lazy cart creation:** `addItem` creates the cart on first use. Requires a `regionId` — obtain via `useRegions().defaultRegion?.id`.
-- **PaymentStep architecture:** `PaymentStep` renders `CodOnlyPaymentStep` when `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` is absent, or Stripe Elements when key is present.
+- **PaymentStep architecture:** Decomposed into `PaymentMethodCard` (selection cards) and `StripePaymentForm` (Stripe Elements container). `PaymentStep` is the orchestrator only.
 - **Checkout prerequisite chain:** Product linked to sales channel → variant has inventory link → `stocked_quantity > 0` → stock location linked to sales channel → fulfillment set + shipping options exist → product has `product_shipping_profile` row.
 - **Store routes:** All `/store/*` pages share `app/store/layout.tsx` (StoreHeader + footer). Search and category filter are URL-param driven (`?q=`, `?category=`) for SSR-friendliness.
 - **Prices NOT in cents** (project-wide rule — `$29.99` stored and displayed as `29.99`).
-- **Spotlight Search:** Keydown hotkeys (`⌘K`, `Ctrl+K`, `/`) toggle command palette. Guard against input/textarea focus before capturing. Search history must be initialized in `useEffect` to avoid SSR hydration mismatch.
-- **Buyer Account Portal:** `/store/account` layout uses a sticky `md:w-16 lg:w-64` icon/full sidebar. All account sub-pages use componentized sub-components (`AddressCard`, `AddressEditorCard`, `DeleteAddressDialog`, `SavedAddressSelector`) with centralized types from `src/types/address.ts`.
-- **Auth Screens:** All auth pages (`/login`, `/register`, `/forgot-password`, etc.) support dark mode. Background uses explicit `dark:bg-[#090d16]`. `AuthContainer` card uses `dark:border-slate-700/40`. All feedback panels (`AuthFeedbackPanel`, inline banners) have `dark:` color variants.
+- **Spotlight Search:** Decomposed into `SearchInput`, `SearchFilters`, and `SearchResultsList`. Hotkeys (`⌘K`, `Ctrl+K`, `/`) toggle command palette. Guard against input/textarea focus before capturing. History initialized in `useEffect`.
+- **ProductCard Componentization:** `ProductCard` is a pure container. Presentation is split into `ProductCardMedia` (image, badges, quick-add buttons), `ProductCardDetails` (title, price, description), and `QuickAddVariantSelector` (desktop popover + mobile sheet). Click-outside on the desktop selector uses a `useRef` global listener with `e.stopPropagation()` on the trigger.
+- **Buyer Account Portal:** `/store/account` layout uses a sticky `md:w-16 lg:w-64` icon/full sidebar. All account sub-pages use componentized sub-components with centralized types from `src/types/address.ts`. Skeletons are rendered under static headers — the header is always visible while data loads.
+- **Account Loading Skeletons:** `SkeletonAccount`, `SkeletonAddresses`, `SkeletonOrders`, `SkeletonProfile`, `SkeletonSavedAddresses` in `src/components/shared/skeletons.tsx`. Use `min-h-*` not fixed `h-*` to prevent button overflow. Integrated into `/store/account/addresses`, `/store/account/orders`, `/store/account/profile`, and `/store/checkout`.
+- **Auth Screens:** All auth pages support dark mode. Background uses explicit `dark:bg-[#090d16]`. `AuthContainer` card uses `dark:border-slate-700/40`.
 - **Skeletonizer:** `.skeleton-auto` CSS utility shimmers any React tree without static layout shifts.
 
 ## 10. Architecture Notes & Known Constraints
@@ -190,3 +192,5 @@ All `<Button>` variants in `src/components/ui/button.tsx` support both modes:
 - **Tablet Responsiveness (Account Area):** Compact icon sidebar on tablet, sticky aside, correct `md:flex-row` outer container, inner grids shifted to `lg:` breakpoints — **COMPLETE ✅** _(v0.9.9)_
 - **Auth Screen Dark Mode:** Dark backgrounds, dark card borders, dark feedback panels (error/success/warning) across all auth forms and layouts — **COMPLETE ✅** _(v0.9.9)_
 - **Button Variant Dark Mode:** All 7 button variants (`default`, `premium`, `outline`, `tonal`, `ghost`, `secondary`, `destructive`) now explicitly support `dark:` Tailwind classes — **COMPLETE ✅** _(v0.9.9)_
+- **Storefront Componentization:** `ProductCard`, `SearchSpotlight`, and `PaymentStep` decomposed into domain-level sub-components. Click-outside selector closure, hover-flash fixes, overlay backdrop corrections — **COMPLETE ✅** _(v1.0.0)_
+- **Account Loading Skeleton Overhaul:** Premium `SkeletonAddresses`, `SkeletonOrders`, `SkeletonProfile`, `SkeletonSavedAddresses` — exact layout mirrors, auto-inverting dark mode, `min-h` overflow fixes, hydration-safe static headers — **COMPLETE ✅** _(v1.0.0)_

@@ -54,7 +54,7 @@ All UI components **must** support dark mode. Rules:
   - `border-slate-100` automatically becomes `#1e293b` (slate 800 divider border).
   - Due to this, to create elements that are **light on light mode, dark on dark mode** (e.g., standard panels, quick add buttons), use `bg-white text-slate-900 border-slate-100` directly without `dark:` overrides.
   - Conversely, standard Tailwind dark classes like `dark:bg-slate-900` or `dark:bg-slate-950` will actually render as **white/light** in dark mode. Avoid using them unless explicitly wanting a white background in dark mode.
-- Never use hardcoded light-only colors (e.g., `bg-white`, `text-gray-900`) without a matching `dark:` counterpart.
+- Never hardcode colors that only work in one mode. Standard auto-inverting classes (`bg-white`, `text-slate-900`, `border-slate-100`) adapt automatically — prefer those over `dark:` overrides.
 - Prefer CSS variable tokens (`bg-card`, `text-foreground`, `bg-secondary`) defined in `globals.css` — these auto-invert in dark mode.
 - For colors that do NOT have CSS variable equivalents (e.g., status colors like `bg-red-50`), always add an explicit dark variant: `dark:bg-red-950/40 dark:text-red-300 dark:border-red-800/50`.
 - Auth screens must use `dark:bg-[#090d16]` for the page background and `dark:border-slate-700/40` for card borders.
@@ -87,12 +87,18 @@ All variants in `src/components/ui/button.tsx` support both light and dark modes
 ## 6. Coding Patterns
 
 ### Hydration Safety
-Always use the `mounted` pattern to avoid SSR/CSR mismatches:
+For skeleton-aware hydration, show a skeleton instead of returning `null`:
 ```tsx
-const [mounted, setMounted] = useState(false)
-useEffect(() => setMounted(true), [])
-if (!mounted) return null
+// Preferred: show skeleton during mount/loading, then real content
+const showSkeleton = !mounted || !user
+return (
+  <div>
+    <h1>Static Title</h1>  {/* always rendered */}
+    {showSkeleton ? <SkeletonProfile /> : <RealForm />}
+  </div>
+)
 ```
+For simple cases without a skeleton: `if (!mounted) return null` is still acceptable.
 
 ### Route Protection
 Use the `<ProtectedRoute />` component for any gated routes:
@@ -117,16 +123,19 @@ Use the **Shopify-style** two-column layout for product and setting forms:
 - **Zero `any` Types**: Declare explicit interfaces for all props, API request/response structures, and form state.
 - **Interface Extension**: Use `Omit`, `Partial`, `Pick` to compose child structures rather than duplicating types.
 
-### Overlay Scroll-Locking
-When implementing drawer panels, dialog modals, or spotlight overlays, prevent background scrolling by calling the `useBodyScrollLock(isOpen)` hook.
+### Storefront Componentization
+Large storefront components must be broken into domain-level sub-components in the same slice folder:
+- **`ProductCard`** → `ProductCardMedia`, `ProductCardDetails`, `QuickAddVariantSelector`
+- **`SearchSpotlight`** → `SearchInput`, `SearchFilters`, `SearchResultsList`
+- **`PaymentStep`** → `PaymentMethodCard`, `StripePaymentForm`
 
-### Buyer Account Portal Componentization
-All buyer account modules use isolated sub-components — never place large forms or dialog state directly in route pages:
-- **`AddressCard`**: Renders addresses with status badges; bubbles edit/delete actions to parent.
-- **`AddressEditorCard`**: Manages address fields with validity, loading, and sole-default logic.
-- **`DeleteAddressDialog`**: Radix `AlertDialog` with default-promotion safety checks.
-- **`SavedAddressSelector`**: Selectable grid at checkout; emits normalized `AddressInput`.
-- **Centralized types**: All address models must use `src/types/address.ts`.
+All sub-components receive state via props — no global store access inside presentational leaves.
+
+### Account Loading Skeletons
+Each account sub-page must have a matching loading skeleton in `src/components/shared/skeletons.tsx`:
+- Always use `min-h-*` instead of fixed `h-*` to prevent buttons or text from overflowing the skeleton container.
+- Static page titles/headers must always render immediately — only the data-dependent sections beneath them use skeletons.
+- The `isLoading && token` pattern is preferred at checkout for conditional skeleton rendering.
 
 ## 7. Security & Validation
 - **Input Validation**: Mandatory Zod schemas for all forms and API payloads.

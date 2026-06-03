@@ -19,6 +19,7 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchMe } from '@/lib/api'
 import { SavedAddressSelector } from '@/components/store/checkout/saved-address-selector'
 import { CustomerAddress } from '@/types/address'
+import { SkeletonSavedAddresses } from '@/components/shared/skeletons'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -55,7 +56,7 @@ export default function CheckoutPage() {
   const [hasPrepopulated, setHasPrepopulated] = useState(false)
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
-  const { data: customerData } = useQuery({
+  const { data: customerData, isLoading: isCustomerLoading } = useQuery({
     queryKey: ['checkout-customer-profile'],
     queryFn: () => fetchMe(token ?? undefined),
     enabled: mounted && !!token,
@@ -239,6 +240,10 @@ export default function CheckoutPage() {
             <h2 className="text-2xl font-heading font-black text-slate-900 mb-6">
               Shipping Information
             </h2>
+
+            {isCustomerLoading && token && (
+              <SkeletonSavedAddresses />
+            )}
 
             {savedAddresses.length > 0 && (
               <SavedAddressSelector

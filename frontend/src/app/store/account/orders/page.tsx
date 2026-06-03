@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Order, OrderItem } from '@/types/order'
+import { SkeletonOrders } from '@/components/shared/skeletons'
 
 const ITEMS_PER_PAGE = 8
 
@@ -25,7 +26,7 @@ export default function OrderHistoryPage() {
     enabled: mounted && !!token,
   })
 
-  if (!mounted) return null
+
 
   const orders = data?.orders || []
   const count = data?.count || 0
@@ -67,11 +68,7 @@ export default function OrderHistoryPage() {
 
       {/* Orders List */}
       {isLoading ? (
-        <div className="space-y-4">
-          {Array.from({ length: 4 }).map((_, idx) => (
-            <div key={idx} className="h-32 w-full bg-slate-50 rounded-3xl animate-pulse" />
-          ))}
-        </div>
+        <SkeletonOrders />
       ) : orders.length === 0 ? (
         <Card className="rounded-3xl border border-slate-100 bg-white p-12 text-center text-slate-400 font-medium">
           <ShoppingBag className="h-12 w-12 text-slate-350 mx-auto mb-4" />

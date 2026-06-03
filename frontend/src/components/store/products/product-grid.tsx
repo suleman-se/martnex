@@ -4,7 +4,7 @@ import { ProductCard } from './product-card'
 import { StoreProduct } from '@/lib/api'
 import { ShoppingBag } from 'lucide-react'
 import { EmptyState } from '@/components/shared/empty-states/empty-state'
-import { Skeletonify } from '@/components/shared/skeletons'
+import { SkeletonGrid } from '@/components/shared/skeletons'
 
 interface ProductGridProps {
   products: StoreProduct[]
@@ -12,42 +12,9 @@ interface ProductGridProps {
   currencyCode?: string
 }
 
-// TODO: Replace with real api-backed skeleton frames
-const MOCK_PRODUCT: StoreProduct = {
-  id: 'mock-id',
-  title: 'Loading Premium Item',
-  handle: 'mock-handle',
-  thumbnail: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=150',
-  description: 'Placeholder description for loading shimmers',
-  variants: [
-    {
-      id: 'var-1',
-      title: 'Default',
-      prices: [{ id: 'p-1', amount: 89.00, currency_code: 'usd' }],
-      options: []
-    }
-  ],
-  options: [
-    {
-      id: 'opt-1',
-      title: 'Size',
-      values: [{ value: 'S' }, { value: 'M' }, { value: 'L' }]
-    }
-  ],
-  images: []
-}
-
 export function ProductGrid({ products, isLoading = false, currencyCode = 'usd' }: ProductGridProps) {
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <Skeletonify key={i}>
-            <ProductCard product={MOCK_PRODUCT} currencyCode={currencyCode} />
-          </Skeletonify>
-        ))}
-      </div>
-    )
+    return <SkeletonGrid count={8} />
   }
 
   if (!products.length) {
