@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useAuthStore } from '@/lib/store/auth-store';
 import { getBackendUrl } from '@/lib/medusa-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,6 +68,10 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           const errorData = await response.json();
           throw new Error(errorData.error || errorData.message || 'Reset failed');
         }
+
+        // Clear local session state immediately if logged in to prevent automatic redirects
+        const { logout } = useAuthStore.getState();
+        await logout().catch(() => {});
 
         setSuccess(true);
         setTimeout(() => {

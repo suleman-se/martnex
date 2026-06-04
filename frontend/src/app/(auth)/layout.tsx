@@ -27,6 +27,9 @@ export default function AuthLayout({
     // If NOT verified and on verify-email page, stay
     if (!user?.email_verified && pathname === '/verify-email') return;
 
+    // If resetting password, allow staying on the reset page
+    if (pathname === '/reset-password') return;
+
     // Otherwise always redirect authenticated users away from auth routes
     router.push('/dashboard');
   }, [mounted, _hasHydrated, isAuthenticated, user, pathname, router]);
@@ -36,8 +39,10 @@ export default function AuthLayout({
     return <FullPageSpinner />;
   }
 
-  // Authenticated users see loading while redirect happens (except for verify-email bypass)
-  const isBypassingRedirect = pathname === '/verify-email' && isAuthenticated && !user?.email_verified;
+  // Authenticated users see loading while redirect happens (except for bypass routes)
+  const isBypassingRedirect = 
+    (pathname === '/verify-email' && isAuthenticated && !user?.email_verified) ||
+    pathname === '/reset-password';
   if (isAuthenticated && !isBypassingRedirect) {
     return <FullPageSpinner />;
   }

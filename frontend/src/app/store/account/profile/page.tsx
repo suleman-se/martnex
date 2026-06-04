@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useAuthStore } from '@/lib/store/auth-store'
-import { updateCustomer } from '@/lib/api'
+import { updateCustomer, requestPasswordReset } from '@/lib/api'
 import { useMounted } from '@/hooks/use-mounted'
 import { User, Check, Mail, Phone, Lock } from 'lucide-react'
 import { Card } from '@/components/ui/card'
@@ -42,6 +42,17 @@ export default function ProfileSettingsPage() {
     },
     onError: (err: unknown) => {
       const message = err instanceof Error ? err.message : 'Failed to update profile settings.'
+      toast.error(message)
+    }
+  })
+
+  const requestResetMutation = useMutation({
+    mutationFn: () => requestPasswordReset(email),
+    onSuccess: (data) => {
+      toast.success(data.message || 'Password reset instructions have been forwarded to ' + email)
+    },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : 'Failed to request password reset.'
       toast.error(message)
     }
   })
@@ -168,12 +179,13 @@ export default function ProfileSettingsPage() {
               <Button
                 type="button"
                 variant="outline"
+                disabled={requestResetMutation.isPending}
                 onClick={() => {
-                  toast.info('Password reset instructions have been forwarded to ' + email)
+                  requestResetMutation.mutate()
                 }}
-                className="rounded-2xl h-10 px-4 font-bold text-xs hover:bg-slate-50 cursor-pointer"
+                className="rounded-2xl h-10 px-4 font-bold text-xs hover:bg-slate-50 cursor-pointer disabled:opacity-50"
               >
-                Request Password Reset
+                {requestResetMutation.isPending ? 'Requesting...' : 'Request Password Reset'}
               </Button>
             </div>
           </Card>

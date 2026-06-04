@@ -215,6 +215,20 @@ export async function updateCustomer(
   return res.json()
 }
 
+/** Request password reset email */
+export async function requestPasswordReset(email: string): Promise<any> {
+  const res = await fetch(`${getBackendUrl()}/auth/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.message || 'Failed to request password reset')
+  }
+  return res.json()
+}
+
 /** Add a shipping address */
 export async function addCustomerAddress(
   address: AddressInput,
