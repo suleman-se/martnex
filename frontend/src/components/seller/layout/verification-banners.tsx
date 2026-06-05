@@ -22,7 +22,7 @@ export function VerificationBanners({
   return (
     <div className="px-10 mt-6 space-y-4">
       {isPending && (
-        <div className="p-5 bg-amber-50 border border-amber-200 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top-4 duration-700">
+        <div className="animate-in slide-in-from-top-4 duration-700 flex flex-col items-center justify-between gap-6 rounded-4xl border border-amber-200 bg-amber-50 p-5 md:flex-row">
           <div className="flex items-center gap-5">
             <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-700 shrink-0">
               <AlertCircle className="w-6 h-6" />
@@ -42,7 +42,7 @@ export function VerificationBanners({
       )}
 
       {isRejected && (
-        <div className="p-5 bg-red-50 border border-red-200 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top-4 duration-700">
+        <div className="animate-in slide-in-from-top-4 duration-700 flex flex-col items-center justify-between gap-6 rounded-4xl border border-red-200 bg-red-50 p-5 md:flex-row">
           <div className="flex items-center gap-5">
             <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center text-red-700 shrink-0">
               <X className="w-6 h-6" />
@@ -62,7 +62,7 @@ export function VerificationBanners({
       )}
 
       {isSuspended && (
-        <div className="p-5 bg-slate-900 border border-slate-700 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top-4 duration-700">
+        <div className="animate-in slide-in-from-top-4 duration-700 flex flex-col items-center justify-between gap-6 rounded-4xl border border-slate-700 bg-slate-900 p-5 md:flex-row">
           <div className="flex items-center gap-5">
             <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-slate-400 shrink-0 animate-pulse">
               <AlertCircle className="w-6 h-6 text-red-500" />

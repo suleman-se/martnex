@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/auth-store';
+import { FullPageSpinner } from '@/components/shared/loading/full-page-spinner';
 
 export default function AuthLayout({
   children,
@@ -26,31 +27,33 @@ export default function AuthLayout({
     // If NOT verified and on verify-email page, stay
     if (!user?.email_verified && pathname === '/verify-email') return;
 
+    // If resetting password, allow staying on the reset page
+    if (pathname === '/reset-password') return;
+
     // Otherwise always redirect authenticated users away from auth routes
     router.push('/dashboard');
   }, [mounted, _hasHydrated, isAuthenticated, user, pathname, router]);
 
   // Consistent loading state on both server and client during hydration
   if (!mounted || !_hasHydrated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-8 h-8 rounded-full border-2 border-slate-900/20 border-t-slate-900 animate-spin" />
-      </div>
-    );
+    return <FullPageSpinner />;
   }
 
-  // Authenticated users see loading while redirect happens (except for verify-email bypass)
-  const isBypassingRedirect = pathname === '/verify-email' && isAuthenticated && !user?.email_verified;
+  // Authenticated users see loading while redirect happens (except for bypass routes)
+  const isBypassingRedirect = 
+    (pathname === '/verify-email' && isAuthenticated && !user?.email_verified) ||
+    pathname === '/reset-password';
   if (isAuthenticated && !isBypassingRedirect) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-8 h-8 rounded-full border-2 border-slate-900/20 border-t-slate-900 animate-spin" />
-      </div>
-    );
+    return <FullPageSpinner />;
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-mesh font-sans p-6 lg:p-8 animate-in fade-in duration-700">
+    <div className="min-h-screen flex items-center justify-center bg-[#f7f9fb] dark:bg-[#090d16] font-sans p-6 lg:p-8 animate-in fade-in duration-700">
+      {/* Ambient background glow — light and dark aware */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-indigo-100/50 dark:bg-indigo-900/10 blur-[120px]" />
+        <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] rounded-full bg-slate-200/60 dark:bg-slate-800/20 blur-[120px]" />
+      </div>
       <div className="w-full max-w-md space-y-8">
         {children}
       </div>

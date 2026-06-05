@@ -11,6 +11,7 @@ import {
   formatCurrency,
 } from '@/hooks/use-seller-orders'
 import type { SellerOrder } from '@/hooks/use-seller-orders'
+import { EmptyState } from '@/components/shared/empty-states/empty-state'
 
 function StatusBadge({ status, fulfillmentStatus }: { status: string; fulfillmentStatus?: string }) {
   const label = formatOrderStatus(status, fulfillmentStatus)
@@ -148,7 +149,7 @@ export default function SellerOrdersPage() {
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white rounded-[2rem] overflow-hidden shadow-sm hover:shadow-premium transition-all duration-700">
+      <div className="bg-white rounded-4xl overflow-hidden shadow-sm hover:shadow-premium transition-all duration-700">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -217,17 +218,16 @@ export default function SellerOrdersPage() {
         </div>
 
         {!isLoading && filteredOrders.length === 0 && (
-          <div className="py-32 flex flex-col items-center justify-center text-center px-6">
-            <div className="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-8">
-              <ShoppingBag className="w-10 h-10 text-slate-300" />
-            </div>
-            <h3 className="text-3xl font-heading font-black text-slate-900">No orders found</h3>
-            <p className="text-slate-500 mt-4 max-w-sm mx-auto font-medium leading-relaxed">
-              {search || statusFilter !== 'all'
+          <EmptyState
+            icon={ShoppingBag}
+            title="No Orders Found"
+            description={
+              search || statusFilter !== 'all'
                 ? 'No orders match your current filters.'
-                : 'Your orders will show up here once customers start purchasing your products.'}
-            </p>
-          </div>
+                : 'Your orders will show up here once customers start purchasing your products.'
+            }
+            className="py-32 opacity-100"
+          />
         )}
       </div>
     </div>

@@ -35,7 +35,9 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
     : rawProducts
       ? [rawProducts]
       : []
-  const productIds: string[] = linkedProducts.map((p: { id: string }) => p.id)
+  const productIds: string[] = linkedProducts
+    .filter(Boolean)
+    .map((p: { id: string }) => p.id)
 
   if (productIds.length === 0) {
     return res.status(200).json({ orders: [], count: 0 })

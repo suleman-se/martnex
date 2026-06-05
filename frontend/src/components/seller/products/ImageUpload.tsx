@@ -74,7 +74,7 @@ export function ImageUpload({ value = [], onChange, onQueueDelete }: ImageUpload
 
     setIsUploading(true);
     try {
-      const token = localStorage.getItem('access_token');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
       const headers = await buildStoreHeaders(token || undefined);
       // Remove Content-Type — FormData sets its own multipart boundary
       const { 'Content-Type': _ct, ...fetchHeaders } = headers as Record<string, string>;

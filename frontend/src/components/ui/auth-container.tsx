@@ -26,8 +26,8 @@ export const AuthContainer = ({
         </div>
       </div>
 
-      {/* Auth Card: Architectural Monolith Style */}
-      <div className="w-full bg-card rounded-lg p-10 md:p-12 shadow-premium border border-white/40">
+      {/* Auth Card */}
+      <div className="w-full bg-card rounded-2xl p-10 md:p-12 shadow-premium border border-slate-200/60 dark:border-slate-700/40">
         <div className="mb-10 text-center">
           <h1 className="text-[32px] font-bold tracking-tight text-primary leading-tight mb-2">
             {title}
@@ -42,13 +42,6 @@ export const AuthContainer = ({
         {children}
       </div>
 
-      {/* Decorative Subtle Background Detail (Handled by Layout/Global but localized here for effect) */}
-      <div className="fixed top-0 right-0 -z-10 w-1/3 h-full opacity-30 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/4 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[120px]"></div>
-      </div>
-      <div className="fixed bottom-0 left-0 -z-10 w-1/3 h-full opacity-30 pointer-events-none overflow-hidden">
-        <div className="absolute bottom-1/4 left-0 w-96 h-96 bg-secondary/20 rounded-full blur-[120px]"></div>
-      </div>
     </div>
   );
 };

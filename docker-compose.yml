@@ -94,6 +94,7 @@ services:
       dockerfile: Dockerfile
     container_name: martnex-frontend
     environment:
+      MEDUSA_BACKEND_URL: http://backend:9001
       NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9001
       NEXT_PUBLIC_BASE_URL: http://localhost:3000
       WATCHPACK_POLLING: "true"

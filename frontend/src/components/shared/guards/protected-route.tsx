@@ -3,18 +3,13 @@
 import { useAuthStore } from '@/lib/store/auth-store';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { FullPageSpinner } from '@/components/shared/loading/full-page-spinner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   allowedRoles?: string[];
   redirectTo?: string;
 }
-
-const LoadingScreen = () => (
-  <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-    <div className="animate-spin rounded-full h-10 w-10 border-2 border-slate-900 border-t-transparent"></div>
-  </div>
-);
 
 export function ProtectedRoute({
   children,
@@ -72,7 +67,7 @@ export function ProtectedRoute({
 
   // Both SSR and initial CSR render return loading — no mismatch
   if (!mounted || !_hasHydrated || isValidating || !isAuthorized) {
-    return <LoadingScreen />;
+    return <FullPageSpinner spinnerClassName="h-10 w-10 border-slate-900 border-t-transparent" />;
   }
 
   return <>{children}</>;

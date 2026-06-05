@@ -3,6 +3,8 @@
 /* Inter is loaded by next/font/google in layout.tsx — no duplicate @import needed */
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Martnex Slate Monolith - Architectural Theme */
   --color-background: #f7f9fb;
@@ -40,6 +42,29 @@
 
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-heading: "Inter", sans-serif;
+
+  /* Custom Slate Palette Extensions for Light Mode */
+  --color-white: #ffffff;
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  --color-slate-950: #020617;
+
+  --color-slate-150: #ebedf2;
+  --color-slate-205: #dcdfe5;
+  --color-slate-250: #d1d5db;
+  --color-slate-350: #b0b8c4;
+  --color-slate-450: #7f8c9d;
+  --color-slate-650: #3d4b5c;
+  --color-slate-750: #293548;
+  --color-slate-850: #161f30;
 }
 
 :root {
@@ -50,11 +75,66 @@
   * {
     @apply border-border/20; /* The "No-Line" Rule: Subdued borders if any */
   }
+
+  .dark {
+    --color-background: #090d16; /* Premium Obsidian Dark background */
+    --color-foreground: #f8fafc; /* Slate 50 */
+    
+    --color-card: #111827; /* Gray 900 */
+    --color-card-foreground: #f8fafc;
+    
+    --color-popover: #111827;
+    --color-popover-foreground: #f8fafc;
+    
+    --color-primary: #ffffff;
+    --color-primary-foreground: #090d16;
+    
+    --color-secondary: #1f2937; /* Gray 800 */
+    --color-secondary-foreground: #f8fafc;
+    
+    --color-muted: #1f2937;
+    --color-muted-foreground: #9ca3af;
+    
+    --color-accent: #374151; /* Gray 700 */
+    --color-accent-foreground: #ffffff;
+    
+    --color-border: #1f2937;
+    --color-input: #111827;
+    color-scheme: dark;
+
+    /* Premium Tailwind Color Palette Inversions */
+    --color-white: #111827; /* Redefine white as premium card dark */
+    --color-slate-50: #0f172a; /* Slate 900 for low contrast panels */
+    --color-slate-100: #1e293b; /* Slate 800 for borders & dividers */
+    --color-slate-150: #1e293b;
+    --color-slate-200: #334155;
+    --color-slate-205: #334155;
+    --color-slate-250: #334155;
+    --color-slate-300: #475569;
+    --color-slate-350: #475569;
+    --color-slate-400: #94a3b8; /* Slate 400 */
+    --color-slate-450: #94a3b8;
+    --color-slate-500: #cbd5e1; /* Invert slate-500 to light gray text */
+    --color-slate-600: #cbd5e1; /* Invert slate-600 to light gray text */
+    --color-slate-650: #e2e8f0;
+    --color-slate-700: #f1f5f9;
+    --color-slate-750: #f8fafc;
+    --color-slate-800: #f8fafc;
+    --color-slate-850: #ffffff;
+    --color-slate-900: #ffffff;
+    --color-slate-950: #ffffff;
+  }
+  
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     letter-spacing: -0.015em;
+  }
+
+  input, select, textarea {
+    color: var(--color-foreground);
+    background-color: var(--color-input);
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -76,6 +156,16 @@
   .tonal-surface-mid { @apply bg-[#eceef0]; }
   .tonal-surface-high { @apply bg-[#e6e8ea]; }
 
+  @keyframes bounce-spring {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.3) rotate(8deg); }
+    60% { transform: scale(0.9) rotate(-4deg); }
+    100% { transform: scale(1); }
+  }
+  .animate-bounce-spring {
+    animation: bounce-spring 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+
   .material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     display: inline-block;
@@ -86,5 +176,76 @@
     white-space: nowrap;
     direction: ltr;
     font-size: 24px; /* default */
+  }
+
+  .skeleton-auto {
+    pointer-events: none !important;
+    user-select: none !important;
+    
+    * {
+      pointer-events: none !important;
+      animation: pulse-shimmer 2s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+    }
+
+    /* Hide noisy interactive elements, overlays and category badges */
+    button,
+    span.absolute,
+    div.z-20 {
+      display: none !important;
+    }
+
+    h1, h2, h3, h4, h5, h6, p, span, label, select, input, textarea,
+    p a, span a, li a {
+      background-color: var(--color-slate-100) !important;
+      color: transparent !important;
+      border-color: transparent !important;
+      border-radius: 0.375rem !important;
+      box-shadow: none !important;
+      background-image: none !important;
+    }
+    
+    img {
+      content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E") !important;
+      opacity: 1 !important;
+      background-color: var(--color-slate-100) !important;
+      border-radius: 0.75rem !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+      background-image: none !important;
+    }
+
+    svg {
+      background-color: var(--color-slate-100) !important;
+      border-radius: 0.75rem !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+      background-image: none !important;
+    }
+
+    svg * {
+      opacity: 0 !important;
+    }
+
+    iframe, video, .image-placeholder {
+      opacity: 0.15 !important;
+      background-color: var(--color-slate-100) !important;
+      border-radius: 0.75rem !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+      background-image: none !important;
+    }
+
+    /* Disable hover interactions completely */
+    :hover, :focus, :active {
+      transform: none !important;
+      scale: 100% !important;
+      box-shadow: none !important;
+      border-color: transparent !important;
+    }
+  }
+
+  @keyframes pulse-shimmer {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .45; }
   }
 }

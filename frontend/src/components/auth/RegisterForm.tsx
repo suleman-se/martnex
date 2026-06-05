@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { FieldLabel } from '@/components/shared/forms/field-label';
 import { ShoppingBag, Store } from 'lucide-react';
 
 const registerSchema = z.object({
@@ -62,18 +62,18 @@ export default function RegisterForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-900 rounded-lg text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-300">
+        <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 text-red-900 dark:text-red-300 rounded-lg text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-300">
           <p className="flex items-center gap-2">
-            <span className="block h-2 w-2 rounded-full bg-red-900 animate-pulse"></span>
+            <span className="block h-2 w-2 rounded-full bg-current animate-pulse"></span>
             {error}
           </p>
         </div>
       )}
 
       {success && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-500">
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-emerald-900 dark:text-emerald-300 rounded-lg text-[11px] font-black uppercase tracking-wider animate-in fade-in duration-500">
           <p className="flex items-center gap-2">
-            <span className="block h-2 w-2 rounded-full bg-emerald-900 animate-pulse"></span>
+            <span className="block h-2 w-2 rounded-full bg-current animate-pulse"></span>
             Account created successfully. Verifying...
           </p>
         </div>
@@ -81,7 +81,7 @@ export default function RegisterForm() {
 
       <div className="space-y-5">
         <div className="space-y-3">
-          <Label className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Account Type</Label>
+          <FieldLabel className="ml-1">Account Type</FieldLabel>
           <div className="grid grid-cols-2 gap-3">
             <label 
               className={`flex flex-col items-center justify-center p-4 rounded-lg cursor-pointer transition-all active:scale-95 border-2 ${
@@ -122,7 +122,7 @@ export default function RegisterForm() {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="first_name" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">First Name</Label>
+            <FieldLabel htmlFor="first_name">First Name</FieldLabel>
             <Input
               id="first_name"
               type="text"
@@ -136,7 +136,7 @@ export default function RegisterForm() {
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="last_name" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Last Name</Label>
+            <FieldLabel htmlFor="last_name">Last Name</FieldLabel>
             <Input
               id="last_name"
               type="text"
@@ -152,7 +152,7 @@ export default function RegisterForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email address</Label>
+          <FieldLabel htmlFor="email">Email address</FieldLabel>
           <Input
             id="email"
             type="email"
@@ -167,7 +167,7 @@ export default function RegisterForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Password</Label>
+          <FieldLabel htmlFor="password">Password</FieldLabel>
           <Input
             id="password"
             type="password"

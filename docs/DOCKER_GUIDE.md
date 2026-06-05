@@ -211,6 +211,14 @@ For production, update these with secure values!
 You no longer need to manually copy a publishable key between backend and frontend
 for local Docker development. The frontend fetches it from the backend at runtime.
 
+### Server Component Docker Networking
+
+When building Next.js Server Components, fetching logic executes inside the `frontend` Docker container rather than the user's browser. If your Server Component attempts to connect to `http://localhost:9001`, it resolves to the frontend container itself instead of the backend container!
+
+To solve this:
+1. Provide an internal Docker network URL for Server Components via `MEDUSA_BACKEND_URL: http://backend:9001` in your `docker-compose.yml`.
+2. The browser will continue to fall back securely to `NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9001`.
+
 ## Project Structure
 
 ```

@@ -196,13 +196,28 @@ export const useAuthStore = create<AuthState>()(
               return;
             }
 
-            const headers = await buildStoreHeaders(token);
-            const response = await fetch(`${API_URL}/store/customers/me`, {
-              headers,
-              cache: 'no-store',
-              // @ts-ignore - Next.js specific
-              next: { revalidate: 0 }
-            });
+            const fetchMe = async (tok: string) => {
+              const headers = await buildStoreHeaders(tok);
+              return fetch(`${API_URL}/store/customers/me`, {
+                headers,
+                cache: 'no-store',
+                // @ts-ignore - Next.js specific
+                next: { revalidate: 0 },
+              });
+            };
+
+            let response = await fetchMe(token);
+
+            // Access token expired — try silent refresh before giving up
+            if (response.status === 401 || response.status === 403) {
+              await get().refreshSession(); // exchanges refresh token or calls logout()
+              const newToken = localStorage.getItem('access_token');
+              if (!newToken || newToken === token) {
+                // refreshSession already called logout(), nothing more to do
+                return;
+              }
+              response = await fetchMe(newToken);
+            }
 
             if (response.ok) {
               const data = await response.json();
@@ -213,12 +228,12 @@ export const useAuthStore = create<AuthState>()(
                   role: (data.customer.metadata?.role as any) || 'buyer',
                   first_name: data.customer.first_name,
                   last_name: data.customer.last_name,
-                  email_verified: !!data.customer.metadata?.email_verified
+                  email_verified: !!data.customer.metadata?.email_verified,
                 };
                 set({ user: userData, isAuthenticated: true });
               }
             } else if (response.status === 401 || response.status === 403 || response.status === 404) {
-              // Token expired, user not found, or forbidden — clear session
+              // Token expired and refresh failed — clear session
               await get().logout();
             }
           } catch (error) {

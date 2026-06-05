@@ -21,12 +21,49 @@ interface Variant {
   sku: string;
 }
 
-interface VariantBuilderProps {
-  value?: { options: Option[]; variants: any[] };
-  onChange: (value: { options: any[]; variants: any[] }) => void;
+interface OptionInput {
+  id?: string;
+  title: string;
+  values: string[];
 }
 
-function inferRemovedTitlesFromValue(value?: { options: Option[]; variants: any[] }): Set<string> {
+interface VariantPriceInput {
+  amount: number;
+  currency_code: string;
+}
+
+interface VariantOptionInput {
+  title?: string;
+  value?: string | { value?: string };
+  option?: { title?: string };
+}
+
+interface VariantInput {
+  id?: string;
+  title: string;
+  options?: VariantOptionInput[] | Record<string, string>;
+  prices?: VariantPriceInput[];
+  calculated_price?: { calculated_amount?: number };
+  price?: number;
+  inventory_quantity?: number;
+  sku?: string;
+}
+
+interface OutgoingVariant {
+  id?: string;
+  title: string;
+  prices: VariantPriceInput[];
+  inventory_quantity: number;
+  sku?: string;
+  options: { title: string; value: string }[];
+}
+
+interface VariantBuilderProps {
+  value?: { options: Option[]; variants: VariantInput[] };
+  onChange: (value: { options: Omit<Option, 'id'>[]; variants: OutgoingVariant[] }) => void;
+}
+
+function inferRemovedTitlesFromValue(value?: { options: Option[]; variants: VariantInput[] }): Set<string> {
   if (!value?.options?.length) {
     return new Set();
   }
@@ -50,7 +87,7 @@ function inferRemovedTitlesFromValue(value?: { options: Option[]; variants: any[
 
   const visibleTitles = new Set(
     (value.variants || [])
-      .map((variant: any) => variant?.title)
+      .map((variant) => variant?.title)
       .filter((title: unknown): title is string => typeof title === 'string' && title.length > 0)
   );
 
@@ -62,19 +99,27 @@ export function VariantBuilder({ value, onChange }: VariantBuilderProps) {
   const [removedTitles, setRemovedTitles] = useState<Set<string>>(() => inferRemovedTitlesFromValue(value));
   const [variants, setVariants] = useState<Variant[]>(() => {
     if (!value?.variants) return [];
-    return value.variants.map((v: any) => ({
-      id: v.id,
-      title: v.title,
-      options: v.options?.reduce((acc: any, curr: any) => {
-        const title = curr.title || curr.option?.title || '';
-        const value = typeof curr.value === 'string' ? curr.value : curr.value?.value || '';
-        if (title) acc[title] = value;
-        return acc;
-      }, {}) || {},
-      price: v.prices?.[0]?.amount ?? v.calculated_price?.calculated_amount ?? v.price ?? 0,
-      inventory_quantity: v.inventory_quantity ?? 0,
-      sku: v.sku ?? '',
-    }));
+    return value.variants.map((v) => {
+      const parsedOptions: Record<string, string> = {};
+      if (Array.isArray(v.options)) {
+        v.options.forEach((curr) => {
+          const title = curr.title || curr.option?.title || '';
+          const val = typeof curr.value === 'string' ? curr.value : curr.value?.value || '';
+          if (title) parsedOptions[title] = val;
+        });
+      } else if (v.options && typeof v.options === 'object') {
+        Object.assign(parsedOptions, v.options);
+      }
+
+      return {
+        id: v.id,
+        title: v.title,
+        options: parsedOptions,
+        price: v.prices?.[0]?.amount ?? v.calculated_price?.calculated_amount ?? v.price ?? 0,
+        inventory_quantity: v.inventory_quantity ?? 0,
+        sku: v.sku ?? '',
+      };
+    });
   });
 
   // Keep refs to latest values so effects can read them without being in deps

@@ -29,7 +29,6 @@ export default function SellerProductsPage() {
   const filtered = products.filter((p) =>
     p.title.toLowerCase().includes(search.toLowerCase())
   );
-console.log('Filtered products:', products);
   const confirmDelete = async () => {
     if (!deleteId) return;
     try {

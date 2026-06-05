@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 
 const navigation = [
   { name: 'Overview',  href: '/seller',          icon: LayoutDashboard },
@@ -37,8 +38,8 @@ export function SellerSidebar({ isOpen }: SellerSidebarProps) {
 
   return (
     <aside 
-      className={`fixed top-0 left-0 z-40 h-screen transition-transform bg-white shadow-xl shadow-slate-200/50 border-r border-slate-100 ${
-        isOpen ? 'translate-x-0 w-72' : '-translate-x-full w-0 hidden'
+      className={`fixed left-0 top-0 z-40 h-screen w-72 border-r border-slate-100 bg-white shadow-xl shadow-slate-200/50 transition-all duration-500 ${
+        isOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0 pointer-events-none'
       }`}
     >
       <div className="flex flex-col h-full p-6">
@@ -76,13 +77,14 @@ export function SellerSidebar({ isOpen }: SellerSidebarProps) {
         </nav>
 
         <div className="pt-6 mt-6 border-t border-slate-100">
-          <button
+          <Button
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all font-medium group"
+            variant="ghost"
+            className="h-auto w-full justify-start gap-3 rounded-xl px-4 py-3 font-medium text-slate-400 hover:bg-red-50 hover:text-red-500"
           >
             <LogOut className="w-5 h-5 group-hover:text-red-500" />
             <span className="tracking-tight">Logout</span>
-          </button>
+          </Button>
         </div>
       </div>
     </aside>

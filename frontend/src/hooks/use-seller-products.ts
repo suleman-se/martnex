@@ -90,7 +90,25 @@ async function fetchSellerProduct(id: string): Promise<Product> {
   return normalizeProduct(data.product as Product);
 }
 
-async function createProduct(payload: any): Promise<Product> {
+export interface CreateProductPayload {
+  title: string;
+  description?: string;
+  category_ids?: string[];
+  images?: { id?: string; url: string; metadata?: Record<string, unknown> | null }[];
+  pending_delete_file_ids?: string[];
+  options?: { title: string; values: string[] }[];
+  variants?: {
+    id?: string;
+    title: string;
+    prices: { amount: number; currency_code: string }[];
+    inventory_quantity: number;
+    sku?: string;
+    options: { title: string; value: string }[];
+  }[];
+  status: 'draft' | 'proposed' | 'published';
+}
+
+async function createProduct(payload: CreateProductPayload): Promise<Product> {
   const token = localStorage.getItem('access_token');
   const headers = await buildStoreHeaders(token || undefined);
   const response = await fetch(`${getBackendUrl()}/store/sellers/me/products`, {
@@ -104,7 +122,7 @@ async function createProduct(payload: any): Promise<Product> {
   return normalizeProduct(data.product as Product);
 }
 
-async function updateProduct({ id, ...payload }: { id: string } & any): Promise<Product> {
+async function updateProduct({ id, ...payload }: { id: string } & Partial<CreateProductPayload>): Promise<Product> {
   const token = localStorage.getItem('access_token');
   const headers = await buildStoreHeaders(token || undefined);
   const response = await fetch(`${getBackendUrl()}/store/sellers/me/products/${id}`, {

@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { FieldLabel } from '@/components/shared/forms/field-label';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -57,10 +57,10 @@ export default function LoginForm() {
       {error && (
         <div className={`p-4 rounded-lg text-xs font-bold flex items-center gap-3 animate-in fade-in duration-300 ${
           lockedMinutes !== null
-            ? 'bg-amber-50 text-amber-900 border border-amber-200'
+            ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50'
             : emailNotVerified
             ? 'bg-secondary text-primary'
-            : 'bg-red-50 text-red-900 border border-red-200'
+            : 'bg-red-50 dark:bg-red-950/40 text-red-900 dark:text-red-300 border border-red-200 dark:border-red-800/50'
         }`}>
           <div className="h-2 w-2 rounded-full bg-current animate-pulse shrink-0"></div>
           <div>
@@ -73,7 +73,7 @@ export default function LoginForm() {
 
       <div className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email</Label>
+          <FieldLabel htmlFor="email">Email</FieldLabel>
           <Input
             id="email"
             type="email"
@@ -90,7 +90,7 @@ export default function LoginForm() {
 
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label htmlFor="password" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Password</Label>
+            <FieldLabel htmlFor="password">Password</FieldLabel>
           </div>
           <Input
             id="password"
