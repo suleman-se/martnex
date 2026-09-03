@@ -33,9 +33,8 @@ export default function AccountDashboardPage() {
     return status === 'placed' || status === 'processing' || status === 'shipped'
   }).length
 
-  // TODO: Replace with real database-backed platform savings index logic
-  // Premium platform savings index (mock indicator computed off purchases to feel alive)
-  const savingsIndex = totalOrdersCount > 0 ? totalOrdersCount * 12.80 + 15.00 : 0
+  // Real lifetime spend from the orders already fetched above.
+  const totalSpent = orders.reduce((sum: number, o: Order) => sum + (o.total || 0), 0)
 
   const recentOrders = orders.slice(0, 3)
 
@@ -123,7 +122,7 @@ export default function AccountDashboardPage() {
           </div>
         </Card>
 
-        {/* Stat 3: Savings Index */}
+        {/* Stat 3: Total Spent */}
         <Card className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm flex items-center gap-5 relative overflow-hidden group">
           <div className="absolute right-0 bottom-0 translate-x-4 translate-y-4 opacity-5 group-hover:opacity-10 transition-opacity duration-300">
             <Sparkles className="h-28 w-28 text-slate-900" />
@@ -132,12 +131,12 @@ export default function AccountDashboardPage() {
             <Sparkles className="h-6 w-6" />
           </div>
           <div className="space-y-0.5">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Savings Index</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Spent</p>
             {isLoading ? (
               <div className="h-7 w-12 bg-slate-100 rounded animate-pulse mt-1" />
             ) : (
               <h3 className="text-2xl font-black text-slate-800">
-                {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(savingsIndex)}
+                {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalSpent)}
               </h3>
             )}
           </div>

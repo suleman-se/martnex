@@ -1,5 +1,6 @@
 import { fetchProductByHandle } from '@/lib/api'
 import ProductDetailClient from './product-detail-client'
+import { ProductReviews } from '@/components/store/reviews/product-reviews'
 import { AlertCircle } from 'lucide-react'
 import { EmptyState } from '@/components/shared/empty-states/empty-state'
 import { Button } from '@/components/ui/button'
@@ -32,7 +33,12 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       )
     }
 
-    return <ProductDetailClient product={product} />
+    return (
+      <div className="space-y-12">
+        <ProductDetailClient product={product} />
+        <ProductReviews productId={product.id} />
+      </div>
+    )
   } catch (err) {
     console.error('ProductDetailPage fetch failed:', err)
     return (

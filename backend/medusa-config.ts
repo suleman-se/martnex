@@ -119,6 +119,11 @@ module.exports = defineConfig({
       {
         resolve: "./src/modules/payout",
       },
+
+      // Review module (product + seller ratings)
+      {
+        resolve: "./src/modules/review",
+      },
     ] : []),
   ],
 })

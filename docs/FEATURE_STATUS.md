@@ -9,10 +9,10 @@ that work.
 
 | | Count |
 | :--- | ---: |
-| Working | 31 |
+| Working | 33 |
 | Partial | 4 |
-| Declared, not built | 14 |
-| Planned next | 3 |
+| Declared, not built | 13 |
+| Planned next | 7 |
 
 ## How this was checked
 
@@ -33,11 +33,14 @@ that work.
 | ✅ Working | Spotlight search (⌘K) | Shortcut opens the overlay; typing "hoodie" returns matching products |
 | ✅ Working | Persistent cart | Item survives navigation; line totals plus free-shipping meter ("$61.00 away", 59%) |
 | ✅ Working | Multi-step checkout | Cart → Address → Delivery → Payment, with card and cash-on-delivery offered |
-| ✅ Working | Account portal | Dashboard, order history, saved addresses, profile settings |
+| ✅ Working | Account portal | Dashboard, order history, saved addresses, profile settings. Stat tiles (orders, pending shipments, total spent) are computed from real order data |
 | ✅ Working | Dark mode | Sets `.dark` on the document, persists `martnex_theme`, survives reload |
-| ✅ Working | Brand storefront pages | Per-merchant route `/store/merchants/[id]` |
+| ✅ Working | Brand storefront pages | Per-merchant route `/store/merchants/[id]`. Catalogue size, join date and verification standing all read from the seller record — the seller rating is the real aggregate across that merchant's reviews, and is hidden entirely until reviews exist |
 | ✅ Working | Loading skeletons | Dedicated skeletons for addresses, orders, profile, saved addresses |
 | ✅ Working | Order confirmation receipt | Confetti receipt on `/store/orders/[id]` |
+| ✅ Working | Product reviews & ratings | Signed-in customers rate 1–5 with an optional title and body. One review per customer per product, verified-purchase badge when an order matches, and a live average plus star distribution on the product page |
+| ✅ Working | Newsletter subscribe | Footer form posts to `POST /store/newsletter` with validation and success/error states. No mailing-list provider is wired up yet — the address is accepted and logged |
+| ✅ Working | Footer catalogue links | Derived from the store's real product categories rather than a hardcoded list |
 | ❌ Not built | Social sign-in | "Google ID" and "Apple ID" buttons render with no handler and no OAuth behind them |
 
 ## Seller centre
@@ -71,14 +74,16 @@ that work.
 
 `features.config.ts` advertises these as toggleable. Each resolves an environment
 variable, but none has a module, route, model or component behind it — a filename
-search across both apps returns nothing for any of them.
+search across both apps returns nothing for any of them. (`REVIEWS` was on this list
+and is now a real module.)
 
-`REVIEWS` · `DISPUTES` · `WISHLIST` · `LOYALTY` · `ANALYTICS` · `PRODUCT_COMPARISON` ·
+`DISPUTES` · `WISHLIST` · `LOYALTY` · `ANALYTICS` · `PRODUCT_COMPARISON` ·
 `LIVE_CHAT` · `PAYPAL` (config only) · `SMS` · `PUSH` · `S3` · `CLOUDINARY`
 
-> **Known issue.** `store-mode.ts` pushes module names — `review`, `dispute`, `wishlist`,
-> `loyalty`, `analytics` — into the loader list for modules that do not exist. With disputes
-> enabled, startup prints `✓ dispute` for a module that was never written.
+> **Fixed.** `store-mode.ts` previously pushed `review`, `dispute`, `wishlist`, `loyalty` and
+> `analytics` into the loader list for modules that did not exist, so startup could print
+> `✓ dispute` for a module that was never written. The list now names only modules that
+> actually ship — `seller`, `commission`, `payout` and `review`.
 
 ## Admin
 
@@ -91,7 +96,7 @@ search across both apps returns nothing for any of them.
 
 | Status | Capability | Evidence |
 | :--- | :--- | :--- |
-| ✅ Working | Backend test suite | 138 tests across 8 files — modules, business rules, seller routes, auth integration |
+| ✅ Working | Backend test suite | 151 tests across 9 files — modules, business rules, seller routes, reviews, auth integration |
 | ✅ Working | Frontend test suite | 41 tests across 6 files — auth forms, cart and product hooks |
 | ✅ Working | Continuous integration | GitHub Actions runs type-check and both suites on push and PR |
 | ⚠️ Partial | Lint cleanliness | Runs and reports 109 errors — mostly new react-hooks rules plus 21 uses of `any`. Non-blocking in CI |
@@ -109,10 +114,24 @@ search across both apps returns nothing for any of them.
 
 ## Planned next
 
+Six of the ten tasks in the buyer-storefront completion plan remain. Four (real merchant
+trust signals, newsletter subscribe, removing the mock savings index, and real footer
+categories) were completed and are reflected above.
+
+| Priority | Task | Notes |
+| :--- | :--- | :--- |
+| Critical | Order cancel flow | `POST /store/orders/:id/cancel` with ownership and status guards, plus cancel actions in the account and order pages |
+| High | Reorder ("Buy Again") | Re-add a past order's line items to the cart in one action |
+| High | Coupon / promo code at checkout | Promo-code entry on the cart via Medusa's native promotion API |
+| Nice-to-have | Order invoice download | Downloadable invoice from the order detail page |
+| Nice-to-have | Merchant location | Capture real location in seller metadata during onboarding — the hardcoded location has been removed, but no real field replaces it yet |
+| Nice-to-have | Product share button | Share a product via the Web Share API with a clipboard fallback |
+
+Beyond the storefront:
+
 - **Admin panel (phase 7)** — dashboard stats, commissions and payouts UI, shipping settings,
   API-key management, replacing the remaining setup scripts.
-- **Coupons and promotions** — promo-code support on the cart via Medusa's native promotion API.
-- **Product reviews, seller fulfilment actions** — queued behind the admin panel.
+- **Review moderation UI** — the data model supports rejecting a review; no admin screen exposes it yet.
 
 ---
 

@@ -60,6 +60,12 @@ export default {
       middlewares: [authenticate("customer", ["session", "bearer"])],
     },
     {
+      // Reading reviews is public; writing one requires a signed-in customer.
+      matcher: "/store/reviews",
+      methods: ["POST"],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
       matcher: "/store/sellers/me*",
       middlewares: [authenticate("customer", ["session", "bearer"])],
     },
