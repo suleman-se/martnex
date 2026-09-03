@@ -1,7 +1,11 @@
 {
   "name": "martnex-backend",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Martnex Multi-Vendor Marketplace Backend",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0",
+    "pnpm": ">=10"
+  },
   "author": "Martnex Team",
   "license": "MIT",
   "keywords": [
