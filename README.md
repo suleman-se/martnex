@@ -3,11 +3,13 @@
   <p><strong>The Next-Generation Multi-Vendor Marketplace Platform</strong></p>
 
   <p>
+    <a href="https://github.com/suleman-se/martnex/actions/workflows/ci.yml"><img src="https://github.com/suleman-se/martnex/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
     <a href="https://github.com/suleman-se/martnex/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
-    <a href="#"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
+    <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
     <a href="#"><img src="https://img.shields.io/badge/Medusa-v2.13-8C4FFF" alt="Medusa v2"></a>
     <a href="#"><img src="https://img.shields.io/badge/Next.js-16.2-black" alt="Next.js 16.2"></a>
-    <a href="#"><img src="https://img.shields.io/badge/version-1.0.0-brightgreen" alt="v1.0.0"></a>
+    <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-1.0.0-brightgreen" alt="v1.0.0"></a>
+    <a href="docs/FEATURE_STATUS.md"><img src="https://img.shields.io/badge/feature_status-31_working-047857" alt="Feature Status"></a>
   </p>
 
   <p>
@@ -15,6 +17,15 @@
     It is designed to switch seamlessly between a high-converting <b>Single Store</b> and a complex <b>Multi-Vendor Marketplace</b>.
   </p>
 </div>
+
+---
+
+> ### 📋 [What's actually built → Feature Status](docs/FEATURE_STATUS.md)
+>
+> A claim-by-claim audit of this project, verified against a **running instance** — not against
+> this README. Includes what's partial, what's scaffolded, and what isn't built yet.
+>
+> **31 working · 4 partial · 14 declared but not built · 3 planned next**
 
 ---
 
@@ -31,6 +42,10 @@ cd martnex
 - **Frontend**: `http://localhost:3000`
 - **Admin Panel**: `http://localhost:7001` (`admin@martnex.io` / `supersecret`)
 - **Backend API**: `http://localhost:9001`
+
+> **Running outside Docker?** Use Node `^20.19.0 || >=22.12.0` (see `.nvmrc`).
+> The Vite 8 / Vitest 4 toolchain ships native binaries that pnpm silently skips on
+> older releases, which leaves `pnpm test` unable to start.
 
 ---
 
@@ -63,11 +78,13 @@ All technical details are centralized in the `docs/` directory for clarity and m
 
 | Category | Document |
 | :--- | :--- |
+| **Project Status** | **[Feature Status — built vs planned](docs/FEATURE_STATUS.md)** |
 | **Strategy** | [Vision & User Roles](docs/VISION.md) • [Roadmap & Changelog](CHANGELOG.md) |
 | **Getting Started** | [Quick Start Guide](docs/QUICK_START.md) • [Setup Instructions](docs/SETUP_INSTRUCTIONS.md) • [Docker Guide](docs/DOCKER_GUIDE.md) |
 | **API Reference** | [API Documentation](docs/API.md) |
 | **Configuration** | [Store Mode Settings](docs/STORE_MODE.md) • [Package Manager (pnpm)](docs/PACKAGE_MANAGER.md) |
 | **Quality** | [Testing Strategy (Unit/E2E)](docs/TESTING_GUIDE.md) • [Development Standards](docs/DEVELOPMENT_STANDARDS.md) |
+| **AI Agents** | [Agent Instructions](AGENTS.md) • [Skills Index](.agents/skills/README.md) |
 
 ---
 
@@ -78,7 +95,28 @@ martnex/
 ├── backend/    # Medusa v2 (Custom Modules: Seller, Commission, Payout)
 ├── frontend/   # Next.js (Feature-Sliced Architecture, Tailwind v4)
 ├── docs/       # Centralized Documentation
+├── .agents/    # AI agent knowledge base (.claude symlinks here)
+├── AGENTS.md   # Agent entry point (CLAUDE.md symlinks here)
 └── start.sh    # Idempotent Docker Orchestration
+```
+
+---
+
+## 🤖 Built for AI Agents
+
+Martnex ships with a first-class agent setup, so Claude Code, Cursor, Copilot and
+friends land productive instead of guessing.
+
+- **[AGENTS.md](AGENTS.md)** — the root entry point every agent reads: layout, commands,
+  hard rules and the gotchas that break checkout. `CLAUDE.md` symlinks to it.
+- **[`.agents/skills/`](.agents/skills/)** — 19 task-scoped skills covering Medusa v2
+  internals, Next.js 16 / React 19 patterns, UI/UX standards, and the plan → build →
+  test workflow. See the [skills index](.agents/skills/README.md).
+- **`.claude` → `.agents`** — a symlink, so Claude Code auto-loads the same knowledge
+  base every other agent reads. One source of truth, no duplication.
+
+```bash
+.agents/skills/<skill-name>/SKILL.md   # flat, one directory per skill
 ```
 
 ---

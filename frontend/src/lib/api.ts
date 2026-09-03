@@ -106,6 +106,84 @@ export async function fetchProductCategories(): Promise<ProductCategory[]> {
   return (data.categories as unknown as ProductCategory[]) || []
 }
 
+// ─── Reviews ──────────────────────────────────────────────────────────────────
+
+export interface Review {
+  id: string
+  product_id: string
+  seller_id: string | null
+  customer_id: string
+  customer_name: string | null
+  is_verified_purchase: boolean
+  rating: number
+  title: string | null
+  content: string | null
+  created_at: string
+}
+
+export interface RatingSummary {
+  average: number | null
+  count: number
+  distribution: Record<string, number>
+}
+
+export interface ReviewsResponse {
+  reviews: Review[]
+  summary: RatingSummary
+}
+
+export async function fetchProductReviews(productId: string): Promise<ReviewsResponse> {
+  const headers = await buildStoreHeaders()
+  const res = await fetch(
+    `${getBackendUrl()}/store/reviews?product_id=${encodeURIComponent(productId)}`,
+    { headers }
+  )
+  if (!res.ok) {
+    throw new Error('Could not load reviews')
+  }
+  return res.json()
+}
+
+export async function submitProductReview(
+  input: { productId: string; rating: number; title?: string; content?: string },
+  token?: string
+): Promise<{ review: Review }> {
+  const headers = await buildStoreHeaders(token)
+  const res = await fetch(`${getBackendUrl()}/store/reviews`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      product_id: input.productId,
+      rating: input.rating,
+      title: input.title || undefined,
+      content: input.content || undefined,
+    }),
+  })
+
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(data.error || 'Could not submit your review. Please try again.')
+  }
+  return data
+}
+
+// ─── Newsletter ───────────────────────────────────────────────────────────────
+
+export async function subscribeToNewsletter(email: string): Promise<{ message: string }> {
+  const headers = await buildStoreHeaders()
+  const res = await fetch(`${getBackendUrl()}/store/newsletter`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  })
+
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(data.error || 'Could not subscribe right now. Please try again.')
+  }
+  return data
+}
+
 // ─── Price Helpers ────────────────────────────────────────────────────────────
 
 /** Returns the lowest price across all variants, in the given currency (defaults to first price). */
@@ -137,6 +215,7 @@ export interface SellerProfile {
   verification_status: string
   verified_at: string | null
   created_at: string
+  rating?: { average: number | null; count: number }
 }
 
 export interface FetchSellerResponse {

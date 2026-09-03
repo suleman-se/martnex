@@ -1,5 +1,5 @@
 ---
-name: building-storefronts
+name: medusa-storefront
 description: Load automatically when planning, researching, or implementing Medusa storefront features in Next.js (App Router, Server Components, Client Components, SDK integration, optional React Query usage). REQUIRED for all storefront development in ALL modes.
 ---
 

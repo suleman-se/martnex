@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { StoreHeader } from '@/components/store/layout/store-header'
 import { CartDrawer } from '@/components/store/layout/cart-drawer'
+import { NewsletterBlock } from '@/components/store/layout/newsletter-block'
+import { FooterCategories } from '@/components/store/layout/footer-categories'
 import Link from 'next/link'
 import { Globe, ShieldCheck } from 'lucide-react'
 
@@ -33,15 +35,7 @@ export default function StoreLayout({ children }: { children: ReactNode }) {
           </div>
 
           {/* Sitemap Columns */}
-          <div className="space-y-4">
-            <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-900">Shop Catalog</h4>
-            <ul className="space-y-2.5 text-xs font-semibold text-slate-400">
-              <li><Link href="/store" className="hover:text-slate-900 transition-colors">All Products</Link></li>
-              <li><Link href="/store?category=apparel" className="hover:text-slate-900 transition-colors">Apparel & Fashion</Link></li>
-              <li><Link href="/store?category=electronics" className="hover:text-slate-900 transition-colors">Electronics</Link></li>
-              <li><Link href="/store" className="hover:text-slate-900 transition-colors">Trending Now</Link></li>
-            </ul>
-          </div>
+          <FooterCategories />
 
           <div className="space-y-4">
             <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-900">Partner Portals</h4>
@@ -54,25 +48,7 @@ export default function StoreLayout({ children }: { children: ReactNode }) {
           </div>
 
           {/* Newsletter block */}
-          <div className="space-y-4">
-            <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-900">Stay Updated</h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Subscribe to unlock early catalog access and premium merchant deals.
-            </p>
-            <div className="relative flex items-center border border-slate-200 focus-within:border-slate-400 bg-white rounded-xl p-1 transition-all duration-200">
-              <input
-                type="email"
-                placeholder="your@email.com"
-                className="w-full bg-transparent px-3 py-1.5 text-xs text-slate-800 focus:outline-none placeholder:text-slate-300"
-              />
-              <button
-                type="button"
-                className="bg-slate-900 text-white px-4 py-1.5 text-xs font-bold rounded-lg hover:bg-slate-800 transition-colors shrink-0"
-              >
-                Join
-              </button>
-            </div>
-          </div>
+          <NewsletterBlock />
         </div>
 
         {/* Bottom Bar */}

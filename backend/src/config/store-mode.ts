@@ -171,25 +171,11 @@ export const getModulesToLoad = (): string[] => {
     modules.push('payout');
   }
 
-  // Optional feature modules
+  // Optional feature modules.
+  // Only list modules that actually exist under src/modules - announcing a
+  // module that was never built made the boot banner lie about the platform.
   if (FEATURES.REVIEWS) {
     modules.push('review');
-  }
-
-  if (FEATURES.DISPUTES) {
-    modules.push('dispute');
-  }
-
-  if (FEATURES.WISHLIST) {
-    modules.push('wishlist');
-  }
-
-  if (FEATURES.LOYALTY) {
-    modules.push('loyalty');
-  }
-
-  if (FEATURES.ANALYTICS) {
-    modules.push('analytics');
   }
 
   return modules;

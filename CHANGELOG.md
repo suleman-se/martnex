@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+> **Note on early version numbers.** Phases 1-2.5 (Nov-Dec 2025) were originally logged as
+> `1.0.0`, `2.0.0` and `2.5.0` — these were *phase* numbers, not releases, and they collided
+> with the actual `1.0.0` release below. They have been renumbered to `0.1.0`, `0.2.0` and
+> `0.2.5` so the history reads monotonically. No content changed, and no git tags existed to
+> break. `1.0.0` (3 June 2026) is the project's first real release.
+
 ## [Unreleased]
 
 > **Next phase — Phase 7: Admin Panel** (`docs/superpowers/plans/2026-05-20-admin-panel.md`)
@@ -14,6 +20,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > After this phase: `pnpm run seed` → login to `/admin` → click "Set Up Shipping" → done. Zero manual scripts.
 
 > Future (post-Phase 7): Product reviews, seller fulfillment actions.
+
+---
+
+## [1.0.0] - Storefront Componentization & Premium Account Skeletons (3 June 2026)
+
+First stable release.
+
+### Added
+- **Premium Account Skeletons**: `SkeletonAddresses`, `SkeletonOrders`, `SkeletonProfile`, and `SkeletonSavedAddresses` — exact layout mirrors with auto-inverting dark mode, `min-h-*` overflow safety, and hydration-safe static headers that stay visible while data loads.
+
+### Changed
+- **Storefront Componentization**: `ProductCard`, `SearchSpotlight`, and `PaymentStep` decomposed into domain-level sub-components — `ProductCardMedia`, `ProductCardDetails`, `QuickAddVariantSelector`, `SearchInput`, `SearchFilters`, `SearchResultsList`, `PaymentMethodCard`, `StripePaymentForm`. Containers own state; leaves are purely presentational.
+
+### Fixed
+- Click-outside closure on the desktop quick-add variant selector.
+- Hover-flash artifacts on product cards.
+- Overlay backdrop layering on the spotlight search.
+
+---
+
+## [0.9.9] - Tablet Responsiveness & Dark Mode Completion (2 June 2026)
+
+### Added
+- **Auth Screen Dark Mode**: Dark backgrounds (`dark:bg-[#090d16]`), card borders (`dark:border-slate-700/40`), and feedback panels (error/success/warning) across all auth forms and layouts.
+
+### Changed
+- **Tablet Responsiveness (Account Area)**: Compact icon sidebar on tablet, sticky aside, corrected `md:flex-row` outer container, and inner grids shifted to `lg:` breakpoints.
+- **Button Variant Dark Mode**: All seven `<Button>` variants (`default`, `premium`, `outline`, `tonal`, `ghost`, `secondary`, `destructive`) now carry explicit `dark:` classes.
+
+### Fixed
+- Assorted mobile and desktop CSS issues across the storefront.
 
 ---
 
@@ -203,7 +240,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.4.0] - Phase 3: Core Infrastructure (April 2026)
+## [0.4.0] - Seller Product Management & Stack Upgrade (April 2026)
 
 ### Added
 - **Seller Product Management (Shopify-style)**:
@@ -272,7 +309,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.5.0] - Phase 2.5: Security Hardening (December 2025)
+## [0.2.5] - Phase 2.5: Security Hardening (December 2025)
 
 ### Added
 - **JWT & Encryption Integrity**:
@@ -287,7 +324,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.0.0] - Phase 2: Multi-Vendor Extensions (December 2025)
+## [0.2.0] - Phase 2: Multi-Vendor Extensions (December 2025)
 
 ### Added
 - **Orchestrated Domain APIs**:
@@ -306,7 +343,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] - Phase 1: Initial Monolithic Foundation
+## [0.1.0] - Phase 1: Initial Monolithic Foundation (November 2025)
 
 ### Added
 - **Database & Architecture Drafts**:
@@ -329,7 +366,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## How to Update This File
 
-When making changes, adhere to the standard format:
-1. Append items under the **[Unreleased]** or highest active phase.
-2. Underline items by impact: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Security**.
-3. Group related entries concisely.
+1. Add items under **[Unreleased]** as you work. Never edit a released section.
+2. Group them by impact: **Added**, **Changed**, **Deprecated**, **Removed**, **Fixed**, **Security**.
+3. To cut a release, rename **[Unreleased]** to `## [X.Y.Z] - Title (D Month YYYY)`, open a
+   fresh **[Unreleased]**, and bump `version` in **both** `backend/package.json` and
+   `frontend/package.json` plus the README badge. All four must match.
+4. Version numbers are **semver, not phase numbers** — MAJOR.MINOR.PATCH, always increasing.
+   A "Phase 8" is not version `8.0.0`.

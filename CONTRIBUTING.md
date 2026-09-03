@@ -64,7 +64,8 @@ Unsure where to start? Look for issues labeled:
 
 ### Prerequisites
 
-- Node.js 20+
+- Node.js `^20.19.0 || >=22.12.0` (see `.nvmrc`) — the Vite 8 / Vitest 4 toolchain
+  ships native binaries that pnpm silently skips on 20.0-20.18 and 22.0-22.11
 - pnpm 10+
 - PostgreSQL 15+
 - Redis 7+

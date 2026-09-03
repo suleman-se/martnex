@@ -1,5 +1,7 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+import { REVIEW_MODULE } from "@modules/review"
+import type ReviewModuleService from "@modules/review/service"
 
 /**
  * GET /store/sellers/:id
@@ -62,6 +64,17 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       }
     })
 
+    // Rating summary travels with the profile so the merchant page renders in
+    // one request. A failure here must not take the whole profile down.
+    let rating = { average: null as number | null, count: 0 }
+    try {
+      const reviewService = req.scope.resolve<ReviewModuleService>(REVIEW_MODULE)
+      const summary = await reviewService.getSellerRatingSummary(seller.id)
+      rating = { average: summary.average, count: summary.count }
+    } catch {
+      // leave the empty summary in place
+    }
+
     // Return only public information alongside the products list
     res.status(200).json({
       seller: {
@@ -71,6 +84,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
         verification_status: seller.verification_status,
         verified_at: seller.verified_at,
         created_at: seller.created_at,
+        rating,
       },
       products,
     })

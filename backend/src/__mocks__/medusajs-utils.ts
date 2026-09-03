@@ -36,8 +36,30 @@ const MedusaServiceFactory = (_models: Record<string, unknown>): any => {
   }
 }
 
+// Minimal stand-in for MedusaError: services throw it for validation and
+// conflict cases, and tests assert on the message.
+class MedusaErrorStub extends Error {
+  type: string
+
+  static Types = {
+    INVALID_DATA: "invalid_data",
+    DUPLICATE_ERROR: "duplicate_error",
+    NOT_FOUND: "not_found",
+    NOT_ALLOWED: "not_allowed",
+    UNAUTHORIZED: "unauthorized",
+    UNEXPECTED_STATE: "unexpected_state",
+  }
+
+  constructor(type: string, message: string) {
+    super(message)
+    this.name = "MedusaError"
+    this.type = type
+  }
+}
+
 module.exports = {
   MedusaService: MedusaServiceFactory,
+  MedusaError: MedusaErrorStub,
   model: {
     define: chainable,
     id: chainable,
